@@ -10,6 +10,8 @@ import dagmc_stats
 
 import nose
 
+test_input = "3vols.h5m"
+
 my_core = core.Core()
 my_core.load_file(test_input)
 
