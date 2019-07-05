@@ -51,3 +51,4 @@ def get_entity_ranges(my_core, meshset, entity_types):
 
     return entity_ranges
 
+get_dagmc_tags(core.Core())

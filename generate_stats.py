@@ -17,10 +17,9 @@ def report_stats(entity_ranges):
     ------
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
-
     for entity_type, eh_range in entity_ranges.items():
         print("There are {} entities of type {}.".format(eh_range.size(),entity_type))
-
+    print('Type 0: Vertices \nType 2: Triangles \nType 11: EntitySets')
 def main():
 
     # starting with a single input file - will need to convert this to a user option
@@ -32,11 +31,10 @@ def main():
 
     # get tags
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-    
+    print(dagmc_tags)
     # get Ranges of various entities
-    entity_types = [types.MBVERTEX, types.MBTRI]
-    entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types)
-
+    entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+    entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types, dagmc_tags)
     report_stats(entity_ranges)
     
 if __name__ == "__main__":
