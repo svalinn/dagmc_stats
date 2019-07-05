@@ -46,10 +46,10 @@ def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags):
     """
 
     entity_ranges = {}
-    for entity_type in entity_types:
+    for entity_type in entity_types:#goes through each entitytype given
         entity_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
-        if entity_type == 11:
-            entity_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
+        if entity_type == 11: #if the type is mbentitytypes
+            entity_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3]) #get all of the entities that are a certain dimension (volumes, surfaces, curves) and part of the set
             entity_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
             entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
     return entity_ranges
