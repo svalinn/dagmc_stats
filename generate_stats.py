@@ -18,25 +18,26 @@ def report_stats(entity_ranges):
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
 
-    for type, eh_range in entity_ranges:
-        print("There are {} entities of type {}.".format(type, len(eh_range)))
+    for entity_type, eh_range in entity_ranges.items():
+        print("There are {} entities of type {}.".format(eh_range.size(),entity_type))
 
 def main():
 
     # starting with a single input file - will need to convert this to a user option
     input_file = "3vols.h5m"
 
-    core = mb.core.Core() #initiates core
-    all_meshset = core.create_meshset() #creates meshset
-    core.load_file(input_file, all_meshset) #dumps all entities into the meshset to be redistributed to other meshsets
+    my_core = core.Core() #initiates core
+    all_meshset = my_core.create_meshset() #creates meshset
+    my_core.load_file(input_file, all_meshset) #dumps all entities into the meshset to be redistributed to other meshsets
 
     # get tags
-    dagmc_tags = get_dagmc_tags(core)
+    dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     
     # get Ranges of various entities
     entity_types = [types.MBVERTEX, types.MBTRI]
-    entity_ranges = get_entity_ranges(core, all_meshset, entity_types)
+    entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types)
 
+    report_stats(entity_ranges)
     
 if __name__ == "__main__":
     main()
