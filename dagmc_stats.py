@@ -30,7 +30,7 @@ def get_dagmc_tags(my_core):
     return dagmc_tags
 
 
-def get_entity_ranges(my_core, meshset, entity_types):
+def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags):
     """
     Get a dictionary with MOAB ranges for each of the requested entity types
 
@@ -48,7 +48,9 @@ def get_entity_ranges(my_core, meshset, entity_types):
     entity_ranges = {}
     for entity_type in entity_types:
         entity_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
-
+        if entity_type == 11:
+            entity_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
+            entity_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
+            entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
     return entity_ranges
 
-get_dagmc_tags(core.Core())
