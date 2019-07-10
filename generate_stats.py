@@ -9,7 +9,7 @@ from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
 
-def report_stats(entity_ranges):
+def report_stats(entity_ranges, surface_per_volume_stats):
     """
     Method to print a table of statistics.
     
@@ -20,6 +20,8 @@ def report_stats(entity_ranges):
     for entity_type, eh_range in entity_ranges.items():
         print("There are {} entities of type {}.".format(eh_range.size(),entity_type))
     print('Type 0: Vertices \nType 2: Triangles \nType 11: EntitySets')
+    for stat, number in surface_per_volume_stats.items():
+        print('The {} number of Surfaces per Volume in this file is {}'.format(stat, number))
 def main():
 
     # starting with a single input file - will need to convert this to a user option
@@ -31,11 +33,11 @@ def main():
 
     # get tags
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-    print(dagmc_tags)
     # get Ranges of various entities
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types, dagmc_tags)
-    report_stats(entity_ranges)
+    surface_per_volume_stats = dagmc_stats.get_surfaces_per_volume(my_core, entity_ranges)
+    report_stats(entity_ranges, surface_per_volume_stats)
     
 if __name__ == "__main__":
     main()

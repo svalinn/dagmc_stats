@@ -3,7 +3,7 @@ import sys
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
-
+import numpy as np
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
@@ -39,7 +39,7 @@ def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags):
     my_core : a MOAB Core instance
     meshset : a MOAB meshset to query for the ranges of entities
     entity_types : a list of valid pyMOAB types to be retrieved
-
+    dagmc_tags : the MOAB tags created in a file
     outputs
     -------
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
@@ -54,3 +54,27 @@ def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags):
             entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
     return entity_ranges
 
+
+def get_surfaces_per_volume(my_core, entity_ranges):
+    """
+    Get the number of surfaces that each volume in a given file contains
+    
+    inputs
+    ------
+    my_core : a MOAB core instance
+    entity_ranges : a dictionary of the ranges of each tag in a file
+    
+    outputs
+    -------
+    pdf : a histogram that displays the number of surfaces each volume has (matplotlib)
+    """
+    freqs = []
+    for volumeset in entity_ranges['Volumes']:
+        freqs.append(my_core.get_child_meshsets(volumeset).size())
+    stats = {}
+    stats['minimum'] = min(freqs)
+    stats['maximum'] = max(freqs)
+    stats['median'] = np.median(freqs)
+    stats['average'] = np.average(freqs)
+    return stats
+    

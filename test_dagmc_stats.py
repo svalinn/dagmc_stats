@@ -13,11 +13,19 @@ import nose
 test_input = "3vols.h5m"
 
 my_core = core.Core()
-my_core.load_file(test_input)
+meshset = my_core.create_meshset()
+my_core.load_file(test_input, meshset)
 
 def test_get_tags():
 
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     assert(len(dagmc_tags) == 3)
+def test_get_ranges():
+    
+    entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+    dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    entity_ranges = dagmc_stats.get_entity_ranges(my_core, meshset, entity_types, dagmc_tags)
+    assert(len(entity_ranges) == 6)
+    
 
     
