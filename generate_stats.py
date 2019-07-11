@@ -5,11 +5,12 @@ import sys
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
-
+import matplotlib.pyplot as plt
+import numpy as np
 # import the new module that defines each of the functions
 import dagmc_stats
 
-def report_stats(entity_ranges, surface_per_volume_stats):
+def report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_stats):
     """
     Method to print a table of statistics.
     
@@ -22,6 +23,11 @@ def report_stats(entity_ranges, surface_per_volume_stats):
     print('Type 0: Vertices \nType 2: Triangles \nType 11: EntitySets')
     for stat, number in surface_per_volume_stats.items():
         print('The {} number of Surfaces per Volume in this file is {}'.format(stat, number))
+    for stat, number in triangle_per_vertex_stats.items():
+        print('The {} number of Triangles per Vertex in this file is {}'.format(stat, number))
+        
+
+
 def main():
 
     # starting with a single input file - will need to convert this to a user option
@@ -29,16 +35,16 @@ def main():
 
     my_core = core.Core() #initiates core
     all_meshset = my_core.create_meshset() #creates meshset
-    my_core.load_file(input_file, all_meshset) #dumps all entities into the meshset to be redistributed to other meshsets
-
+    my_core.load_file(input_file) #dumps all entities into the meshset to be redistributed to other meshsets
+    all_meshset = my_core.get_root_set()
     # get tags
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     # get Ranges of various entities
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types, dagmc_tags)
     surface_per_volume_stats = dagmc_stats.get_surfaces_per_volume(my_core, entity_ranges)
-    report_stats(entity_ranges, surface_per_volume_stats)
-    
+    triangle_per_vertex_stats = dagmc_stats.get_triangles_per_vertex(my_core, all_meshset)
+    report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_stats)
 if __name__ == "__main__":
     main()
     
