@@ -4,7 +4,6 @@ sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.
 from pymoab import core, types
 from pymoab.rng import Range
 import numpy as np
-import matplotlib as plt
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
