@@ -23,10 +23,12 @@ def report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_st
     ------
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
+    type_legend = {0:'Vertex', 2:'Triangle', 11: 'EntitySet'}
     if verbose: #if the user wants verbosity, print with more words
         for entity_type, eh_range in entity_ranges.items():
+            if type(entity_type) == int:
+                entity_type = type_legend[entity_type]
             print("There are {} entities of type {}.".format(eh_range.size(),entity_type))
-        print('Type 0: Vertices \nType 2: Triangles \nType 11: EntitySets')
         for stat, number in surface_per_volume_stats.items():
             print('The {} number of Surfaces per Volume in this file is {}'.format(stat, number))
         for stat, number in triangle_per_vertex_stats.items():
@@ -35,6 +37,8 @@ def report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_st
             print('The {} number of Triangles per Surface in this file is {}'.format(stat, number))
     else: #or, print with minimal words
         for entity_type, eh_range in entity_ranges.items():
+            if type(entity_type) == int:
+                entity_type = type_legend[entity_type]
             print("Type {}: {}".format(entity_type, eh_range.size()))
         print("Surfaces per Volume:")
         for stat, number in surface_per_volume_stats.items():
