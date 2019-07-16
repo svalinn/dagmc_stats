@@ -193,3 +193,37 @@ def get_triangles_per_vertex(my_core, all_meshset):
     mean = find_mean(sorted_dict)
     triangles_per_vertex_stats['average'] = mean
     return triangles_per_vertex_stats
+def get_triangles_per_surface(my_core, entity_ranges):
+    '''
+    This function will return statistics about the number of triangles on each surface in a file
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    entity_ranges : a dictionary containing ranges for each type in the file (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
+    
+    outputs
+    -------
+    triangles_per_surface_stats : a dictionary of certain stats about triangles per surface
+    '''
+    tri_dict = {}
+    for surface in entity_ranges['Surfaces']:
+        triangles = my_core.get_entities_by_type(surface, types.MBTRI)
+        try:
+            tri_dict[triangles.size()] += 1
+        except KeyError:
+            tri_dict[triangles.size()] = 1
+    sorted_dictionary = {}
+    for number in sorted(tri_dict.keys()):
+        sorted_dictionary[number] = tri_dict[number]
+    triangles_per_surface_stats = {}
+    triangles_per_surface_stats['minimum'] = min(tri_dict.keys())
+    triangles_per_surface_stats['maximum'] = max(tri_dict.keys())
+    median = find_median(sorted_dictionary)
+    triangles_per_surface_stats['median'] = median
+    mean = find_mean(sorted_dictionary)
+    triangles_per_surface_stats['mean'] = mean
+    return triangles_per_surface_stats
+    
+    
+    
