@@ -18,7 +18,7 @@ def get_dagmc_tags(my_core):
 
     dagmc_tags = {}
     dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size = 1, tag_type = types.MB_TYPE_INTEGER, #creates tag for the geo-
-                                                 storage_type = types.MB_TAG_SPARSE, create_if_missing = True)# metric dimension
+                                                 storage_type = types.MB_TAG_SPARSE, create_if_missing = True)# geometric dimension
     
     dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size = 32, tag_type = types.MB_TYPE_OPAQUE, #creates tag for the word of 
                                                  storage_type = types.MB_TAG_SPARSE, create_if_missing = True) #the category
@@ -130,9 +130,7 @@ def find_median(sorted_dict):
     """
     
     #finds the number of data points
-    length = 0
-    for value in sorted_dict.values():
-        length += value
+    length = sum(sorted_dict.values())
     half = length / 2
     sum_var = 0
     #finds the index of the middle of the dataset
@@ -145,12 +143,11 @@ def find_median(sorted_dict):
     #returns the median based off some characteristics of the dataset
     if sum(list(sorted_dict.values())[index:]) != sum(list(sorted_dict.values())[:index]):
         if sum(list(sorted_dict.values())[index:]) > sum(list(sorted_dict.values())[:index]):
-            median = list(sorted_dict.keys())[index]
+            return list(sorted_dict.keys())[index]
         else:
-            median = list(sorted_dict.keys())[index-1]
+            return list(sorted_dict.keys())[index-1]
     else:
-        median = (list(sorted_dict.keys())[index-1] + list(sorted_dict.keys())[index]) / 2
-    return(median)
+        return (list(sorted_dict.keys())[index-1] + list(sorted_dict.keys())[index]) / 2
 
 
 def find_mean(sorted_dict):
@@ -161,19 +158,20 @@ def find_mean(sorted_dict):
     ------
     sorted_dict : a dictionary sorted by its keys
     
+    example dictionary:
+    {3:2, 4:5, 6:3} = [3,3,4,4,4,4,4,6,6,6]
+    
     outputs
     -------
     mean : the mean of the dataset
     
-    example dictionary:
-    {3:2, 4:5, 6:3} = [3,3,4,4,4,4,4,6,6,6]
     """
     
     total = 0
     for key, value in sorted_dict.items():
         total += key*value
     mean = total / sum(sorted_dict.values())
-    return(mean)
+    return mean
 
 
 
