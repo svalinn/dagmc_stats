@@ -1,12 +1,13 @@
 # set the path to find the current installation of pyMOAB
 import sys
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
+import numpy as np
 from pymoab import core, types
 from pymoab.rng import Range
-import numpy as np
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
+    
     inputs
     ------
     my_core : a MOAB Core instance
@@ -31,11 +32,13 @@ def get_dagmc_tags(my_core):
 def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags):
     """
     Get a dictionary with MOAB ranges for each of the requested entity types
+    
     inputs
     ------
     my_core : a MOAB Core instance
     meshset : a MOAB meshset to query for the ranges of entities
     entity_types : a list of valid pyMOAB types to be retrieved
+    dagmc_tags : a dictionary of relevant tags. 
     outputs
     -------
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
@@ -61,8 +64,9 @@ def get_surfaces_per_volume(my_core, entity_ranges):
     
     outputs
     -------
-    pdf : a histogram that displays the number of surfaces each volume has (matplotlib)
+    pdf : a histogram that displays the number of surfaces of each volume (matplotlib)
     """
+    
     freqs = []
     for volumeset in entity_ranges['Volumes']:
         freqs.append(my_core.get_child_meshsets(volumeset).size())
@@ -76,6 +80,7 @@ def get_surfaces_per_volume(my_core, entity_ranges):
 def make_verts_dictionary(vert_list):
     """
     returns a dictionary of frequency of the values of the triangles per vertex (ie {number of triangles per vertex: occurences})
+    
     inputs
     -----
     vert_list : a list of all vertices in a file
@@ -84,14 +89,14 @@ def make_verts_dictionary(vert_list):
     --------
     sorted_dict: a dictionary that has information about triangles per vertex, sorted by its keys.
     """
+    
     vertices_and_frequencies = {} 
     #makes dictionary with each vertex and the number of triangles on it
     for vert in vert_list:
-        number_of_vertex = vert
         try:
-            vertices_and_frequencies[number_of_vertex] += 1
+            vertices_and_frequencies[vert] += 1
         except KeyError:
-            vertices_and_frequencies[number_of_vertex] = 1
+            vertices_and_frequencies[vert] = 1
     number_of_frequencies = {}
     #makes dictionary with the number of triangles, and the number of vertices that have that number
     for vertex in vertices_and_frequencies:
@@ -104,6 +109,9 @@ def make_verts_dictionary(vert_list):
     for frequency in sorted(number_of_frequencies.keys()):
         sorted_dict[frequency] = number_of_frequencies[frequency]
     return(sorted_dict)
+
+
+
 def find_median(sorted_dict):
     """
     finds the median of a dictionary with format {value:occurences}
@@ -111,14 +119,16 @@ def find_median(sorted_dict):
     inputs
     ------
     sorted_dict : a dictionary sorted by its keys
+    example dictionary:
+    {3:2, 4:5, 6:3} = [3,3,4,4,4,4,4,6,6,6]
+    
     
     outputs
     -------
-    mean : the median of the dataset
+    mean : the median of the dataset 
     
-    example dictionary:
-    {3:2, 4:5, 6:3} = [3,3,4,4,4,4,4,6,6,6]
     """
+    
     #finds the number of data points
     length = 0
     for value in sorted_dict.values():
@@ -142,6 +152,7 @@ def find_median(sorted_dict):
         median = (list(sorted_dict.keys())[index-1] + list(sorted_dict.keys())[index]) / 2
     return(median)
 
+
 def find_mean(sorted_dict):
     """
     finds the mean of a dictionary with format {value:occurences}
@@ -157,14 +168,19 @@ def find_mean(sorted_dict):
     example dictionary:
     {3:2, 4:5, 6:3} = [3,3,4,4,4,4,4,6,6,6]
     """
+    
     total = 0
     for key, value in sorted_dict.items():
         total += key*value
     mean = total / sum(sorted_dict.values())
     return(mean)
+
+
+
 def get_triangles_per_vertex(my_core, all_meshset):
     """
     gets stats for the number of trianges touching each vertex in a file
+    
     inputs
     ------
     my_core : a MOAB core instance
@@ -174,6 +190,7 @@ def get_triangles_per_vertex(my_core, all_meshset):
     -------
     triangles_per_vertex_stats : a dictionary with certain statistics
     """
+    
     tri_meshset = my_core.create_meshset() #creates a meshset
     tri_range = my_core.get_entities_by_type(all_meshset, types.MBTRI) #retrieves all entities with type triangle
     my_core.add_entities(tri_meshset, tri_range) #adds the entities into the new meshset
@@ -193,8 +210,11 @@ def get_triangles_per_vertex(my_core, all_meshset):
     mean = find_mean(sorted_dict)
     triangles_per_vertex_stats['average'] = mean
     return triangles_per_vertex_stats
+
+
+
 def get_triangles_per_surface(my_core, entity_ranges):
-    '''
+    """
     This function will return statistics about the number of triangles on each surface in a file
     
     inputs
@@ -205,7 +225,8 @@ def get_triangles_per_surface(my_core, entity_ranges):
     outputs
     -------
     triangles_per_surface_stats : a dictionary of certain stats about triangles per surface
-    '''
+    """
+    
     tri_dict = {}
     for surface in entity_ranges['Surfaces']:
         triangles = my_core.get_entities_by_type(surface, types.MBTRI)
