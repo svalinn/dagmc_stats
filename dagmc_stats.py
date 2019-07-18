@@ -77,6 +77,7 @@ def get_surfaces_per_volume(my_core, entity_ranges):
     stats['average'] = np.average(freqs)
     return stats
 
+
 def make_verts_dictionary(vert_list):
     """
     returns a dictionary of frequency of the values of the triangles per vertex (ie {number of triangles per vertex: occurences})
@@ -109,7 +110,6 @@ def make_verts_dictionary(vert_list):
     for frequency in sorted(number_of_frequencies.keys()):
         sorted_dict[frequency] = number_of_frequencies[frequency]
     return(sorted_dict)
-
 
 
 def find_median(sorted_dict):
@@ -174,7 +174,6 @@ def find_mean(sorted_dict):
     return mean
 
 
-
 def get_triangles_per_vertex(my_core, all_meshset):
     """
     gets stats for the number of trianges touching each vertex in a file
@@ -210,7 +209,6 @@ def get_triangles_per_vertex(my_core, all_meshset):
     return triangles_per_vertex_stats
 
 
-
 def get_triangles_per_surface(my_core, entity_ranges):
     """
     This function will return statistics about the number of triangles on each surface in a file
@@ -243,6 +241,5 @@ def get_triangles_per_surface(my_core, entity_ranges):
     mean = find_mean(sorted_dictionary)
     triangles_per_surface_stats['mean'] = mean
     return triangles_per_surface_stats
-    
-    
+
     
