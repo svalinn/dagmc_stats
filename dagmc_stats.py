@@ -49,11 +49,11 @@ def get_native_ranges(my_core, meshset, entity_types, dagmc_tags=None):
         native_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
     return native_ranges
 
-def get_entityset_ranges(my_core, meshset, dagmc_tags):
-    entityset_ranges = {}
-    entityset_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
-    entityset_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
-    entityset_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
+def get_entityset_ranges(my_core, meshset, entity_ranges, dagmc_tags):
+    entity_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
+    entity_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
+    entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
+    return entity_ranges
 def get_surfaces_per_volume(my_core, entity_ranges):
     """
     Get the number of surfaces that each volume in a given file contains

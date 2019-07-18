@@ -15,7 +15,7 @@ import argparse
 
 
 
-def report_stats(native_ranges, entityset_ranges, surface_per_volume_stats, triangle_per_vertex_stats, triangle_per_surface_stats, verbose):
+def report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_stats, triangle_per_surface_stats, verbose):
     """
     Method to print a table of statistics.
     
@@ -36,7 +36,7 @@ def report_stats(native_ranges, entityset_ranges, surface_per_volume_stats, tria
         for stat, number in triangle_per_surface_stats.items():
             print('The {} number of Triangles per Surface in this file is {}'.format(stat, number))
     else: #or, print with minimal words
-        for entity_type, eh_range in entityset_ranges.items():
+        for entity_type, eh_range in entity_ranges.items():
             if type(entity_type) == int:
                 entity_type = type_legend[entity_type]
             print("Type {}: {}".format(entity_type, eh_range.size()))
@@ -69,11 +69,11 @@ def main():
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     native_ranges = dagmc_stats.get_native_ranges(my_core, all_meshset, entity_types)     # get Ranges of various entities
-    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, all_meshset, dagmc_tags)
-    surface_per_volume_stats = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges) #get stats for surface per volume
+    entity_ranges = dagmc_stats.get_entityset_ranges(my_core, all_meshset, native_ranges, dagmc_tags)
+    surface_per_volume_stats = dagmc_stats.get_surfaces_per_volume(my_core, entity_ranges) #get stats for surface per volume
     triangle_per_vertex_stats = dagmc_stats.get_triangles_per_vertex(my_core, all_meshset) #get stats for triangle per vertex
-    triangle_per_surface_stats = dagmc_stats.get_triangles_per_surface(my_core, entityset_ranges) #get stats for triangle per surface
-    report_stats(native_ranges, entityset_ranges, surface_per_volume_stats, triangle_per_vertex_stats, triangle_per_surface_stats, 
+    triangle_per_surface_stats = dagmc_stats.get_triangles_per_surface(my_core, entity_ranges) #get stats for triangle per surface
+    report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_stats, triangle_per_surface_stats, 
                  verbose) #report the statistics
     #show_histograms()
 if __name__ == "__main__":
