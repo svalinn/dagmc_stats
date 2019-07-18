@@ -29,7 +29,7 @@ def get_dagmc_tags(my_core):
     return dagmc_tags
 
 
-def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags=None):
+def get_native_ranges(my_core, meshset, entity_types, dagmc_tags=None):
     """
     Get a dictionary with MOAB ranges for each of the requested entity types
     
@@ -44,15 +44,16 @@ def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags=None):
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
 
-    entity_ranges = {}
+    native_ranges = {}
     for entity_type in entity_types:
-        entity_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
-        if entity_type == 11 and not(dagmc_tags == None):
-            entity_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
-            entity_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
-            entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
-    return entity_ranges
+        native_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
+    return native_ranges
 
+def get_entityset_ranges(my_core, meshset, dagmc_tags):
+    entityset_ranges = {}
+    entityset_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
+    entityset_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
+    entityset_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
 def get_surfaces_per_volume(my_core, entity_ranges):
     """
     Get the number of surfaces that each volume in a given file contains
