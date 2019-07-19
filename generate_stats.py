@@ -31,7 +31,6 @@ def main():
 
     # get tags
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-    print(dagmc_tags)
     # get Ranges of various entities
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types, dagmc_tags)
@@ -39,4 +38,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    
