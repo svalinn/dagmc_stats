@@ -17,14 +17,16 @@ my_core = core.Core()
 my_core.load_file(test_input)
 test_set = {}
 for x in range(rd.randint(1,10)):
-    test_set[rd.randint(10*x,10*x+10)] = rd.randint(1,10000)
+    test_set[rd.randint(0,100)] = rd.randint(1,10000)
 def test_get_tags():
 
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     assert(len(dagmc_tags) == 3)
 
 def test_get_median():
-
+    '''
+    compares my function with one found online and one that converts it to a list to find the median. 
+    '''
     # Sort the dictionary
     values_sorted = OrderedDict(sorted(test_set.items(), key=lambda t: t[0]))
     index = sum(values_sorted.values())/2
