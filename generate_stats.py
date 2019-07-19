@@ -62,8 +62,7 @@ def main():
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types, dagmc_tags)
     surface_per_volume_stats = dagmc_stats.get_surfaces_per_volume(my_core, entity_ranges)
-    triangle_per_vertex_stats = dagmc_stats.get_triangles_per_vertex(my_core, all_meshset)
+    triangle_per_vertex_stats = dagmc_stats.get_triangles_per_vertex(my_core, entity_ranges)
     report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_stats, verbose)
 if __name__ == "__main__":
     main()
-    

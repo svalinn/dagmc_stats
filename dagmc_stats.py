@@ -7,11 +7,9 @@ import numpy as np
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
-
     inputs
     ------
     my_core : a MOAB Core instance
-
     outputs
     -------
     dagmc_tags : a dictionary of relevant tags
@@ -33,7 +31,6 @@ def get_dagmc_tags(my_core):
 def get_entity_ranges(my_core, meshset, entity_types, dagmc_tags):
     """
     Get a dictionary with MOAB ranges for each of the requested entity types
-
     inputs
     ------
     my_core : a MOAB Core instance
@@ -68,41 +65,23 @@ def get_surfaces_per_volume(my_core, entity_ranges):
     -------
     pdf : a histogram that displays the number of surfaces each volume has (matplotlib)
     """
-    freqs = []
+    surf_freqs = {}
     for volumeset in entity_ranges['Volumes']:
-        freqs.append(my_core.get_child_meshsets(volumeset).size())
-    stats = {}
-    stats['minimum'] = min(freqs)
-    stats['maximum'] = max(freqs)
-    stats['median'] = np.median(freqs)
-    stats['average'] = np.average(freqs)
-    return stats
-
-
-def make_verts_dictionary(vert_list):
-    divisions = int(len(vert_list)/10000)
-    broken_up_verts = []
-    for cut in range(divisions+1):
-        broken_up_verts.append(list(vert_list[cut*10000:cut*10000+10000]))
-    
-    vertices_and_frequencies = {}
-    for cut in range(divisions+1):
-        for vert in broken_up_verts[cut]:
-            number_of_vertex = vert
-            try:
-                vertices_and_frequencies[number_of_vertex] += 1
-            except KeyError:
-                vertices_and_frequencies[number_of_vertex] = 1
-    number_of_frequencies = {}
-    for vertex in vertices_and_frequencies:
         try:
-            number_of_frequencies[vertices_and_frequencies[vertex]] += 1
+            surf_freqs[my_core.get_child_meshsets(volumeset).size()] +=1
         except KeyError:
-            number_of_frequencies[vertices_and_frequencies[vertex]] = 1
+            surf_freqs[my_core.get_child_meshsets(volumeset).size()] =1
     sorted_dict = {}
-    for frequency in sorted(number_of_frequencies.keys()):
-        sorted_dict[frequency] = number_of_frequencies[frequency]
-    return(sorted_dict)
+    for frequency in sorted(surf_freqs.keys()):
+        sorted_dict[frequency] = surf_freqs[frequency]
+    stats = {}
+    stats['minimum'] = min(sorted_dict.keys())
+    stats['maximum'] = max(sorted_dict.keys())
+    median = find_median(sorted_dict)
+    stats['median'] = median
+    mean = find_mean(sorted_dict)
+    stats['average'] = mean
+    return stats
 
 
 def find_median(sorted_dict):
@@ -125,7 +104,8 @@ def find_median(sorted_dict):
     else:
         median = (list(sorted_dict.keys())[index-1] + list(sorted_dict.keys())[index]) / 2
     return(median)
-        
+
+
 def find_mean(sorted_dict):
     total = 0
     for key, value in sorted_dict.items():
@@ -133,17 +113,17 @@ def find_mean(sorted_dict):
     mean = total / sum(sorted_dict.values())
     return(mean)
 
-def get_triangles_per_vertex(my_core, all_meshset):
-    tri_meshset = my_core.create_meshset() #creates a meshset
-    tri_range = my_core.get_entities_by_type(all_meshset, types.MBTRI) #retrieves all entities with type triangle
-    my_core.add_entities(tri_meshset, tri_range) #adds the entities into the new meshset
-    all_verts = [] 
-    freq_list = []
-    for tri in range(tri_range.size()): #range should be the length of the tri_range, working on scalability, so may not be
-        connect = my_core.get_adjacencies(tri_range[tri], 0) #stores the vertices of each triangle
-        for vert in range(3):
-            all_verts.append(connect[vert]) #adds each individual vertex into a list
-    sorted_dict = make_verts_dictionary(all_verts)
+
+def get_triangles_per_vertex(my_core, entity_ranges):
+    tris_adj = {}
+    for vert in entity_ranges[0]:
+        try:
+            tris_adj[my_core.get_adjacencies(vert, 2).size()] += 1
+        except KeyError:
+            tris_adj[my_core.get_adjacencies(vert, 2).size()] = 1
+    sorted_dict = {}
+    for frequency in sorted(tris_adj.keys()):
+        sorted_dict[frequency] = tris_adj[frequency]
     triangles_per_vertex_stats = {}
     triangles_per_vertex_stats['minimum'] = min(sorted_dict.keys())
     triangles_per_vertex_stats['maximum'] = max(sorted_dict.keys())
@@ -152,4 +132,3 @@ def get_triangles_per_vertex(my_core, all_meshset):
     mean = find_mean(sorted_dict)
     triangles_per_vertex_stats['average'] = mean
     return triangles_per_vertex_stats
-
