@@ -61,7 +61,7 @@ def test_get_median():
     median = dagmc_stats.find_median(test_set)
     assert(median == median_manual == median_computed)
     
-def test_median():
+def test_mean():
     my_mean = dagmc_stats.find_mean(test_set)
     values_list = list()
     for val, count in test_set.items():
