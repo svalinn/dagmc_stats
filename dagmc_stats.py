@@ -1,8 +1,8 @@
 # set the path to find the current installation of pyMOAB
 import sys
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
-import numpy as np
 from pymoab import core, types
+import numpy as np
 from pymoab.rng import Range
 def get_dagmc_tags(my_core):
     """
@@ -54,6 +54,8 @@ def get_entityset_ranges(my_core, meshset, entity_ranges, dagmc_tags):
     entity_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
     entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
     return entity_ranges
+
+
 def get_surfaces_per_volume(my_core, entity_ranges):
     """
     Get the number of surfaces that each volume in a given file contains
@@ -79,7 +81,7 @@ def get_surfaces_per_volume(my_core, entity_ranges):
     return stats
 
 
-def make_verts_dictionary(vert_list):
+def sort_dictionary(unsorted_dict):
     """
     returns a dictionary of frequency of the values of the triangles per vertex (ie {number of triangles per vertex: occurences})
     
@@ -92,24 +94,9 @@ def make_verts_dictionary(vert_list):
     sorted_dict: a dictionary that has information about triangles per vertex, sorted by its keys.
     """
     
-    vertices_and_frequencies = {} 
-    #makes dictionary with each vertex and the number of triangles on it
-    for vert in vert_list:
-        try:
-            vertices_and_frequencies[vert] += 1
-        except KeyError:
-            vertices_and_frequencies[vert] = 1
-    number_of_frequencies = {}
-    #makes dictionary with the number of triangles, and the number of vertices that have that number
-    for vertex in vertices_and_frequencies:
-        try:
-            number_of_frequencies[vertices_and_frequencies[vertex]] += 1
-        except KeyError:
-            number_of_frequencies[vertices_and_frequencies[vertex]] = 1
-    sorted_dict = {}
-    #sorts the dictionary
-    for frequency in sorted(number_of_frequencies.keys()):
-        sorted_dict[frequency] = number_of_frequencies[frequency]
+    sorted_dict = {} 
+    for frequency in sorted(unsorted_dict.keys()):
+        sorted_dict[frequency] = unsorted_dict[frequency]
     return(sorted_dict)
 
 
@@ -175,7 +162,7 @@ def find_mean(sorted_dict):
     return mean
 
 
-def get_triangles_per_vertex(my_core, all_meshset):
+def get_triangles_per_vertex(my_core, entity_ranges):
     """
     gets stats for the number of trianges touching each vertex in a file
     
@@ -188,17 +175,13 @@ def get_triangles_per_vertex(my_core, all_meshset):
     -------
     triangles_per_vertex_stats : a dictionary with certain statistics
     """
-    
-    tri_meshset = my_core.create_meshset() #creates a meshset
-    tri_range = my_core.get_entities_by_type(all_meshset, types.MBTRI) #retrieves all entities with type triangle
-    my_core.add_entities(tri_meshset, tri_range) #adds the entities into the new meshset
-    all_verts = [] 
-    freq_list = []
-    for tri in range(tri_range.size()): #range should be the length of the tri_range, working on scalability, so may not be
-        connect = my_core.get_adjacencies(tri_range[tri], 0) #stores the vertices of each triangle
-        for vert in range(3):
-            all_verts.append(connect[vert]) #adds each individual vertex into a list
-    sorted_dict = make_verts_dictionary(all_verts)
+    tris_adj = {}
+    for vert in entity_ranges[0]:
+        try:
+            tris_adj[my_core.get_adjacencies(vert, 2).size()] += 1
+        except KeyError:
+            tris_adj[my_core.get_adjacencies(vert, 2).size()] = 1
+    sorted_dict = sort_dictionary(tris_adj)
     #makes a dictionary of all statistics
     triangles_per_vertex_stats = {}
     triangles_per_vertex_stats['minimum'] = min(sorted_dict.keys())
@@ -231,9 +214,7 @@ def get_triangles_per_surface(my_core, entity_ranges):
             tri_dict[triangles.size()] += 1
         except KeyError:
             tri_dict[triangles.size()] = 1
-    sorted_dictionary = {}
-    for number in sorted(tri_dict.keys()):
-        sorted_dictionary[number] = tri_dict[number]
+    sorted_dictionary = sort_dictionary(tri_dict)
     triangles_per_surface_stats = {}
     triangles_per_surface_stats['minimum'] = min(tri_dict.keys())
     triangles_per_surface_stats['maximum'] = max(tri_dict.keys())

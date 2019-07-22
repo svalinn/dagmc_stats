@@ -71,7 +71,7 @@ def main():
     native_ranges = dagmc_stats.get_native_ranges(my_core, all_meshset, entity_types)     # get Ranges of various entities
     entity_ranges = dagmc_stats.get_entityset_ranges(my_core, all_meshset, native_ranges, dagmc_tags)
     surface_per_volume_stats = dagmc_stats.get_surfaces_per_volume(my_core, entity_ranges) #get stats for surface per volume
-    triangle_per_vertex_stats = dagmc_stats.get_triangles_per_vertex(my_core, all_meshset) #get stats for triangle per vertex
+    triangle_per_vertex_stats = dagmc_stats.get_triangles_per_vertex(my_core, entity_ranges) #get stats for triangle per vertex
     triangle_per_surface_stats = dagmc_stats.get_triangles_per_surface(my_core, entity_ranges) #get stats for triangle per surface
     report_stats(entity_ranges, surface_per_volume_stats, triangle_per_vertex_stats, triangle_per_surface_stats, 
                  verbose) #report the statistics
