@@ -5,8 +5,6 @@ import sys
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
-import matplotlib.pyplot as plt
-import numpy as np
 # import the new module that defines each of the functions
 import dagmc_stats
 import argparse

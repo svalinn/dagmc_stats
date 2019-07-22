@@ -63,7 +63,7 @@ def get_surfaces_per_volume(my_core, entity_ranges):
     
     outputs
     -------
-    pdf : a histogram that displays the number of surfaces each volume has (matplotlib)
+    stats : a dictionary that contains relevant statistics
     """
     surf_freqs = {}
     for volumeset in entity_ranges['Volumes']:
