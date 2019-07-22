@@ -9,7 +9,7 @@ from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
 
-def report_stats(entity_ranges):
+def report_stats(native_ranges, entityset_ranges):
     """
     Method to print a table of statistics.
     
@@ -17,9 +17,12 @@ def report_stats(entity_ranges):
     ------
     entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
-    for entity_type, eh_range in entity_ranges.items():
-        print("There are {} entities of type {}.".format(eh_range.size(),entity_type))
+    for native_type, native_range in native_ranges.items():
+        print("There are {} entities of type {}.".format(native_range.size(),native_type))
     print('Type 0: Vertices \nType 2: Triangles \nType 11: EntitySets')
+    for set_type, set_range in entityset_ranges.items():
+        print("There are {} {}s in this model)".format(set_range.size(), set_type))
+    
 def main():
 
     # starting with a single input file - will need to convert this to a user option
@@ -33,8 +36,9 @@ def main():
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     # get Ranges of various entities
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-    entity_ranges = dagmc_stats.get_entity_ranges(my_core, all_meshset, entity_types, dagmc_tags)
-    report_stats(entity_ranges)
+    native_ranges = dagmc_stats.get_native_ranges(my_core, all_meshset, entity_types)
+    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, all_meshset, dagmc_tags['geom_dim'])
+    report_stats(native_ranges, entityset_ranges)
     
 if __name__ == "__main__":
     main()
