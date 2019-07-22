@@ -21,7 +21,7 @@ def report_stats(native_ranges, entityset_ranges):
         print("There are {} entities of type {}.".format(native_range.size(),native_type))
     print('Type 0: Vertices \nType 2: Triangles \nType 11: EntitySets')
     for set_type, set_range in entityset_ranges.items():
-        print("There are {} {}s in this model)".format(set_range.size(), set_type))
+        print("There are {} {} in this model".format(set_range.size(), set_type))
     
 def main():
 
