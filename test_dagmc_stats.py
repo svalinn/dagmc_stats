@@ -15,12 +15,17 @@ my_core.load_file(test_input)
 root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 def test_get_tags():
-
+    """
+    Tests different aspects of the get_dagmc_tags function
+    """
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     assert(len(dagmc_tags) == 3)
 
     
 def test_get_native_ranges():
+    """
+    Tests different aspects of the get_native_ranges function
+    """
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
     vertex_range = my_core.get_entities_by_type(root_set, types.MBVERTEX)
     triangle_range = my_core.get_entities_by_type(root_set, types.MBTRI)
@@ -29,6 +34,9 @@ def test_get_native_ranges():
 
     
 def test_get_entityset_ranges():
+    """
+    Tests different aspects of the get_entityset_ranges function
+    """
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
     node_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [0])

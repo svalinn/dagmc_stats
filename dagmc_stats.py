@@ -2,8 +2,9 @@
 import sys
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
-import numpy as np
 from pymoab.rng import Range
+
+
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
@@ -38,10 +39,10 @@ def get_native_ranges(my_core, meshset, entity_types):
     my_core : a MOAB Core instance
     meshset : a MOAB meshset to query for the ranges of entities
     entity_types : a list of valid pyMOAB types to be retrieved
-    dagmc_tags : a dictionary of relevant tags. 
+    
     outputs
     -------
-    entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
+    native_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
 
     native_ranges = {}
@@ -50,6 +51,21 @@ def get_native_ranges(my_core, meshset, entity_types):
     return native_ranges
 
 def get_entityset_ranges(my_core, meshset, geom_dim):
+    """
+    Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET type
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    meshset : the root meshset for the file
+    geom_dim : the tag that specifically denotes the dimesion of the entity
+    
+    outputs
+    -------
+    entityset_ranges : a dictionary with one entry for each entityset type, and the value is the range of entities that corrospond to 
+                        each type
+
+    """
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     for set_number, set_type in enumerate(entityset_types):

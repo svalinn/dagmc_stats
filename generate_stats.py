@@ -36,6 +36,19 @@ def report_stats(stats, verbose):
             
 
 def collect_statistics(my_core, root_set):
+    """
+    Collects statistics for a range of different areas
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    root_set : the root set for a file
+    
+    outputs
+    -------
+    stats : a dictionary containing statistics for a variety of different areas
+ 
+    """
     stats = {}
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
@@ -44,6 +57,7 @@ def collect_statistics(my_core, root_set):
     stats['Native Ranges'] = native_ranges
     stats['EntitySet Ranges'] = entityset_ranges
     return stats
+    
     
 def main():
 
