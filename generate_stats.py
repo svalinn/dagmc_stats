@@ -32,6 +32,18 @@ def report_stats(stats, verbose):
             print("{} : {}".format(statistic, value))
         
 def get_stats(data):
+    """
+    gets the minimum, maximum, median, and mean for a dataset
+    
+    inputs
+    ------
+    data : a dataset in list form
+    
+    outputs
+    -------
+    statistics : a dictionary of statistics for a given dataset
+    
+    """
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
@@ -40,6 +52,19 @@ def get_stats(data):
     return statistics
 
 def collect_statistics(my_core, root_set):
+    """
+    Collects statistics for a range of different areas
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    root_set : the root set for a file
+    
+    outputs
+    -------
+    stats : a dictionary containing statistics for a variety of different areas
+ 
+    """
     stats = {}
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]

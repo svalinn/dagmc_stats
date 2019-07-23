@@ -38,18 +38,33 @@ def get_native_ranges(my_core, meshset, entity_types):
     my_core : a MOAB Core instance
     meshset : a MOAB meshset to query for the ranges of entities
     entity_types : a list of valid pyMOAB types to be retrieved
-    dagmc_tags : a dictionary of relevant tags. 
+    
     outputs
     -------
-    entity_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
+    native_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
-
+    
     native_ranges = {}
     for entity_type in entity_types:
         native_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
     return native_ranges
 
 def get_entityset_ranges(my_core, meshset, geom_dim):
+    """
+    Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET type
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    meshset : the root meshset for the file
+    geom_dim : the tag that specifically denotes the dimesion of the entity
+    
+    outputs
+    -------
+    entityset_ranges : a dictionary with one entry for each entityset type, and the value is the range of entities that corrospond to 
+                        each type
+
+    """
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     for set_number, set_type in enumerate(entityset_types):
