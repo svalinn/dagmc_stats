@@ -44,7 +44,7 @@ def get_native_ranges(my_core, meshset, entity_types):
     -------
     native_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
     """
-
+    
     native_ranges = {}
     for entity_type in entity_types:
         native_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 

@@ -35,6 +35,18 @@ def report_stats(stats, verbose):
             print("{} : {}".format(statistic, value))
         
 def get_stats(data):
+    """
+    gets the minimum, maximum, median, and mean for a dataset
+    
+    inputs
+    ------
+    data : a dataset in list form
+    
+    outputs
+    -------
+    statistics : a dictionary of statistics for a given dataset
+    
+    """
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
