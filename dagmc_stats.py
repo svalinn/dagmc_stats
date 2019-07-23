@@ -29,7 +29,7 @@ def get_dagmc_tags(my_core):
     return dagmc_tags
 
 
-def get_native_ranges(my_core, meshset, entity_types, dagmc_tags=None):
+def get_native_ranges(my_core, meshset, entity_types):
     """
     Get a dictionary with MOAB ranges for each of the requested entity types
     
@@ -49,14 +49,16 @@ def get_native_ranges(my_core, meshset, entity_types, dagmc_tags=None):
         native_ranges[entity_type] = my_core.get_entities_by_type(meshset, entity_type) 
     return native_ranges
 
-def get_entityset_ranges(my_core, meshset, entity_ranges, dagmc_tags):
-    entity_ranges['Volumes'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
-    entity_ranges['Surfaces'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
-    entity_ranges['Curves'] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
-    return entity_ranges
+def get_entityset_ranges(my_core, meshset, geom_dim):
+    entityset_ranges = {}
+    entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
+    for set_number, set_type in enumerate(entityset_types):
+        entityset_ranges[set_type] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, geom_dim, 
+                                                                          [set_number])
+    return entityset_ranges
 
 
-def get_surfaces_per_volume(my_core, entity_ranges):
+def get_surfaces_per_volume(my_core, entityset_ranges):
     """
     Get the number of surfaces that each volume in a given file contains
     
@@ -71,14 +73,14 @@ def get_surfaces_per_volume(my_core, entity_ranges):
     """
     
     freqs = []
-    for volumeset in entity_ranges['Volumes']:
+    for volumeset in entityset_ranges['Volumes']:
         freqs.append(my_core.get_child_meshsets(volumeset).size())
     stats = {}
     stats['minimum'] = min(freqs)
     stats['maximum'] = max(freqs)
     stats['median'] = np.median(freqs)
     stats['average'] = np.average(freqs)
-    return stats
+    return stats, freqs
 
 
 def sort_dictionary(unsorted_dict):
@@ -190,7 +192,7 @@ def get_triangles_per_vertex(my_core, entity_ranges):
     triangles_per_vertex_stats['median'] = median
     mean = find_mean(sorted_dict)
     triangles_per_vertex_stats['average'] = mean
-    return triangles_per_vertex_stats
+    return triangles_per_vertex_stats, sorted_dict
 
 
 def get_triangles_per_surface(my_core, entity_ranges):
@@ -222,6 +224,4 @@ def get_triangles_per_surface(my_core, entity_ranges):
     triangles_per_surface_stats['median'] = median
     mean = find_mean(sorted_dictionary)
     triangles_per_surface_stats['mean'] = mean
-    return triangles_per_surface_stats
-
-    
+    return triangles_per_surface_stats, sorted_dictionary
