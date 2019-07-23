@@ -1,4 +1,4 @@
-# This file is the script that users will actually run to generate the full set of statistics for a file
+#This file is the script that users will actually run to generate the full set of statistics for a file
 
 # set the path to find the current installation of pyMOAB
 import sys
