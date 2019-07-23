@@ -56,3 +56,25 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
         entityset_ranges[set_type] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, geom_dim, 
                                                                           [set_number])
     return entityset_ranges
+
+
+def get_surfaces_per_volume(my_core, entityset_ranges):
+    """
+    Get the number of surfaces that each volume in a given file contains
+    
+    inputs
+    ------
+    my_core : a MOAB core instance
+    entity_ranges : a dictionary of the entityset ranges of each tag in a file
+    
+    outputs
+    -------
+    freqs : a list of the number of surfaces each volume in the file contains
+    
+    """
+
+    freqs = []
+    for volumeset in entityset_ranges['Volumes']:
+        freqs.append(my_core.get_child_meshsets(volumeset).size())
+    return freqs
+

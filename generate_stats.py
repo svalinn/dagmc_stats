@@ -8,6 +8,7 @@ from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
 import argparse
+import numpy as np
 
 
 
@@ -23,17 +24,20 @@ def report_stats(stats, verbose):
     """
     
     if verbose: #if the user wants verbosity, print with more words
-        for native_type, native_range in stats['Native Ranges'].items():
-            print("There are {} entities of type {}.".format(native_range.size(), native_type))
-        for entityset_type, entityset_range in stats['EntitySet Ranges'].items():
-            print("There are {} entities of type {}.".format(entityset_range.size(), entityset_type))
+        for statistic, value in stats['S_P_V'].items():
+            print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
     else: #or, print with minimal words
-        for native_type, native_range in stats['Native Ranges'].items():
-            print("Type {}: {}".format(native_type, native_range.size()))
-        for entityset_type, entityset_range in stats['EntitySet Ranges'].items():
-            print("Type {}: {}".format(entityset_type, entityset_range.size()))
+        print("Surfaces per Volume:")
+        for statistic, value in stats['S_P_V'].items():
+            print("{} : {}".format(statistic, value))
         
-            
+def get_stats(data):
+    statistics = {}
+    statistics['minimum'] = min(data)
+    statistics['maximum'] = max(data)
+    statistics['median'] = np.median(data)
+    statistics['mean'] = np.mean(data)
+    return statistics
 
 def collect_statistics(my_core, root_set):
     stats = {}
@@ -41,8 +45,9 @@ def collect_statistics(my_core, root_set):
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-    stats['Native Ranges'] = native_ranges
-    stats['EntitySet Ranges'] = entityset_ranges
+    s_p_v_data = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
+    s_p_v_stats = get_stats(s_p_v_data)
+    stats['S_P_V'] = s_p_v_stats
     return stats
     
 def main():
