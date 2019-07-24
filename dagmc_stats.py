@@ -1,11 +1,10 @@
 # set the path to find the current installation of pyMOAB
 import sys
-sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
-from pymoab import core, types
-from pymoab.rng import Range
 import numpy as np
-
-
+sys.path.append(
+    '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
+from pymoab.rng import Range
+from pymoab import core, types
 
 def get_dagmc_tags(my_core):
     """
@@ -20,13 +19,13 @@ def get_dagmc_tags(my_core):
     """
 
     dagmc_tags = {}
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,  # creates tag for the geo-
+    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,   
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
 
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  # creates tag for the word of
+    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
 
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  # creates tag for each entity
+    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  
                                                      storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
 
     return dagmc_tags
@@ -93,7 +92,7 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
     """
 
-    freqs = []
+    s_p_v = []
     for volumeset in entityset_ranges['Volumes']:
-        freqs.append(my_core.get_child_meshsets(volumeset).size())
-    return freqs
+        s_p_v.append(my_core.get_child_meshsets(volumeset).size())
+    return np.array(s_p_v)
