@@ -72,3 +72,22 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
         entityset_ranges[set_type] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, geom_dim, 
                                                                           [dimension])
     return entityset_ranges
+
+def get_triangles_per_surface(my_core, entity_ranges):
+    """
+    This function will return data about the number of triangles on each surface in a file
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    entity_ranges : a dictionary containing ranges for each type in the file (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
+    
+    outputs
+    -------
+    t_p_s_data : a list of the number of triangles each surface contains
+    """
+    
+    t_p_s_data = []
+    for surface in entity_ranges['Surfaces']:
+        t_p_s_data.append(my_core.get_entities_by_type(surface, types.MBTRI).size())
+    return t_p_s_data
