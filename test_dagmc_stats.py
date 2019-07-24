@@ -49,8 +49,13 @@ def test_get_entityset_ranges():
     assert(node_range == entityset_ranges['Nodes'], curve_range == entityset_ranges['Curves'], surface_range ==
            entityset_ranges['Surfaces'], volume_range == entityset_ranges['Volumes'])
     
-    
-    
+def test_get_triangles_per_surface():
+    dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+    t_p_s_data = dagmc_stats.get_triangles_per_surface(my_core, entityset_ranges)
+    surfaces = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [2]).size()
+    triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
+    assert(len(t_p_s_data) == surfaces, sum(t_p_s_data) == triangles)
     
     
     
