@@ -8,12 +8,15 @@ from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
 import nose
+
 test_input = "3vols.h5m"
 
 my_core = core.Core()
 my_core.load_file(test_input)
+
 root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+
 def test_get_tags():
     """
     Tests different aspects of the get_dagmc_tags function
