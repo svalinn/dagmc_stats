@@ -73,21 +73,22 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
                                                                           [dimension])
     return entityset_ranges
 
-def get_triangles_per_surface(my_core, entity_ranges):
+def get_triangles_per_vertex(my_core, native_ranges):
     """
     This function will return data about the number of triangles on each surface in a file
     
     inputs
     ------
     my_core : a MOAB Core instance
-    entity_ranges : a dictionary containing ranges for each type in the file (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
+    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
     
     outputs
     -------
-    t_p_s_data : a list of the number of triangles each surface contains
+    t_p_v_data : a list of the number of triangles each vertex touches
     """
     
-    t_p_s_data = []
-    for surface in entity_ranges['Surfaces']:
-        t_p_s_data.append(my_core.get_entities_by_type(surface, types.MBTRI).size())
-    return t_p_s_data
+    t_p_v_data = []
+    tri_dimension = 2
+    for vertex in native_ranges[0]:
+        t_p_v_data.append(my_core.get_adjacencies(vertex, tri_dimension).size())
+    return t_p_v_data

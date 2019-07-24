@@ -24,11 +24,11 @@ def report_stats(stats, verbose):
     """
     
     if verbose: #if the user wants verbosity, print with more words
-        for statistic, value in stats['T_P_S'].items():
-            print("The {} number of Triangles per Surface in this model is {}.".format(value, statistic))
+        for statistic, value in stats['T_P_V'].items():
+            print("The {} number of Triangles per Vertex in this model is {}.".format(value, statistic))
     else: #or, print with minimal words
-        print("Triangles per Surface:")
-        for statistic, value in stats['T_P_S'].items():
+        print("Triangles per Vertex:")
+        for statistic, value in stats['T_P_V'].items():
             print("{} : {}".format(statistic, value))
         
 def get_stats(data):
@@ -70,9 +70,9 @@ def collect_statistics(my_core, root_set):
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-    t_p_s_data = dagmc_stats.get_triangles_per_surface(my_core, entityset_ranges)
-    t_p_s_stats = get_stats(t_p_s_data)
-    stats['T_P_S'] = t_p_s_stats
+    t_p_v_data = dagmc_stats.get_triangles_per_surface(my_core, native_ranges)
+    t_p_v_stats = get_stats(t_p_v_data)
+    stats['T_P_V'] = t_p_v_stats
     return stats
     
 def main():
@@ -84,7 +84,7 @@ def main():
     args = parser.parse_args() 
     input_file = args.filename
     verbose = args.verbose
-    #input_file = "3vols.h5m"
+
 
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
