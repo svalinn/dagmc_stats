@@ -2,12 +2,13 @@
 
 # set the path to find the current installation of pyMOAB
 import sys
+import argparse
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
-import argparse
+
 
 
 
@@ -52,10 +53,8 @@ def collect_statistics(my_core, root_set):
     stats = {}
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
-    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-    stats['Native Ranges'] = native_ranges
-    stats['EntitySet Ranges'] = entityset_ranges
+    stats['Native Ranges'] = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
+    stats['EntitySet Ranges'] = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim']) 
     return stats
     
     
@@ -68,7 +67,7 @@ def main():
     args = parser.parse_args() 
     input_file = args.filename
     verbose = args.verbose
-    #input_file = "3vols.h5m"
+
 
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
@@ -79,3 +78,4 @@ def main():
     
 if __name__ == "__main__":
     main()
+    

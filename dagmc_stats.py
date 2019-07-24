@@ -68,7 +68,7 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     """
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
-    for set_number, set_type in enumerate(entityset_types):
+    for dimension, set_type in enumerate(entityset_types):
         entityset_ranges[set_type] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, geom_dim, 
-                                                                          [set_number])
+                                                                          [dimension])
     return entityset_ranges
