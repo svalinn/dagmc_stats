@@ -51,8 +51,7 @@ def test_get_entityset_ranges():
     surface_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
     assert(surface_range ==entityset_ranges['Surfaces'])
     volume_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
-    assert(node_range == entityset_ranges['Nodes'], curve_range == entityset_ranges['Curves'], surface_range ==
-           entityset_ranges['Surfaces'], volume_range == entityset_ranges['Volumes'])
+    assert(volume_range == entityset_ranges['Volumes'])
     
 
 def test_get_surfaces_per_volume():

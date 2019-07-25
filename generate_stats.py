@@ -2,6 +2,7 @@
 
 # set the path to find the current installation of pyMOAB
 import sys
+import numpy as np
 import argparse
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
@@ -9,8 +10,7 @@ from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
 
-import argparse
-import numpy as np
+
 
 
 
@@ -76,6 +76,7 @@ def collect_statistics(my_core, root_set):
     s_p_v_data = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
     s_p_v_stats = get_stats(s_p_v_data)
     stats['S_P_V'] = s_p_v_stats
+    stats['S_P_V_data'] = s_p_v_data
     return stats
     
     
