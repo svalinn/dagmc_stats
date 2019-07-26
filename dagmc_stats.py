@@ -92,7 +92,7 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
     """
 
-    s_p_v = []
+    s_p_v = np.array([])
     for volumeset in entityset_ranges['Volumes']:
-        s_p_v.append(my_core.get_child_meshsets(volumeset).size())
-    return np.array(s_p_v)
+        s_p_v = np.append(s_p_v, my_core.get_child_meshsets(volumeset).size())
+    return s_p_v

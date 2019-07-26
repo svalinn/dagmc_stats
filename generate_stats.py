@@ -11,12 +11,6 @@ from pymoab.rng import Range
 import dagmc_stats
 
 
-
-
-
-
-
-
 def report_stats(stats, verbose):
     """
     Method to print a table of statistics.
@@ -69,15 +63,19 @@ def collect_statistics(my_core, root_set):
  
     """
     stats = {}
+    data = {}
+    
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
+    
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-    s_p_v_data = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
-    s_p_v_stats = get_stats(s_p_v_data)
-    stats['S_P_V'] = s_p_v_stats
-    stats['S_P_V_data'] = s_p_v_data
-    return stats
+    
+    data['S_P_V_data'] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
+    stats['S_P_V'] = get_stats(data['S_P_V_data'])
+    
+    return stats, data
     
     
 def main():
@@ -94,7 +92,7 @@ def main():
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
-    stats = collect_statistics(my_core, root_set)
+    stats, data = collect_statistics(my_core, root_set)
     report_stats(stats, verbose)
     
     
