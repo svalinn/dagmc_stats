@@ -9,9 +9,9 @@ from pymoab import core, types
 from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
+import entity_specific_stats
 
-
-def report_stats(stats, verbose):
+def report_stats(stats, data, verbose, spv_data, tps_data):
     """
     Method to print a table of statistics.
     
@@ -27,6 +27,11 @@ def report_stats(stats, verbose):
         print("Surfaces per Volume:")
         for statistic, value in stats['S_P_V'].items():
             print("{} : {}".format(statistic, value))
+    if spv_data:
+        entity_specific_stats.print_spv_data(data['spv_dict'])
+    if tps_data:
+        entity_specific_stats.print_tps_data(data['tps_dict'])
+        
         
 def get_stats(data):
     """
@@ -47,6 +52,7 @@ def get_stats(data):
     statistics['median'] = np.median(data)
     statistics['mean'] = np.mean(data)
     return statistics
+
 
 def collect_statistics(my_core, root_set):
     """
@@ -75,6 +81,7 @@ def collect_statistics(my_core, root_set):
     spv_key = 'S_P_V'
     
     data[spv_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
+    data['spv_dict'] = entity_specific_stats.get_spv_data(my_core, entityset_ranges)
     stats[spv_key] = get_stats(data[spv_key])
     
     return stats, data
@@ -86,16 +93,19 @@ def main():
     parser = argparse.ArgumentParser() 
     parser.add_argument("filename", help = "the file that you want read")
     parser.add_argument("-v", "--verbose", action = "store_true", help = "increase output verbosity") #optional verbosity setting
+    parser.add_argument("--tps_data", action = "store_true", help = "display the triangles per surface raw data")
+    parser.add_argument("--spv_data", action = "store_true", help = "display the surfaces per volume raw data")
     args = parser.parse_args() 
     input_file = args.filename
     verbose = args.verbose
-
+    tps_data = args.tps_data
+    spv_data = args.spv_data
 
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
     stats, data = collect_statistics(my_core, root_set)
-    report_stats(stats, verbose)
+    report_stats(stats, data, verbose, spv_data, tps_data)
     
     
 if __name__ == "__main__":
