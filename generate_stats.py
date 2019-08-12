@@ -11,7 +11,7 @@ from pymoab.rng import Range
 import dagmc_stats
 
 
-def report_stats(stats, verbose):
+def report_stats(stats, verbose, display_options):
     """
     Method to print a table of statistics.
     
@@ -21,13 +21,15 @@ def report_stats(stats, verbose):
     """
     
     if verbose: #if the user wants verbosity, print with more words
-        for statistic, value in stats['S_P_V'].items():
-            print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
+        if display_options['SPV']:  
+            for statistic, value in stats['S_P_V'].items():
+                print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
     else: #or, print with minimal words
-        print("Surfaces per Volume:")
-        for statistic, value in stats['S_P_V'].items():
-            print("{} : {}".format(statistic, value))
-        
+        if display_options['SPV']:
+            print("Surfaces per Volume:")
+            for statistic, value in stats['S_P_V'].items():
+                print("{} : {}".format(statistic, value))
+
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -86,16 +88,23 @@ def main():
     parser = argparse.ArgumentParser() 
     parser.add_argument("filename", help = "the file that you want read")
     parser.add_argument("-v", "--verbose", action = "store_true", help = "increase output verbosity") #optional verbosity setting
+    parser.add_argument("--nr", action = "store_true", help = "display native ranges (default is to display all statistics)")
+    parser.addarguemnt("--er", action = "store_true", help = "display entityset ranges (Volume, Surface, Curve, Node)")
+    parser.add_argument("--spv", action = "store_true", help = "display surface per volume stats") 
+    parser.add_argument("--tpv", action = "store_true", help = "display triangles per vertex stats")
+    parser.add_argument("--tps", action = "store_true", help = "display triangles per surface stats")
     args = parser.parse_args() 
     input_file = args.filename
     verbose = args.verbose
-
+    display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv, 'TPS':args.tps} 
+    if not(True in display_options.values()):
+        display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True}
 
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
     stats, data = collect_statistics(my_core, root_set)
-    report_stats(stats, verbose)
+    report_stats(stats, verbose, display_options)
     
     
 if __name__ == "__main__":
