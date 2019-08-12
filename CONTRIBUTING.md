@@ -23,7 +23,7 @@ Important Resources
 
 License
 -------
-By contributing, you agree that your contributions will be licensed under the [MIT License](https://github.com/svalinn/DAGMC_stats/blob/master/LICENSE.md).
+By contributing, you agree that your contributions will be licensed under the [MIT License](https://github.com/svalinn/DAGMC_stats/blob/master/LICENSE).
 
 References
 ----------
