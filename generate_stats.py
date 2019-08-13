@@ -23,13 +23,23 @@ def report_stats(stats, verbose):
     """
 
     if verbose:  # if the user wants verbosity, print with more words
+        for nativerange, size in stats['native_ranges'].items():
+            print("There are {} entities of native type {} in this model.".format(size.size(), nativerange))
+        for entityrange, size in stats['entityset_ranges'].items():
+            print("There are {} {} in this model.".format(size.size(), entityrange))
         for statistic, value in stats['T_P_S'].items():
             print("The {} number of Triangles per Surface in this model is {}.".format(
-                value, statistic))
+                statistic, value))
         for statistic, value in stats['S_P_V'].items():
-            print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
+            print("The {} number of Surfaces per Volume in this model is {}.".format(statistic, value))
             
     else:  # or, print with minimal words
+        print("Native Ranges")
+        for nr, size in stats['native_ranges'].items():
+            print("Type {} : {}".format(nr, size.size()))
+        print("EntitySet Ranges")
+        for er, size in stats['entityset_ranges'].items():
+            print("{} : {}".format(er, size.size()))
         print("Triangles per Surface:")
         for statistic, value in stats['T_P_S'].items():
             print("{} : {}".format(statistic, value))
@@ -82,9 +92,12 @@ def collect_statistics(my_core, root_set):
     
     data[spv_key] = dagmc_stats.get_surfaces_per_volume(
                                 my_core, entityset_ranges)
-    stats[spv_key] = get_stats(data[spv_key])
+
     data[tps_key] = dagmc_stats.get_triangles_per_surface(
                                 my_core, entityset_ranges)
+    stats['native_ranges'] = native_ranges
+    stats['entityset_ranges'] = entityset_ranges
+    stats[spv_key] = get_stats(data[spv_key])
     stats[tps_key] = get_stats(data[tps_key])
     
     return stats, data

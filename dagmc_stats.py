@@ -88,7 +88,7 @@ def get_triangles_per_surface(my_core, entity_ranges):
 
     t_p_s = np.array([])
     for surface in entity_ranges['Surfaces']:
-        np.append(t_p_s, my_core.get_entities_by_type(
+        t_p_s = np.append(t_p_s, my_core.get_entities_by_type(
             surface, types.MBTRI).size())
     return t_p_s
 
