@@ -1,5 +1,6 @@
 # set the path to find the current installation of pyMOAB
 import sys
+import numpy as np
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
@@ -18,13 +19,13 @@ def get_dagmc_tags(my_core):
     """
 
     dagmc_tags = {}
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size = 1, tag_type = types.MB_TYPE_INTEGER, #creates tag for the geo-
-                                                 storage_type = types.MB_TAG_SPARSE, create_if_missing = True)# geometric dimension
+    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size = 1, tag_type = types.MB_TYPE_INTEGER, 
+                                                 storage_type = types.MB_TAG_SPARSE, create_if_missing = True)#geometric dimension
     
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size = 32, tag_type = types.MB_TYPE_OPAQUE, #creates tag for the word of 
-                                                 storage_type = types.MB_TAG_SPARSE, create_if_missing = True) #the category
+    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size = 32, tag_type = types.MB_TYPE_OPAQUE, 
+                                                 storage_type = types.MB_TAG_SPARSE, create_if_missing = True) #category
     
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size = 1, tag_type = types.MB_TYPE_INTEGER, #creates tag for each entity
+    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size = 1, tag_type = types.MB_TYPE_INTEGER, 
                                                   storage_type = types.MB_TAG_SPARSE, create_if_missing = True) #id
 
     return dagmc_tags
@@ -84,11 +85,12 @@ def get_triangles_per_vertex(my_core, native_ranges):
     
     outputs
     -------
-    t_p_v_data : a list of the number of triangles each vertex touches
+    t_p_v : a list of the number of triangles each vertex touches
     """
     
-    t_p_v_data = []
-    tri_dimension = 2
-    for vertex in native_ranges[0]:
-        t_p_v_data.append(my_core.get_adjacencies(vertex, tri_dimension).size())
-    return t_p_v_data
+    t_p_v_data = np.array([])
+    tri_dim = 2
+    vertex_dim = 0
+    for vertex in native_ranges[vertex_dim]:
+        t_p_v = np.append(t_p_v, my_core.get_adjacencies(vertex, tri_dim).size())
+    return t_p_v

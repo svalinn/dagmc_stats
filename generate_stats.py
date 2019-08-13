@@ -2,16 +2,13 @@
 
 # set the path to find the current installation of pyMOAB
 import sys
+import numpy as np
+import argparse
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
-import argparse
-import numpy as np
-
-
-
 
 
 def report_stats(stats, verbose):
@@ -30,6 +27,7 @@ def report_stats(stats, verbose):
         print("Triangles per Vertex:")
         for statistic, value in stats['T_P_V'].items():
             print("{} : {}".format(statistic, value))
+        
         
 def get_stats(data):
     """
@@ -66,14 +64,22 @@ def collect_statistics(my_core, root_set):
  
     """
     stats = {}
+    data = {}
+    
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
+    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types) 
+    
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-    t_p_v_data = dagmc_stats.get_triangles_per_vertex(my_core, native_ranges)
-    t_p_v_stats = get_stats(t_p_v_data)
-    stats['T_P_V'] = t_p_v_stats
-    return stats
+    
+    tpv_key = 'T_P_V'
+    
+    data[tpv_key] = dagmc_stats.get_triangles_per_vertex(my_core, native_ranges)
+    
+    stats['T_P_V'] = get_stats(t_p_v_data)
+    
+    return stats, data
     
 def main():
 
@@ -89,7 +95,7 @@ def main():
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
-    stats = collect_statistics(my_core, root_set)
+    stats, data = collect_statistics(my_core, root_set)
     report_stats(stats, verbose)
     
     
