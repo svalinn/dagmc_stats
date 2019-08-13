@@ -54,6 +54,9 @@ def test_get_entityset_ranges():
 
     
 def test_get_triangles_per_surface():
+    """
+    Tests some parts of the get_triangles_per_surface function
+    """
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entityset_ranges = dagmc_stats.get_entityset_ranges(
         my_core, root_set, dagmc_tags['geom_dim'])
@@ -67,6 +70,9 @@ def test_get_triangles_per_surface():
     
 
 def test_get_surfaces_per_volume():
+    """
+    Tests different aspects of the get_surfaces_per_volume function
+    """
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
     s_p_v_data = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)

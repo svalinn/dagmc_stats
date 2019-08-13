@@ -14,6 +14,7 @@ from pymoab import core, types
 # import the new module that defines each of the functions
 import dagmc_stats
 
+
 def report_stats(stats, verbose):
     """
     Method to print a table of statistics.
