@@ -53,3 +53,16 @@ def test_get_entityset_ranges():
     volume_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
     assert(volume_range == entityset_ranges['Volumes'])
     
+
+def test_get_surfaces_per_volume():
+    dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+    s_p_v_data = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
+    known_volumes = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
+    for eh in range(known_volumes.size()):
+        surfs = my_core.get_child_meshsets(known_volumes[eh]).size()
+        assert(surfs == s_p_v_data[eh])
+    
+    
+    
+    

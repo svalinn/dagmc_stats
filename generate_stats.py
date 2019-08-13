@@ -2,16 +2,13 @@
 
 # set the path to find the current installation of pyMOAB
 import sys
+import numpy as np
 import argparse
 sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
-
-
-
-
 
 
 def report_stats(stats, verbose):
@@ -24,17 +21,32 @@ def report_stats(stats, verbose):
     """
     
     if verbose: #if the user wants verbosity, print with more words
-        for native_type, native_range in stats['Native Ranges'].items():
-            print("There are {} entities of type {}.".format(native_range.size(), native_type))
-        for entityset_type, entityset_range in stats['EntitySet Ranges'].items():
-            print("There are {} entities of type {}.".format(entityset_range.size(), entityset_type))
+        for statistic, value in stats['S_P_V'].items():
+            print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
     else: #or, print with minimal words
-        for native_type, native_range in stats['Native Ranges'].items():
-            print("Type {}: {}".format(native_type, native_range.size()))
-        for entityset_type, entityset_range in stats['EntitySet Ranges'].items():
-            print("Type {}: {}".format(entityset_type, entityset_range.size()))
+        print("Surfaces per Volume:")
+        for statistic, value in stats['S_P_V'].items():
+            print("{} : {}".format(statistic, value))
         
-            
+def get_stats(data):
+    """
+    gets the minimum, maximum, median, and mean for a dataset
+    
+    inputs
+    ------
+    data : a dataset in list form
+    
+    outputs
+    -------
+    statistics : a dictionary of statistics for a given dataset
+    
+    """
+    statistics = {}
+    statistics['minimum'] = min(data)
+    statistics['maximum'] = max(data)
+    statistics['median'] = np.median(data)
+    statistics['mean'] = np.mean(data)
+    return statistics
 
 def collect_statistics(my_core, root_set):
     """
@@ -51,11 +63,21 @@ def collect_statistics(my_core, root_set):
  
     """
     stats = {}
+    data = {}
+    
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-    stats['Native Ranges'] = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
-    stats['EntitySet Ranges'] = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim']) 
-    return stats
+    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
+    
+    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+    
+    spv_key = 'S_P_V'
+    
+    data[spv_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
+    stats[spv_key] = get_stats(data[spv_key])
+    
+    return stats, data
     
     
 def main():
@@ -72,7 +94,7 @@ def main():
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
-    stats = collect_statistics(my_core, root_set)
+    stats, data = collect_statistics(my_core, root_set)
     report_stats(stats, verbose)
     
     
