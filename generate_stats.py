@@ -67,16 +67,22 @@ def collect_statistics(my_core, root_set):
 
     """
     stats = {}
+    data = {}
+    
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     native_ranges = dagmc_stats.get_native_ranges(
         my_core, root_set, entity_types)     # get Ranges of various entities
+    
     entityset_ranges = dagmc_stats.get_entityset_ranges(
         my_core, root_set, dagmc_tags['geom_dim'])
-    t_p_s_data = dagmc_stats.get_triangles_per_surface(
+    
+    tps_key = 'T_P_S'
+    
+    data[tps_key] = dagmc_stats.get_triangles_per_surface(
         my_core, entityset_ranges)
-    t_p_s_stats = get_stats(t_p_s_data)
-    stats['T_P_S'] = t_p_s_stats
+    stats[tps_key] = get_stats(data[tps_key])
     return stats
 
 

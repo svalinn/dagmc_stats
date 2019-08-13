@@ -1,9 +1,11 @@
 # set the path to find the current installation of pyMOAB
-from pymoab.rng import Range
-from pymoab import core, types
 import sys
+import numpy as np
 sys.path.append(
     '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
+from pymoab.rng import Range
+from pymoab import core, types
+
 
 
 def get_dagmc_tags(my_core):
@@ -91,8 +93,8 @@ def get_triangles_per_surface(my_core, entity_ranges):
     t_p_s_data : a list of the number of triangles each surface contains
     """
 
-    t_p_s_data = []
+    t_p_s = np.array([])
     for surface in entity_ranges['Surfaces']:
-        t_p_s_data.append(my_core.get_entities_by_type(
+        np.append(t_p_s, my_core.get_entities_by_type(
             surface, types.MBTRI).size())
-    return t_p_s_data
+    return t_p_s
