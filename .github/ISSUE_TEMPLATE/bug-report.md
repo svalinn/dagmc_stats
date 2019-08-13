@@ -27,7 +27,6 @@ If applicable, add screenshots or snippets of code and error messages to help ex
  - OS: [e.g. iOS]
  - Python Version: [e.g. 3]
  - MOAB Version: [e.g. 5.0]
- - VisIt Version: [e.g. 2.13.3]
 
 **Additional Context**<br/>
 Add any other context about the problem here.
