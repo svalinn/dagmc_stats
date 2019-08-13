@@ -14,7 +14,10 @@ def get_spv_data(my_core, entityset_ranges):
 
 
 def get_tps_data(my_core, entityset_ranges):
-    pass
+    tps_data_dict = {}
+    for surface in entityset_ranges['Surfaces']:
+        tps_data_dict[surface] = my_core.get_entities_by_type(surface, types.MBTRI)
+    return tps_data_dict
 
 def print_spv_data(spv_data):
     """
@@ -26,10 +29,11 @@ def print_spv_data(spv_data):
     data[spv_key] : a dictionary containing every volume paired with the number of child surfaces
     
     """
-    print('Volume          Surfaces')
+    print('Volume                          Surfaces')
+    ids = 1
     for volume, surfaces in spv_data.items():
-        print(volume,'         ', surfaces)
-    
+        print("{} ({})        {}".format(volume, ids, surfaces))
+        ids += 1
 
 def print_tps_data(tps_data):
     """
@@ -41,7 +45,9 @@ def print_tps_data(tps_data):
     data[tps_key] : a dictionary containing every surface paired with the number of triangles it contains
     
     """
-    print('Surface          Triangles')
+    print('Surface                                 Triangles')
+    ids = 1
     for surface, triangles in tps_data.items():
-        print(surface,'         ', triangles)
+        print("{} ({})        {}".format(surface, ids, triangles))
+        ids += 1
         
