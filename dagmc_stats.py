@@ -1,10 +1,10 @@
 # set the path to find the current installation of pyMOAB
+from pymoab import core, types
+from pymoab.rng import Range
 import sys
 import numpy as np
 sys.path.append(
     '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
-from pymoab.rng import Range
-from pymoab import core, types
 
 
 def get_dagmc_tags(my_core):
@@ -20,13 +20,13 @@ def get_dagmc_tags(my_core):
 
     dagmc_tags = {}
 
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,   
+    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
 
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  
+    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
 
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  
+    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,
 
                                                      storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
 
@@ -92,7 +92,7 @@ def get_triangles_per_surface(my_core, entity_ranges):
             surface, types.MBTRI).size())
     return t_p_s
 
-  
+
 def get_surfaces_per_volume(my_core, entityset_ranges):
     """
     Get the number of surfaces that each volume in a given file contains
