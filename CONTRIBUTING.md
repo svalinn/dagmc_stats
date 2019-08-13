@@ -1,6 +1,6 @@
-Contributing to DAGMC-Viz
+Contributing to DAGMC_Stats
 =========================
-The following is a guide to contributing to the DAGMC-Viz repository. Please note there is a [Code of Conduct](https://github.com/svalinn/DAGMC_stats/blob/master/CODE_OF_CONDUCT.md) and make sure to follow it in all interactions with this project.
+The following is a guide to contributing to the DAGMC_Stats repository. Please note there is a [Code of Conduct](https://github.com/svalinn/DAGMC_stats/blob/master/CODE_OF_CONDUCT.md) and make sure to follow it in all interactions with this project.
 
 Creating a Pull Request
 -----------------------
