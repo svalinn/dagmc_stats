@@ -1,16 +1,18 @@
 # This file is the script that users will actually run to generate the full set of statistics for a file
 
 # set the path to find the current installation of pyMOAB
+import sys
 import numpy as np
 import argparse
-import dagmc_stats
-from pymoab.rng import Range
-from pymoab import core, types
 import sys
 sys.path.append(
     '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
-# import the new module that defines each of the functions
 
+from pymoab.rng import Range
+from pymoab import core, types
+
+# import the new module that defines each of the functions
+import dagmc_stats
 
 def report_stats(stats, verbose):
     """
@@ -25,11 +27,16 @@ def report_stats(stats, verbose):
         for statistic, value in stats['T_P_S'].items():
             print("The {} number of Triangles per Surface in this model is {}.".format(
                 value, statistic))
+        for statistic, value in stats['S_P_V'].items():
+            print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
+            
     else:  # or, print with minimal words
         print("Triangles per Surface:")
         for statistic, value in stats['T_P_S'].items():
             print("{} : {}".format(statistic, value))
-
+        print("Surfaces per Volume:")
+        for statistic, value in stats['S_P_V'].items():
+            print("{} : {}".format(statistic, value))
 
 def get_stats(data):
     """
@@ -44,6 +51,7 @@ def get_stats(data):
     statistics : a dictionary of statistics for a given dataset
 
     """
+    
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
@@ -72,19 +80,22 @@ def collect_statistics(my_core, root_set):
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-    native_ranges = dagmc_stats.get_native_ranges(
-        my_core, root_set, entity_types)     # get Ranges of various entities
+    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
     
-    entityset_ranges = dagmc_stats.get_entityset_ranges(
-        my_core, root_set, dagmc_tags['geom_dim'])
+    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
     
+    spv_key = 'S_P_V'
     tps_key = 'T_P_S'
     
+    data[spv_key] = dagmc_stats.get_surfaces_per_volume(
+                                my_core, entityset_ranges)
+    stats[spv_key] = get_stats(data[spv_key])
     data[tps_key] = dagmc_stats.get_triangles_per_surface(
-        my_core, entityset_ranges)
+                                my_core, entityset_ranges)
     stats[tps_key] = get_stats(data[tps_key])
-    return stats
-
+    
+    return stats, data
+    
 
 def main():
 
@@ -96,13 +107,12 @@ def main():
     args = parser.parse_args()
     input_file = args.filename
     verbose = args.verbose
-    #input_file = "3vols.h5m"
 
-    my_core = core.Core()  # initiates core
-    my_core.load_file(input_file)  # loads the file
-    # dumps all entities into the meshset to be redistributed to other meshsets
-    root_set = my_core.get_root_set()
-    stats = collect_statistics(my_core, root_set)
+
+    my_core = core.Core() #initiates core
+    my_core.load_file(input_file) #loads the file
+    root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
+    stats, data = collect_statistics(my_core, root_set)
     report_stats(stats, verbose)
 
 

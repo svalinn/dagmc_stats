@@ -7,7 +7,6 @@ from pymoab.rng import Range
 from pymoab import core, types
 
 
-
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
@@ -21,13 +20,15 @@ def get_dagmc_tags(my_core):
     """
 
     dagmc_tags = {}
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,  # creates tag for the geo-
+
+    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,   
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
 
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  # creates tag for the word of
+    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
 
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  # creates tag for each entity
+    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  
+
                                                      storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
 
     return dagmc_tags
@@ -90,7 +91,7 @@ def get_triangles_per_surface(my_core, entity_ranges):
 
     outputs
     -------
-    t_p_s_data : a list of the number of triangles each surface contains
+    t_p_s : a list of the number of triangles each surface contains
     """
 
     t_p_s = np.array([])
@@ -98,3 +99,24 @@ def get_triangles_per_surface(my_core, entity_ranges):
         np.append(t_p_s, my_core.get_entities_by_type(
             surface, types.MBTRI).size())
     return t_p_s
+
+  
+def get_surfaces_per_volume(my_core, entityset_ranges):
+    """
+    Get the number of surfaces that each volume in a given file contains
+
+    inputs
+    ------
+    my_core : a MOAB core instance
+    entity_ranges : a dictionary of the entityset ranges of each tag in a file
+
+    outputs
+    -------
+    s_p_v : a list of the number of surfaces each volume in the file contains
+
+    """
+
+    s_p_v = np.array([])
+    for volumeset in entityset_ranges['Volumes']:
+        s_p_v = np.append(s_p_v, my_core.get_child_meshsets(volumeset).size())
+    return s_p_v
