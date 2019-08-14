@@ -6,19 +6,6 @@ from pymoab.rng import Range
 from pymoab import core, types
 
 
-def get_spv_data(my_core, entityset_ranges):
-    spv_data_dict = {}
-    for volume in entityset_ranges['Volumes']:
-        spv_data_dict[volume] = my_core.get_child_meshsets(volume).size()
-    return spv_data_dict
-
-
-def get_tps_data(my_core, entityset_ranges):
-    tps_data_dict = {}
-    for surface in entityset_ranges['Surfaces']:
-        tps_data_dict[surface] = my_core.get_entities_by_type(surface, types.MBTRI)
-    return tps_data_dict
-
 def print_spv_data(spv_data):
     """
     Prints the actual data for surfaces per volume

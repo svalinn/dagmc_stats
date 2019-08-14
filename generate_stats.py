@@ -49,8 +49,8 @@ def get_stats(data):
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
-    statistics['median'] = np.median(data)
-    statistics['mean'] = np.mean(data)
+    statistics['median'] = np.median(list(data))
+    statistics['mean'] = np.mean(list(data))
     return statistics
 
 
@@ -80,14 +80,15 @@ def collect_statistics(my_core, root_set):
     
     spv_key = 'S_P_V'
     tps_key = 'T_P_S'
+    tpv_key = 'T_P_V'
     
-    data[spv_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
-    data['spv_dict'] = entity_specific_stats.get_spv_data(my_core, entityset_ranges)
-    data[tps_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
-    data['tps_dict'] = entity_specific_stats.get_tps_data(my_core, entityset_ranges)
+    data[spv_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges) #dict
+    data[tps_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges) #dict
+    data[tpv_key] = dagmc_stats.get_surfaces_per_voluem(my_core, entityset_ranges) #list
     
-    stats[tps_key] = get_stats(data[tps_key])
-    stats[spv_key] = get_stats(data[spv_key])
+    stats[tps_key] = get_stats(data[tps_key].values())
+    stats[spv_key] = get_stats(data[spv_key].values())
+    stats[tpv_key] = get_stats(data[tpv_key])
     
     return stats, data
     
