@@ -89,13 +89,15 @@ def get_triangles_per_surface(my_core, entity_ranges):
     
     outputs
     -------
-    t_p_s : a list of the number of triangles each surface contains
+    t_p_s : a dictionary containing the entityhandle of the surface, and the number of triangles each surface contains
     """
 
-    t_p_s = np.array([])
+    t_p_s = {}
+    surf_id = 1
     for surface in entity_ranges['Surfaces']:
-        t_p_s = np.append(t_p_s, my_core.get_entities_by_type(
-            surface, types.MBTRI).size())
+        t_p_s[surf_id] = my_core.get_entities_by_type(
+                                 surface, types.MBTRI).size()
+        surf_id += 1
     return t_p_s
 
   
@@ -110,10 +112,12 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     
     outputs
     -------
-    s_p_v : a list of the number of surfaces each volume in the file contains
+    s_p_v : a dictionary containing the volume entityhandle and the number of surfaces each volume in the file contains
     """
 
-    s_p_v = np.array([])
+    s_p_v = {}
+    vol_id = 1
     for volumeset in entityset_ranges['Volumes']:
-        s_p_v = np.append(s_p_v, my_core.get_child_meshsets(volumeset).size())
+        s_p_v[vol_id] = my_core.get_child_meshsets(volumeset).size()
+        vol_id += 1
     return s_p_v

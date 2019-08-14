@@ -60,8 +60,8 @@ def get_stats(data):
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
-    statistics['median'] = np.median(data)
-    statistics['mean'] = np.mean(data)
+    statistics['median'] = np.median(list(data))
+    statistics['mean'] = np.mean(list(data))
     return statistics
 
 
@@ -94,8 +94,8 @@ def collect_statistics(my_core, root_set):
     data[tps_key] = dagmc_stats.get_triangles_per_surface(
                                 my_core, entityset_ranges)
 
-    stats[spv_key] = get_stats(data[spv_key])    
-    stats[tps_key] = get_stats(data[tps_key])
+    stats[spv_key] = get_stats(data[spv_key].values())    
+    stats[tps_key] = get_stats(data[tps_key].values())
     stats['native_ranges'] = native_ranges
     stats['entity_ranges'] = entityset_ranges
     return stats, data
