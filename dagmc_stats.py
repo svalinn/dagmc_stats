@@ -93,11 +93,9 @@ def get_triangles_per_surface(my_core, entity_ranges):
     """
 
     t_p_s = {}
-    surf_id = 1
     for surface in entity_ranges['Surfaces']:
-        t_p_s[surf_id] = my_core.get_entities_by_type(
+        t_p_s[surface] = my_core.get_entities_by_type(
                                  surface, types.MBTRI).size()
-        surf_id += 1
     return t_p_s
 
   
@@ -116,8 +114,6 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     """
 
     s_p_v = {}
-    vol_id = 1
     for volumeset in entityset_ranges['Volumes']:
-        s_p_v[vol_id] = my_core.get_child_meshsets(volumeset).size()
-        vol_id += 1
+        s_p_v[volumeset] = my_core.get_child_meshsets(volumeset).size()
     return s_p_v
