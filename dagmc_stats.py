@@ -45,7 +45,8 @@ def get_native_ranges(my_core, meshset, entity_types):
     
     outputs
     -------
-    native_ranges : a dictionary with one entry for each entity type that is a Range of handles to that type
+    native_ranges : a dictionary with one entry for each entity type that is a
+                    Range of handles to that type
     """
 
     native_ranges = {}
@@ -57,7 +58,8 @@ def get_native_ranges(my_core, meshset, entity_types):
 
 def get_entityset_ranges(my_core, meshset, geom_dim):
     """
-    Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET type
+    Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET
+    type
     
     inputs
     ------
@@ -67,8 +69,9 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     
     outputs
     -------
-    entityset_ranges : a dictionary with one entry for each entityset type, and the value is the range of entities that corrospond to 
-                        each type
+    entityset_ranges : a dictionary with one entry for each entityset type, 
+                       and the value is the range of entities that corrospond to each
+                       type
     """
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
@@ -80,16 +83,20 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
 
 def get_triangles_per_surface(my_core, entity_ranges):
     """
-    This function will return data about the number of triangles on each surface in a file
+    This function will return data about the number of triangles on each
+    surface in a file
     
     inputs
     ------
     my_core : a MOAB Core instance
-    entity_ranges : a dictionary containing ranges for each type in the file (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
+    entity_ranges : a dictionary containing ranges for each type in the file 
+                    (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
     
     outputs
     -------
-    t_p_s : a dictionary containing the entityhandle of the surface, and the number of triangles each surface contains
+    t_p_s : a dictionary containing the entityhandle of the surface,
+            and the number of triangles each surface contains.
+            i.e {surface entityhandle : triangles it contains}
     """
 
     t_p_s = {}
@@ -110,7 +117,9 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     
     outputs
     -------
-    s_p_v : a dictionary containing the volume entityhandle and the number of surfaces each volume in the file contains
+    s_p_v : a dictionary containing the volume entityhandle
+            and the number of surfaces each volume in the file contains
+            i.e. {volume entityhandle:surfaces it contains}
     """
 
     s_p_v = {}
