@@ -77,22 +77,35 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     return entityset_ranges
 
 
-def get_surfaces_per_volume(my_core, entityset_ranges):
+def get_triangle_aspect_ratio(my_core, meshset, entityset_ranges):
     """
-    Get the number of surfaces that each volume in a given file contains
-
+    Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
+    
     inputs
     ------
-    my_core : a MOAB core instance
-    entity_ranges : a dictionary of the entityset ranges of each tag in a file
-
+    my_core : a MOAB Core instance
+    entityset_ranges : a dictionary with one entry for each entityset type, and the value is the range of entities that corrospond to 
+                        each type
+    meshset : a meshset containing a certain part of the mesh
+    
     outputs
     -------
-    freqs : a list of the number of surfaces each volume in the file contains
-
+    t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
     """
 
-    s_p_v = np.array([])
-    for volumeset in entityset_ranges['Volumes']:
-        s_p_v = np.append(s_p_v, my_core.get_child_meshsets(volumeset).size())
-    return s_p_v
+    
+    tris = my_core.get_entities_by_type(meshset, types.MBTRI)
+    for triangle in range(tris.size()):
+        
+        
+
+
+
+
+
+
+
+
+
+
+
