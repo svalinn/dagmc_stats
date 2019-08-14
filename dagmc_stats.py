@@ -94,8 +94,30 @@ def get_triangle_aspect_ratio(my_core, meshset, entityset_ranges):
     """
 
     
-    tris = my_core.get_entities_by_type(meshset, types.MBTRI)
-    for triangle in range(tris.size()):
+    t_a_r = []
+    tris = core.get_entities_by_type(entity_ranges['Surfaces'][0], types.MBTRI)
+    for triangle in tris:
+        side_lengths = []
+        s = 0
+        verts = list(core.get_adjacencies(triangle, 0))
+        coord_list = []
+        for side in range(3):
+            coords = list(core.get_coords(verts[side]))
+            coord_list.append(coords)
+        coord_array = np.array(coord_list)
+        for length in range(3):    
+            sum_squares = 0
+            for vert in range(3):
+                sum_squares += coord_array[vert,length]**2
+            side_lengths.append(math.sqrt(sum_squares))
+            s += .5*(side_lengths[length])
+        top = np.prod(side_lengths)
+        bottom = 8*(s-side_lengths[0])*(s-side_lengths[1])*(s-side_lengths[2])
+        print(top, bottom, s)
+        t_a_r.append(top/bottom)
+    print(t_a_r)
+            
+            
         
         
 
