@@ -109,7 +109,7 @@ def get_triangles_per_vertex(my_core, native_ranges):
 def get_triangles_per_surface(my_core, entity_ranges):
     """
     This function will return data about the number of triangles on each
-    vertex in a file
+    surface in a file
     
     inputs
     ------
