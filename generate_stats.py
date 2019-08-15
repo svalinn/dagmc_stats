@@ -18,6 +18,7 @@ import dagmc_stats
 def report_stats(stats, verbose):
     """
     Method to print a table of statistics.
+    
     inputs
     ------
     stats : a dictionary with information about certain statistics for a model
@@ -49,9 +50,11 @@ def report_stats(stats, verbose):
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
+    
     inputs
     ------
     data : a dataset in list form
+    
     outputs
     -------
     statistics : a dictionary of statistics for a given dataset
@@ -68,14 +71,17 @@ def get_stats(data):
 def collect_statistics(my_core, root_set):
     """
     Collects statistics for a range of different areas
+   
     inputs
     ------
     my_core : a MOAB Core instance
     root_set : the root set for a file
+    
     outputs
     -------
     stats : a dictionary containing statistics for a variety of different areas
     """
+    
     stats = {}
     data = {}
     
@@ -86,18 +92,20 @@ def collect_statistics(my_core, root_set):
     
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
     
-    spv_key = 'S_P_V'
-    tps_key = 'T_P_S'
-    
-    data[spv_key] = dagmc_stats.get_surfaces_per_volume(
-                                my_core, entityset_ranges)
-    data[tps_key] = dagmc_stats.get_triangles_per_surface(
-                                my_core, entityset_ranges)
-
-    stats[spv_key] = get_stats(data[spv_key].values())    
-    stats[tps_key] = get_stats(data[tps_key].values())
     stats['native_ranges'] = native_ranges
     stats['entity_ranges'] = entityset_ranges
+    
+    
+    spv_key = 'S_P_V'
+    data[spv_key] = dagmc_stats.get_surfaces_per_volume(
+                                my_core, entityset_ranges)
+    stats[spv_key] = get_stats(data[spv_key].values())
+    
+    tps_key = 'T_P_S'
+    data[tps_key] = dagmc_stats.get_triangles_per_surface(
+                                my_core, entityset_ranges)
+    stats[tps_key] = get_stats(data[tps_key].values())
+
     return stats, data
     
 
@@ -122,3 +130,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

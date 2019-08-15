@@ -10,9 +10,11 @@ from pymoab import core, types
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
+    
     inputs
     ------
     my_core : a MOAB Core instance
+    
     outputs
     -------
     dagmc_tags : a dictionary of relevant tags
@@ -73,6 +75,7 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
                        and the value is the range of entities that corrospond to each
                        type
     """
+    
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     for dimension, set_type in enumerate(entityset_types):
