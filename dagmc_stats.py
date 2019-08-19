@@ -199,7 +199,8 @@ def get_triangle_aspect_ratio(my_core, meshset):
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*(s-side_lengths[0])*(s-side_lengths[1])*(s-side_lengths[2])
-        
+        if top/bottom < 1.205763046406059:
+            print(triangle, side_lengths)
         t_a_r.append(top/bottom)
     
     return t_a_r
