@@ -23,17 +23,22 @@ def report_stats(stats, verbose):
     ------
     stats : a dictionary with information about certain statistics for a model
     """
-
+    
     if verbose:  # if the user wants verbosity, print with more words
         for nr, size in stats['native_ranges'].items():
-            print("There are {} entities of native type {} in this model".format(size.size(), nr))
+            print("There are {} entities of native type {} in this model".format(
+                 size.size(), nr))
         for er, size in stats['entity_ranges'].items():
             print("There are {} {} in this model".format(size.size(), er))
         for statistic, value in stats['T_P_S'].items():
             print("The {} number of Triangles per Surface in this model is {}.".format(
-                value, statistic))
+                 value, statistic))
         for statistic, value in stats['S_P_V'].items():
-            print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
+            print("The {} number of Surfaces per Volume in this model is {}.".format(
+                 value, statistic))
+        for statistic, value in stats['T_P_V'].items():
+            print("The {} number of Triangles per Vertex in this model is {}.".format(
+                 value, statistic))
             
     else:  # or, print with minimal words
         for nr, size in stats['native_ranges'].items():
@@ -46,7 +51,9 @@ def report_stats(stats, verbose):
         print("Surfaces per Volume:")
         for statistic, value in stats['S_P_V'].items():
             print("{} : {}".format(statistic, value))
-
+        print("Triangles per Vertex:")
+        for statistic, value in stats['T_P_V'].items():
+            print("{} : {}".format(statistic, value))
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -91,7 +98,7 @@ def collect_statistics(my_core, root_set):
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
     
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-    
+  
     stats['native_ranges'] = native_ranges
     stats['entity_ranges'] = entityset_ranges
     
@@ -105,7 +112,12 @@ def collect_statistics(my_core, root_set):
     data[tps_key] = dagmc_stats.get_triangles_per_surface(
                                 my_core, entityset_ranges)
     stats[tps_key] = get_stats(data[tps_key].values())
-
+ 
+    tpv_key = 'T_P_V'
+    data[tpv_key] = dagmc_stats.get_triangles_per_vertex(
+                                my_core, native_ranges)
+    stats[tpv_key] = get_stats(data[tpv_key])
+    
     return stats, data
     
 

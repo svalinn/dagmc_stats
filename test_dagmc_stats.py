@@ -53,6 +53,15 @@ def test_get_entityset_ranges():
     assert(volume_range == entityset_ranges['Volumes'])
 
     
+def test_get_triangles_per_vertex():
+    "Tests part of the get_triangles_per_vertex function"
+    dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
+    t_p_v_data = dagmc_stats.get_triangles_per_vertex(my_core, native_ranges)
+    vertices = my_core.get_entities_by_type(root_set, types.MBVERTEX).size()
+    assert(len(t_p_v_data) == vertices)
+    
+
 def test_get_triangles_per_surface():
     """
     Tests some parts of the get_triangles_per_surface function
