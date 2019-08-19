@@ -25,7 +25,7 @@ def report_stats(stats, verbose, display_options):
             for nr, size in stats['native_ranges'].items():
                 print("There are {} entities of native type {} in this model".format(size.size(), nr))
         if display_options['ER']:
-            for er, size in stats['entity_ranges'].items():
+            for er, size in stats['entityset_ranges'].items():
                 print("There are {} {} in this model".format(size.size(), er))
         if display_options['TPS']:
             for statistic, value in stats['T_P_S'].items():
@@ -37,12 +37,15 @@ def report_stats(stats, verbose, display_options):
         if display_options['TPV']:
             for statistic, value in stats['T_P_V'].items():
                 print("The {} number of Triangles per Vertex in this model is {}.".format(value, statistic))
+        if display_options['TAR']:
+            for statistic, value in stats['T_A_R'].items():
+                print("The {} Triangle Aspect Ratio in this model is {}.".format(statistic, value))
     else: #or, print with minimal words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
                 print("Type {} : {}".format(nr, size.size()))
         if display_options['ER']:
-            for er, size in stats['entity_ranges'].items():
+            for er, size in stats['entityset_ranges'].items():
                 print("{} : {}".format(er, size.size()))
         if display_options['TPS']:
             print("Triangles per Surface:")
@@ -55,6 +58,10 @@ def report_stats(stats, verbose, display_options):
         if display_options['TPV']:
             print("Triangles per Vertex:")
             for statistic, value in stats['T_P_V'].items():
+                print("{} : {}".format(statistic, value))
+        if display_options['TAR']:
+            print("Triangle Aspect Ratio:")
+            for statistic, value in stats['T_A_R'].items():
                 print("{} : {}".format(statistic, value))
 
 def get_stats(data):
@@ -123,16 +130,17 @@ def main():
     parser.add_argument("filename", help = "the file that you want read")
     parser.add_argument("-v", "--verbose", action = "store_true", help = "increase output verbosity") #optional verbosity setting
     parser.add_argument("--nr", action = "store_true", help = "display native ranges (default is to display all statistics)")
-    parser.addarguemnt("--er", action = "store_true", help = "display entityset ranges (Volume, Surface, Curve, Node)")
+    parser.add_argument("--er", action = "store_true", help = "display entityset ranges (Volume, Surface, Curve, Node)")
     parser.add_argument("--spv", action = "store_true", help = "display surface per volume stats") 
     parser.add_argument("--tpv", action = "store_true", help = "display triangles per vertex stats")
     parser.add_argument("--tps", action = "store_true", help = "display triangles per surface stats")
+    parser.add_argument("--tar", action = "store_true", help = "dispaly triangle aspect ratio stats")
     args = parser.parse_args() 
     input_file = args.filename
     verbose = args.verbose
-    display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv, 'TPS':args.tps} 
+    display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv, 'TPS':args.tps, 'TAR':args.tar} 
     if not(True in display_options.values()):
-        display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True}
+        display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True, 'TAR':True}
 
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
