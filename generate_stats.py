@@ -112,11 +112,11 @@ def collect_statistics(my_core, root_set):
     data[tps_key] = dagmc_stats.get_triangles_per_surface(
                                 my_core, entityset_ranges)
     stats[tps_key] = get_stats(data[tps_key].values())
-
+ 
     tpv_key = 'T_P_V'
     data[tpv_key] = dagmc_stats.get_triangles_per_vertex(
-      `                         my_core, native_ranges)
-    stats[tpv_key] = get_stats(tpv_key)
+                                my_core, native_ranges)
+    stats[tpv_key] = get_stats(data[tpv_key])
     
     return stats, data
     
