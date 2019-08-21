@@ -1,12 +1,16 @@
-#This file is the script that users will actually run to generate the full set of statistics for a file
+# This file is the script that users will actually run to generate the full set of statistics for a file
 
 # set the path to find the current installation of pyMOAB
 import sys
 import numpy as np
 import argparse
-sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
-from pymoab import core, types
+import sys
+sys.path.append(
+    '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
+
 from pymoab.rng import Range
+from pymoab import core, types
+
 # import the new module that defines each of the functions
 import dagmc_stats
 
@@ -19,6 +23,7 @@ def report_stats(stats, verbose, display_options):
     ------
     stats : a dictionary with information about certain statistics for a model
     """
+    
     
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
@@ -68,6 +73,7 @@ def report_stats(stats, verbose, display_options):
             for statistic, value in stats['T_A_R'].items():
                 print("{} : {}".format(statistic, value))
 
+                
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -138,10 +144,11 @@ def collect_statistics(my_core, root_set):
     
     return stats, data
     
-    
+
 def main():
 
     # allows the user to input the file name into the command line
+
     parser = argparse.ArgumentParser() 
     parser.add_argument("filename", help = "the file that you want read")
     parser.add_argument("-v", "--verbose", action = "store_true",
@@ -159,6 +166,7 @@ def main():
     parser.add_argument("--tar", action = "store_true",
                         help = "dispaly triangle aspect ratio stats")
     args = parser.parse_args() 
+
     input_file = args.filename
     verbose = args.verbose
     display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv,
@@ -173,7 +181,7 @@ def main():
     stats, data = collect_statistics(my_core, root_set)
     report_stats(stats, verbose, display_options)
     
-    
+
 if __name__ == "__main__":
     main()
     
