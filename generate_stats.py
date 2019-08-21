@@ -125,7 +125,7 @@ def collect_statistics(my_core, root_set):
     stats[tpv_key] = get_stats(data[tpv_key])
     
     tar_key = 'T_A_R'
-    data[tar_key] = dagmc_stats.get_triangle_aspect_raio(
+    data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
                                 my_core, root_set)
     stats[tar_key] = get_stats(data[tar_key])
     

@@ -183,19 +183,12 @@ def get_triangle_aspect_ratio(my_core, meshset):
         verts = list(my_core.get_adjacencies(triangle, 0))
         
         for side in range(3):
-            coords = list(my_core.get_coords(verts[side]))
+            coords = my_core.get_coords(verts[side])
             coord_list.append(coords)
-            
-        coord_array = np.array(coord_list)
         
         for length in range(3):    
-            sum_squares = 0
+            side_lengths.append(np.linalg.norm(coord_list[length]-coord_list[indexes[length]]))
             
-            for vert in range(3):
-                sum_squares += (coord_array[length, vert] - coord_array[indexes[length], vert])**2
-            
-            side_lengths.append(math.sqrt(sum_squares))
-        
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*(s-side_lengths[0])*(s-side_lengths[1])*(s-side_lengths[2])

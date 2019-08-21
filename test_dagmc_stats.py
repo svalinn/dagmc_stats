@@ -16,6 +16,7 @@ my_core.load_file(test_input)
 root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
+
 def test_get_tags():
     """
     Tests different aspects of the get_dagmc_tags function
@@ -87,7 +88,6 @@ def test_get_triangle_aspect_ratio():
     assert(len(t_a_r_data) == known_triangles.size())
     
     
-
 def test_get_surfaces_per_volume():
     """
     Tests different aspects of the get_surfaces_per_volume function
