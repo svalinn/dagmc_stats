@@ -102,15 +102,15 @@ def get_triangles_per_vertex(my_core, native_ranges):
     
     t_p_v_data = []
     tri_dimension = 2
-    for vertex in native_ranges[0]:
+    for vertex in native_ranges[types.MBVERTEX]:
         t_p_v_data.append(my_core.get_adjacencies(vertex, tri_dimension).size())
-    return t_p_v_data
+    return np.array(t_p_v_data)
   
   
 def get_triangles_per_surface(my_core, entity_ranges):
     """
     This function will return data about the number of triangles on each
-    vertex in a file
+    surface in a file
     
     inputs
     ------
