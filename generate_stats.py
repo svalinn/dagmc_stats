@@ -23,23 +23,27 @@ def report_stats(stats, verbose, display_options):
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
-                print("There are {} entities of native type {} in this model".format(size.size(), nr))
+                print("There are {} entities of native type {} in this model".format(
+                    size.size(), nr))
         if display_options['ER']:
             for er, size in stats['entityset_ranges'].items():
                 print("There are {} {} in this model".format(size.size(), er))
         if display_options['TPS']:
             for statistic, value in stats['T_P_S'].items():
                 print("The {} number of Triangles per Surface in this model is {}.".format(
-                    value, statistic))
+                    statistic, value))
         if display_options['SPV']:  
             for statistic, value in stats['S_P_V'].items():
-                print("The {} number of Surfaces per Volume in this model is {}.".format(value, statistic))
+                print("The {} number of Surfaces per Volume in this model is {}.".format(
+                    statistic, value))
         if display_options['TPV']:
             for statistic, value in stats['T_P_V'].items():
-                print("The {} number of Triangles per Vertex in this model is {}.".format(value, statistic))
+                print("The {} number of Triangles per Vertex in this model is {}.".format(
+                    statistic, value))
         if display_options['TAR']:
             for statistic, value in stats['T_A_R'].items():
-                print("The {} Triangle Aspect Ratio in this model is {}.".format(statistic, value))
+                print("The {} Triangle Aspect Ratio in this model is {}.".format(
+                    statistic, value))
     else: #or, print with minimal words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
@@ -75,19 +79,20 @@ def get_stats(data):
     outputs
     -------
     statistics : a dictionary of statistics for a given dataset
-    
     """
+    
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
-    statistics['median'] = np.median(data)
-    statistics['mean'] = np.mean(data)
+    statistics['median'] = np.median(list(data))
+    statistics['mean'] = np.mean(list(data))
     return statistics
+
 
 def collect_statistics(my_core, root_set):
     """
     Collects statistics for a range of different areas
-    
+   
     inputs
     ------
     my_core : a MOAB Core instance
@@ -96,8 +101,8 @@ def collect_statistics(my_core, root_set):
     outputs
     -------
     stats : a dictionary containing statistics for a variety of different areas
- 
     """
+    
     stats = {}
     data = {}
     
@@ -107,18 +112,29 @@ def collect_statistics(my_core, root_set):
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
     
     entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+  
+    stats['native_ranges'] = native_ranges
+    stats['entity_ranges'] = entityset_ranges
     
     spv_key = 'S_P_V'
-    tps_key = 'T_P_S'
-    tpv_key = 'T_P_V'
-    
-    data[spv_key] = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
-    data[tps_key] = dagmc_stats.get_triangles_per_surface(my_core, entityset_ranges)
-    data[tpv_key] = dagmc_stats.get_triangles_per_vertex(my_core, entityset_ranges)
-    
-    stats[tps_key] = get_stats(data[tps_key].values())
+    data[spv_key] = dagmc_stats.get_surfaces_per_volume(
+                                my_core, entityset_ranges)
     stats[spv_key] = get_stats(data[spv_key].values())
+    
+    tps_key = 'T_P_S'
+    data[tps_key] = dagmc_stats.get_triangles_per_surface(
+                                my_core, entityset_ranges)
+    stats[tps_key] = get_stats(data[tps_key].values())
+ 
+    tpv_key = 'T_P_V'
+    data[tpv_key] = dagmc_stats.get_triangles_per_vertex(
+                                my_core, native_ranges)
     stats[tpv_key] = get_stats(data[tpv_key])
+    
+    tar_key = 'T_A_R'
+    data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
+                                my_core, root_set)
+    stats[tar_key] = get_stats(data[tar_key])
     
     return stats, data
     
@@ -128,19 +144,28 @@ def main():
     # allows the user to input the file name into the command line
     parser = argparse.ArgumentParser() 
     parser.add_argument("filename", help = "the file that you want read")
-    parser.add_argument("-v", "--verbose", action = "store_true", help = "increase output verbosity") #optional verbosity setting
-    parser.add_argument("--nr", action = "store_true", help = "display native ranges (default is to display all statistics)")
-    parser.add_argument("--er", action = "store_true", help = "display entityset ranges (Volume, Surface, Curve, Node)")
-    parser.add_argument("--spv", action = "store_true", help = "display surface per volume stats") 
-    parser.add_argument("--tpv", action = "store_true", help = "display triangles per vertex stats")
-    parser.add_argument("--tps", action = "store_true", help = "display triangles per surface stats")
-    parser.add_argument("--tar", action = "store_true", help = "dispaly triangle aspect ratio stats")
+    parser.add_argument("-v", "--verbose", action = "store_true",
+                        help = "increase output verbosity") #optional verbosity setting
+    parser.add_argument("--nr", action = "store_true",
+                        help = "display native ranges (default is to display all statistics)")
+    parser.add_argument("--er", action = "store_true",
+                        help = "display entityset ranges (Volume, Surface, Curve, Node)")
+    parser.add_argument("--spv", action = "store_true",
+                        help = "display surface per volume stats") 
+    parser.add_argument("--tpv", action = "store_true",
+                        help = "display triangles per vertex stats")
+    parser.add_argument("--tps", action = "store_true",
+                        help = "display triangles per surface stats")
+    parser.add_argument("--tar", action = "store_true",
+                        help = "dispaly triangle aspect ratio stats")
     args = parser.parse_args() 
     input_file = args.filename
     verbose = args.verbose
-    display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv, 'TPS':args.tps, 'TAR':args.tar} 
+    display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv,
+                       'TPS':args.tps, 'TAR':args.tar} 
     if not(True in display_options.values()):
-        display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True, 'TAR':True}
+        display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
+                           'TAR':True}
 
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
