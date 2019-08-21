@@ -99,4 +99,3 @@ def test_get_surfaces_per_volume():
     for eh in range(known_volumes.size()):
         surfs = my_core.get_child_meshsets(known_volumes[eh]).size()
         assert(surfs == s_p_v_data[eh])
-    
