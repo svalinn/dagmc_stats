@@ -102,15 +102,15 @@ def get_triangles_per_vertex(my_core, native_ranges):
     
     t_p_v_data = []
     tri_dimension = 2
-    for vertex in native_ranges[0]:
+    for vertex in native_ranges[types.MBVERTEX]:
         t_p_v_data.append(my_core.get_adjacencies(vertex, tri_dimension).size())
-    return t_p_v_data
+    return np.array(t_p_v_data)
   
   
 def get_triangles_per_surface(my_core, entity_ranges):
     """
     This function will return data about the number of triangles on each
-    vertex in a file
+    surface in a file
     
     inputs
     ------
@@ -199,8 +199,6 @@ def get_triangle_aspect_ratio(my_core, meshset):
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*(s-side_lengths[0])*(s-side_lengths[1])*(s-side_lengths[2])
-        if top/bottom < 1.205763046406059:
-            print(triangle, side_lengths)
         t_a_r.append(top/bottom)
     
     return t_a_r
