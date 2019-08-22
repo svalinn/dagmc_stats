@@ -31,7 +31,7 @@ def report_stats(stats, verbose, display_options):
                 print("There are {} entities of native type {} in this model".format(
                     size.size(), nr))
         if display_options['ER']:
-            for er, size in stats['entityset_ranges'].items():
+            for er, size in stats['entity_ranges'].items():
                 print("There are {} {} in this model".format(size.size(), er))
         if display_options['TPS']:
             for statistic, value in stats['T_P_S'].items():
@@ -54,7 +54,7 @@ def report_stats(stats, verbose, display_options):
             for nr, size in stats['native_ranges'].items():
                 print("Type {} : {}".format(nr, size.size()))
         if display_options['ER']:
-            for er, size in stats['entityset_ranges'].items():
+            for er, size in stats['entity_ranges'].items():
                 print("{} : {}".format(er, size.size()))
         if display_options['TPS']:
             print("Triangles per Surface:")
@@ -95,7 +95,7 @@ def get_stats(data):
     return statistics
 
 
-def collect_statistics(my_core, root_set):
+def collect_statistics(my_core, root_set, tar_meshset):
     """
     Collects statistics for a range of different areas
    
@@ -139,7 +139,7 @@ def collect_statistics(my_core, root_set):
     
     tar_key = 'T_A_R'
     data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
-                                my_core, root_set)
+                                my_core, tar_meshset)
     stats[tar_key] = get_stats(data[tar_key])
     
     return stats, data
@@ -165,6 +165,9 @@ def main():
                         help = "display triangles per surface stats")
     parser.add_argument("--tar", action = "store_true",
                         help = "dispaly triangle aspect ratio stats")
+    parser.add_argument("--tar_meshset", 
+                        help = "The EntityHandle of the meshset that is to be analyzed for its triangle aspect ratio"
+                       )
     args = parser.parse_args() 
 
     input_file = args.filename
@@ -174,11 +177,15 @@ def main():
     if not(True in display_options.values()):
         display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
                            'TAR':True}
-
+    tar_meshset = args.tar_meshset
+    print(tar_meshset)
+    
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
-    stats, data = collect_statistics(my_core, root_set)
+    if tar_meshset == None:
+        tar_meshset = root_set
+    stats, data = collect_statistics(my_core, root_set, tar_meshset)
     report_stats(stats, verbose, display_options)
     
 
