@@ -11,7 +11,7 @@ from pymoab.rng import Range
 import dagmc_stats
 import entity_specific_stats
 
-def report_stats(stats, verbose, display_options):
+def report_stats(stats, data, verbose, display_options):
     """
     Method to print a table of statistics.
     
@@ -27,7 +27,7 @@ def report_stats(stats, verbose, display_options):
                 print("There are {} entities of native type {} in this model".format(
                     size.size(), nr))
         if display_options['ER']:
-            for er, size in stats['entityset_ranges'].items():
+            for er, size in stats['entity_ranges'].items():
                 print("There are {} {} in this model".format(size.size(), er))
         if display_options['TPS']:
             for statistic, value in stats['T_P_S'].items():
@@ -50,7 +50,7 @@ def report_stats(stats, verbose, display_options):
             for nr, size in stats['native_ranges'].items():
                 print("Type {} : {}".format(nr, size.size()))
         if display_options['ER']:
-            for er, size in stats['entityset_ranges'].items():
+            for er, size in stats['entity_ranges'].items():
                 print("{} : {}".format(er, size.size()))
         if display_options['TPS']:
             print("Triangles per Surface:")
@@ -70,9 +70,9 @@ def report_stats(stats, verbose, display_options):
                 print("{} : {}".format(statistic, value))
 
     if display_options['SPV_data']:
-        entity_specific_stats.print_spv_data(data['spv_dict'])
+        entity_specific_stats.print_spv_data(data['S_P_V'])
     if display_options['TPS_data']:
-        entity_specific_stats.print_tps_data(data['tps_dict'])
+        entity_specific_stats.print_tps_data(data['T_P_S'])
         
         
 def get_stats(data):
