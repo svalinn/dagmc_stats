@@ -153,7 +153,7 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     return s_p_v
 
 
-def get_triangle_aspect_ratio(my_core, meshset):
+def get_triangle_aspect_ratio(my_core, meshset, dagmc_tags):
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
     
@@ -170,26 +170,31 @@ def get_triangle_aspect_ratio(my_core, meshset):
     """
 
     t_a_r = []
+    if meshset != my_core.get_root_set():
+        if my_core.tag_get_data(dagmc_tags['category'], meshset)[0][0] == 'Volume':
+            surfs = my_core.get_child_meshsets(meshset)
+    else:
+        surfs = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
+    for surface in surfs:
+        tris = my_core.get_entities_by_type(surface, types.MBTRI)
 
-    tris = my_core.get_entities_by_type(meshset, types.MBTRI)
+        for triangle in tris:
+            side_lengths = []
+            s = 0
+            coord_list = []
 
-    for triangle in tris:
-        side_lengths = []
-        s = 0
-        coord_list = []
+            verts = list(my_core.get_adjacencies(triangle, 0))
 
-        verts = list(my_core.get_adjacencies(triangle, 0))
+            for vert in verts:
+                coords = my_core.get_coords(vert)
+                coord_list.append(coords)
 
-        for vert in verts:
-            coords = my_core.get_coords(vert)
-            coord_list.append(coords)
+            for side in range(3):    
+                side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
 
-        for side in range(3):    
-            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
-
-        s = .5*(sum(side_lengths))
-        top = np.prod(side_lengths)
-        bottom = 8*np.prod(s-side_lengths)
-        t_a_r.append(top/bottom)
+            s = .5*(sum(side_lengths))
+            top = np.prod(side_lengths)
+            bottom = 8*np.prod(s-side_lengths)
+            t_a_r.append(top/bottom)
 
     return t_a_r

@@ -139,7 +139,7 @@ def collect_statistics(my_core, root_set, tar_meshset):
     
     tar_key = 'T_A_R'
     data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
-                                my_core, tar_meshset)
+                                my_core, tar_meshset, dagmc_tags)
     stats[tar_key] = get_stats(data[tar_key])
     
     return stats, data
@@ -165,7 +165,7 @@ def main():
                         help = "display triangles per surface stats")
     parser.add_argument("--tar", action = "store_true",
                         help = "dispaly triangle aspect ratio stats")
-    parser.add_argument("--tar_meshset", 
+    parser.add_argument("--tar_meshset", type = np.uint64,
                         help = "The EntityHandle of the meshset that is to be analyzed for its triangle aspect ratio"
                        )
     args = parser.parse_args() 
