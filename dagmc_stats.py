@@ -1,7 +1,6 @@
 # set the path to find the current installation of pyMOAB
 import sys
 import numpy as np
-import math
 sys.path.append(
     '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab.rng import Range
@@ -171,8 +170,7 @@ def get_triangle_aspect_ratio(my_core, meshset):
     """
     
     t_a_r = []
-    indexes = [1,2,0]
-    
+
     tris = my_core.get_entities_by_type(meshset, types.MBTRI)
     
     for triangle in tris:
@@ -182,16 +180,16 @@ def get_triangle_aspect_ratio(my_core, meshset):
         
         verts = list(my_core.get_adjacencies(triangle, 0))
         
-        for side in range(3):
-            coords = my_core.get_coords(verts[side])
+        for vert in verts:
+            coords = my_core.get_coords(vert)
             coord_list.append(coords)
         
-        for length in range(3):    
-            side_lengths.append(np.linalg.norm(coord_list[length]-coord_list[indexes[length]]))
+        for side in range(3):    
+            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
             
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
-        bottom = 8*(s-side_lengths[0])*(s-side_lengths[1])*(s-side_lengths[2])
+        bottom = 8*np.prod(s-side_lengths)
         t_a_r.append(top/bottom)
     
     return t_a_r
