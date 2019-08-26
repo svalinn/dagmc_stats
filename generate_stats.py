@@ -178,7 +178,6 @@ def main():
         display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
                            'TAR':True}
     tar_meshset = args.tar_meshset
-    print(tar_meshset)
     
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
