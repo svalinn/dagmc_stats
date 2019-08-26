@@ -185,8 +185,10 @@ def get_triangle_aspect_ratio(my_core, meshset):
             coord_list.append(coords)
         
         for side in range(3):    
-            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
-            
+            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2])) #The indices of coord_list include the "-2" because 
+                                                                                     # this way each side will be matched up with both
+                                                                                     # other sides (IDs: (Side 0, Side 1), (Side 1, 
+                                                                                     # Side 2), (Side 2, Side 0))
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*np.prod(s-side_lengths)
