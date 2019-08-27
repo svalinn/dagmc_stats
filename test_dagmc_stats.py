@@ -16,6 +16,7 @@ my_core.load_file(test_input)
 root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
+
 def test_get_tags():
     """
     Tests different aspects of the get_dagmc_tags function
@@ -78,6 +79,15 @@ def test_get_triangles_per_surface():
     assert(sum(t_p_s_data) == triangles)
     
 
+def test_get_triangle_aspect_ratio():
+    """
+    Tests part of the get_triangle_aspect_ratio function
+    """
+    t_a_r_data = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)
+    known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
+    assert(len(t_a_r_data) == known_triangles.size())
+    
+    
 def test_get_surfaces_per_volume():
     """
     Tests different aspects of the get_surfaces_per_volume function
@@ -89,4 +99,3 @@ def test_get_surfaces_per_volume():
     for eh in range(known_volumes.size()):
         surfs = my_core.get_child_meshsets(known_volumes[eh]).size()
         assert(surfs == s_p_v_data[eh])
-    
