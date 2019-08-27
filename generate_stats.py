@@ -1,12 +1,16 @@
-#This file is the script that users will actually run to generate the full set of statistics for a file
+# This file is the script that users will actually run to generate the full set of statistics for a file
 
 # set the path to find the current installation of pyMOAB
 import sys
 import numpy as np
 import argparse
-sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
-from pymoab import core, types
+import sys
+sys.path.append(
+    '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
+
 from pymoab.rng import Range
+from pymoab import core, types
+
 # import the new module that defines each of the functions
 import dagmc_stats
 import entity_specific_stats
@@ -19,7 +23,6 @@ def report_stats(stats, data, verbose, display_options):
     ------
     stats : a dictionary with information about certain statistics for a model
     """
-    
     
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
@@ -86,8 +89,8 @@ def get_stats(data):
     outputs
     -------
     statistics : a dictionary of statistics for a given dataset
-    
     """
+    
     statistics = {}
     statistics['minimum'] = min(data)
     statistics['maximum'] = max(data)
@@ -147,7 +150,7 @@ def collect_statistics(my_core, root_set, tar_meshset):
     
     return stats, data
     
-    
+
 def main():
 
     # allows the user to input the file name into the command line
@@ -171,7 +174,7 @@ def main():
     parser.add_argument("--tar_meshset", type = np.uint64, help =
                         "meshset for triangle aspect ratio stats")
     args = parser.parse_args() 
- 
+
     input_file = args.filename
     verbose = args.verbose
     tps_data = args.tps_data
@@ -191,8 +194,7 @@ def main():
 
     stats, data = collect_statistics(my_core, root_set, tar_meshset)
     report_stats(stats, data, verbose, display_options)
-    
-    
+
 if __name__ == "__main__":
     main()
     
