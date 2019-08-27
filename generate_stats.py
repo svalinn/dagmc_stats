@@ -15,15 +15,20 @@ from pymoab import core, types
 import dagmc_stats
 import entity_specific_stats
 
+
 def report_stats(stats, data, verbose, display_options):
+
     """
     Method to print a table of statistics.
     
     inputs
     ------
     stats : a dictionary with information about certain statistics for a model
+    verbose : a setting that determines how wordy (verbose) the output is
+    display_options : a dictionary with different settings to determine which statistics
+                      get printed
     """
-    
+  
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
@@ -76,8 +81,7 @@ def report_stats(stats, data, verbose, display_options):
         entity_specific_stats.print_spv_data(data['S_P_V'])
     if display_options['TPS_data']:
         entity_specific_stats.print_tps_data(data['T_P_S'])
-        
-        
+
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -154,6 +158,7 @@ def collect_statistics(my_core, root_set, tar_meshset):
 def main():
 
     # allows the user to input the file name into the command line
+
     parser = argparse.ArgumentParser() 
     parser.add_argument("filename", help = "the file that you want read")
     parser.add_argument("-v", "--verbose", action = "store_true", help = "increase output verbosity") #optional verbosity setting
@@ -170,7 +175,7 @@ def main():
     parser.add_argument("--tps", action = "store_true",
                         help = "display triangles per surface stats")
     parser.add_argument("--tar", action = "store_true",
-                        help = "dispaly triangle aspect ratio stats")
+                        help = "display triangle aspect ratio stats")
     parser.add_argument("--tar_meshset", type = np.uint64, help =
                         "meshset for triangle aspect ratio stats")
     args = parser.parse_args() 
