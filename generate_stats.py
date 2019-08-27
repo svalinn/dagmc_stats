@@ -22,7 +22,11 @@ def report_stats(stats, verbose, display_options):
     inputs
     ------
     stats : a dictionary with information about certain statistics for a model
+    verbose : a setting that determines how wordy (verbose) the output is
+    display_options : a dictionary with different settings to determine which statistics
+                      get printed
     """
+    
     
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
@@ -72,7 +76,7 @@ def report_stats(stats, verbose, display_options):
             for statistic, value in stats['T_A_R'].items():
                 print("{} : {}".format(statistic, value))
 
-
+                
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -163,7 +167,7 @@ def main():
     parser.add_argument("--tps", action = "store_true",
                         help = "display triangles per surface stats")
     parser.add_argument("--tar", action = "store_true",
-                        help = "dispaly triangle aspect ratio stats")
+                        help = "display triangle aspect ratio stats")
     args = parser.parse_args() 
 
     input_file = args.filename
