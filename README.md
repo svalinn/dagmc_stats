@@ -1,6 +1,17 @@
 # dagmc_stats
 Tool for calculating and reporting statistics about DAGMC models
 
+Dependencies
+============
+
+[PyMOAB](https://press3.mcs.anl.gov/sigma/moab-library/)
+
+[NumPy](https://www.numpy.org/)
+
+[MatPlotLib](https://matplotlib.org/)
+
+[Argparse](https://docs.python.org/3/library/argparse.html)
+
 
 Explanation of Statistics Returned
 ==================================
