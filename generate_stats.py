@@ -96,7 +96,7 @@ def get_stats(data):
     return statistics
 
 
-def collect_statistics(my_core, root_set):
+def collect_statistics(my_core, root_set, tar_meshset):
     """
     Collects statistics for a range of different areas
    
@@ -104,6 +104,7 @@ def collect_statistics(my_core, root_set):
     ------
     my_core : a MOAB Core instance
     root_set : the root set for a file
+    tar_meshset : the meshset for the triangle aspect ratio statistic
     
     outputs
     -------
@@ -118,7 +119,8 @@ def collect_statistics(my_core, root_set):
     entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)     # get Ranges of various entities
     
-    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+    entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set,
+                                                        dagmc_tags['geom_dim'])
   
     stats['native_ranges'] = native_ranges
     stats['entity_ranges'] = entityset_ranges
@@ -140,7 +142,7 @@ def collect_statistics(my_core, root_set):
     
     tar_key = 'T_A_R'
     data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
-                                my_core, root_set)
+                                my_core, tar_meshset, dagmc_tags)
     stats[tar_key] = get_stats(data[tar_key])
     
     return stats, data
@@ -166,6 +168,8 @@ def main():
                         help = "display triangles per surface stats")
     parser.add_argument("--tar", action = "store_true",
                         help = "dispaly triangle aspect ratio stats")
+    parser.add_argument("--tar_meshset", type = np.uint64, help =
+                        "meshset for triangle aspect ratio stats")
     args = parser.parse_args() 
  
     input_file = args.filename
@@ -177,11 +181,15 @@ def main():
     if not(True in display_options.values()):
         display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
                            'TAR':True, 'TPS_data':False, 'SPV_data':False}
-        
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
-    stats, data = collect_statistics(my_core, root_set)
+    
+    tar_meshset = args.tar_meshset
+    if tar_meshset == None:
+        tar_meshset = root_set
+
+    stats, data = collect_statistics(my_core, root_set, tar_meshset)
     report_stats(stats, data, verbose, display_options)
     
     

@@ -32,7 +32,7 @@ def print_tps_data(tps_data):
     data[tps_key] : a dictionary containing every surface paired with the number of triangles it contains
     
     """
-    print('Surface                                 Triangles')
+    print('Surface                        Triangles')
     ids = 1
     for surface, triangles in tps_data.items():
         print("{} ({})        {}".format(surface, ids, triangles))
