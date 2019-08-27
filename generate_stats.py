@@ -24,7 +24,6 @@ def report_stats(stats, verbose, display_options):
     stats : a dictionary with information about certain statistics for a model
     """
     
-    
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
@@ -73,7 +72,7 @@ def report_stats(stats, verbose, display_options):
             for statistic, value in stats['T_A_R'].items():
                 print("{} : {}".format(statistic, value))
 
-                
+
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
