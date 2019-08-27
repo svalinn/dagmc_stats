@@ -154,6 +154,7 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
 
 def get_triangle_aspect_ratio(my_core, meshset):
+
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
     
