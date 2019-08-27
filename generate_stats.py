@@ -32,14 +32,16 @@ def report_stats(stats, verbose):
             print("There are {} {} in this model".format(size.size(), er))
         for statistic, value in stats['T_P_S'].items():
             print("The {} number of Triangles per Surface in this model is {}.".format(
-                 value, statistic))
+                 statistic, value))
         for statistic, value in stats['S_P_V'].items():
             print("The {} number of Surfaces per Volume in this model is {}.".format(
-                 value, statistic))
+                 statistic, value))
         for statistic, value in stats['T_P_V'].items():
             print("The {} number of Triangles per Vertex in this model is {}.".format(
-                 value, statistic))
-            
+                 statistic, value))
+        for statistic, value in stats['T_A_R'].items():
+            print("The {} number of Triangle Aspect Ratio in this model is {}.".format(
+                 statistic, value))
     else:  # or, print with minimal words
         for nr, size in stats['native_ranges'].items():
             print("Type {} : {}".format(nr, size.size()))
@@ -54,6 +56,11 @@ def report_stats(stats, verbose):
         print("Triangles per Vertex:")
         for statistic, value in stats['T_P_V'].items():
             print("{} : {}".format(statistic, value))
+        print("Triangle Aspect Ratio:")
+        for statistic, value in stats['T_A_R'].items():
+            print("{} : {}".format(statistic, value))
+            
+            
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -102,7 +109,6 @@ def collect_statistics(my_core, root_set):
     stats['native_ranges'] = native_ranges
     stats['entity_ranges'] = entityset_ranges
     
-    
     spv_key = 'S_P_V'
     data[spv_key] = dagmc_stats.get_surfaces_per_volume(
                                 my_core, entityset_ranges)
@@ -118,6 +124,11 @@ def collect_statistics(my_core, root_set):
                                 my_core, native_ranges)
     stats[tpv_key] = get_stats(data[tpv_key])
     
+    tar_key = 'T_A_R'
+    data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
+                                my_core, root_set)
+    stats[tar_key] = get_stats(data[tar_key])
+    
     return stats, data
     
 
@@ -132,7 +143,6 @@ def main():
     input_file = args.filename
     verbose = args.verbose
 
-
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
@@ -142,3 +152,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
