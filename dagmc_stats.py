@@ -153,7 +153,7 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     return s_p_v
 
 
-def get_triangle_aspect_ratio(my_core, meshset, dagmc_tags):
+def get_triangle_aspect_ratio(my_core, meshset):
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
     
@@ -170,31 +170,26 @@ def get_triangle_aspect_ratio(my_core, meshset, dagmc_tags):
     """
 
     t_a_r = []
-    if meshset != my_core.get_root_set():
-        if my_core.tag_get_data(dagmc_tags['category'], meshset)[0][0] == 'Volume':
-            surfs = my_core.get_child_meshsets(meshset)
-    else:
-        surfs = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, dagmc_tags['geom_dim'], [2])
-    for surface in surfs:
-        tris = my_core.get_entities_by_type(surface, types.MBTRI)
 
-        for triangle in tris:
-            side_lengths = []
-            s = 0
-            coord_list = []
+    tris = my_core.get_entities_by_type(meshset, types.MBTRI)
 
-            verts = list(my_core.get_adjacencies(triangle, 0))
+    for triangle in tris:
+        side_lengths = []
+        s = 0
+        coord_list = []
 
-            for vert in verts:
-                coords = my_core.get_coords(vert)
-                coord_list.append(coords)
+        verts = list(my_core.get_adjacencies(triangle, 0))
 
-            for side in range(3):    
-                side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
+        for vert in verts:
+            coords = my_core.get_coords(vert)
+            coord_list.append(coords)
 
-            s = .5*(sum(side_lengths))
-            top = np.prod(side_lengths)
-            bottom = 8*np.prod(s-side_lengths)
-            t_a_r.append(top/bottom)
+        for side in range(3):    
+            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
+
+        s = .5*(sum(side_lengths))
+        top = np.prod(side_lengths)
+        bottom = 8*np.prod(s-side_lengths)
+        t_a_r.append(top/bottom)
 
     return t_a_r
