@@ -82,6 +82,7 @@ Surfaces per Volume is the number of surfaces each volume in the mesh contains.
 
 Minimum, Maximum, Median, and Mean (average) are returned for this statistic, as well as a distribution.
 
+There is an option to return the EntityHandle of each Volume and its corrosponding number of Surfaces
 
 ## 9. Triangles per Surface:
 
@@ -91,6 +92,7 @@ A triangle is a mesh entity, and make up larger surfaces within a mesh.
 
 Minimum, Maximum, Median, and Mean (average) are returned for this statistic, as well as a distribution.
 
+There is an option to display the EntityHandle of each Surface and its corrosponding number of Triangles
 
 ## 10. Triangles per Vertex:
 
