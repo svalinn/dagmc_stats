@@ -17,10 +17,9 @@ def print_spv_data(spv_data):
     
     """
     print('Volume                          Surfaces')
-    ids = 1
     for volume, surfaces in spv_data.items():
         print("{} ({})        {}".format(volume, ids, surfaces))
-        ids += 1
+        
 
 def print_tps_data(tps_data):
     """
@@ -33,8 +32,6 @@ def print_tps_data(tps_data):
     
     """
     print('Surface                        Triangles')
-    ids = 1
     for surface, triangles in tps_data.items():
         print("{} ({})        {}".format(surface, ids, triangles))
-        ids += 1
         

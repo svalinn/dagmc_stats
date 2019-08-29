@@ -153,7 +153,7 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     return s_p_v
 
 
-def get_triangle_aspect_ratio(my_core, meshset, dagmc_tags):
+def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
@@ -162,15 +162,14 @@ def get_triangle_aspect_ratio(my_core, meshset, dagmc_tags):
     ------
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
-    dagmc_tags : a dictionary containing relevant tags
-
+    geom_dim : a MOAB Tag that holds the dimension of an entity.
     
     outputs
     -------
     t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
     """
 
-    if my_core.tag_get_data(dagmc_tags['geom_dim'], meshset)[0][0] == 3:
+    if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
         entities = my_core.create_meshset()
         for surface in my_core.get_child_meshsets(meshset):
             my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
@@ -201,4 +200,4 @@ def get_triangle_aspect_ratio(my_core, meshset, dagmc_tags):
         bottom = 8*np.prod(s-side_lengths)
         t_a_r.append(top/bottom)
 
-return t_a_r
+    return t_a_r

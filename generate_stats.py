@@ -24,6 +24,7 @@ def report_stats(stats, data, verbose, display_options):
     inputs
     ------
     stats : a dictionary with information about certain statistics for a model
+    data : a dictionary with the data for each statistical area
     verbose : a setting that determines how wordy (verbose) the output is
     display_options : a dictionary with different settings to determine which statistics
                       get printed
@@ -149,7 +150,7 @@ def collect_statistics(my_core, root_set, tar_meshset):
     
     tar_key = 'T_A_R'
     data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
-                                my_core, tar_meshset, dagmc_tags)
+                                my_core, tar_meshset, dagmc_tags['geom_dim'])
     stats[tar_key] = get_stats(data[tar_key])
     
     return stats, data
