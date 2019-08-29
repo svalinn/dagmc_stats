@@ -240,7 +240,13 @@ Minimum, Maximum, Median, and Mean (average) are returned for this statistic, as
 
 This is a ratio that describes a certain triangle, and can be calculated using the equation:
 
-abc/(8*(s-a)(s-b)(s-c)) where s = .5(a+b+c) and a, b, and c are the side lengths of the triangle. 
+<img src="https://latex.codecogs.com/gif.latex?AR&space;=&space;\frac{abc}{(s-a)(s-b)(s-c)}" title="AR = \frac{(abc)}{(s-a)(s-b)(s-c)} , s = .5(a+b+c)" /></a> 
+
+where
+
+<img src="https://latex.codecogs.com/gif.latex?s&space;=&space;.5(a+b+c)" /></a>
+
+and a, b, and c are the side lengths of the triangle. 
 
 Minimum, Maximum, Median, and Mean (average) are returned for this statistic, as well as a distribution.
 
