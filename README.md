@@ -14,7 +14,140 @@ Dependencies
 
 [Argparse](https://docs.python.org/3/library/argparse.html)
 
+Usage
+=====
 
+`generate_stats.py` can be used to return statistics about certain parts of a mesh file, such as `.h5m` or `.vtk` files. Running `generate_stats.py` will print these statistics when it is run. There are a variety of options that can be implemented in order to individualize the statistics returned.
+
+  `python generate_stats.py [filename]`
+  
+This base option will return all statistics that might be relevant to the file
+  
+  `python generate_stats.py [filename] -v`
+
+The `-v` controls the verbosity of the output
+
+  `python generate_stats.py [filename] --nr --er --spv --tps --tpv --tar`
+  
+Each of the previous options controls whether a different statistical area is printed:
+  
+    `--nr` : Native Ranges
+  
+    `--er` : EntitySet Ranges
+
+    `--spv` : Surfaces per Volume
+
+    `--tps` : Triangles per Surface
+
+    `--tpv` : Triangles per Vertex
+
+    `--tar` : Triangle Aspect Ratio
+  
+The default setting is that all statistics will be printed, so if one or more of these options are specified, the unspecified options will not be printed.
+  
+  `python generate_stats.py [filename] --tar_meshset TAR_MESHSET`
+
+`--tar_meshset` controls what meshset (or EntitySet) is used to compute the statistics for the Triangle Aspect Ratio. Default is the root set for the file. This can be a surface, volume, or the root_set.
+
+  `python generate_stats.py [filename] --spv_data, --tps_data`
+  
+These two options control whether the actual data for Surfaces per Volume and Triangles per Surface is printed, with each entity being paired with its corrosponding value (see example below)
+
+Example Output from `generate_stats.py`
+=======================================
+
+#### `python generate_stats.py 3vols.h5m`
+  
+    Type 0 : 74130
+
+    Type 2 : 148248
+
+    Type 11 : 58
+
+    Nodes : 16
+
+    Curves : 24
+
+    Surfaces : 13
+
+    Volumes : 3
+
+    Triangles per Surface:
+
+    minimum : 2
+
+    maximum : 148224
+
+    median : 2.0
+
+    mean : 11403.692307692309
+
+    Surfaces per Volume:
+
+    minimum : 1
+
+    maximum : 6
+
+    median : 6.0
+
+    mean : 4.333333333333333
+
+    Triangles per Vertex:
+
+    minimum : 4
+
+    maximum : 386
+
+    median : 6.0
+
+    mean : 5.999514366653177
+
+    Triangle Aspect Ratio:
+
+    minimum : 1.205763046406058
+
+    maximum : 61.534011819479794
+
+    median : 1.2691552474001135
+
+    mean : 2.2629211298630483
+
+
+#### `python generate_stats.py 3vols.h5m --spv -v`
+
+    The minimum number of Surfaces per Volume in this model is 1.
+
+    The maximum number of Surfaces per Volume in this model is 6.
+
+    The median number of Surfaces per Volume in this model is 6.0.
+
+    The mean number of Surfaces per Volume in this model is 4.333333333333333.
+
+
+#### `python generate_stats.py 3vols.h5m --spv_data`
+
+    Volume                          Surfaces
+
+    12682136550675316791 (1)        6
+
+    12682136550675316792 (2)        6
+
+    12682136550675316793 (3)        1
+
+
+#### `python generate_stats.py 3vols.h5m --tar --tar_meshset 12682136550675316791`
+
+    Triangle Aspect Ratio:
+
+    minimum : 1.2071067811865475
+
+    maximum : 1.2071067811865477
+
+    median : 1.2071067811865475
+
+    mean : 1.2071067811865477
+
+  
 Explanation of Statistics Returned
 ==================================
 ## 1. Vertices (Type 0):
