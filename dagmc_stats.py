@@ -152,8 +152,8 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
         s_p_v[volumeset] = my_core.get_child_meshsets(volumeset).size()
     return s_p_v
 
-  
-def get_triangle_aspect_ratio(my_core, meshset):
+def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
+
 
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
@@ -162,15 +162,22 @@ def get_triangle_aspect_ratio(my_core, meshset):
     ------
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
+    geom_dim : a MOAB Tag that holds the dimension of an entity.
     
     outputs
     -------
     t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
     """
 
-    t_a_r = []
+    if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
+        entities = my_core.create_meshset()
+        for surface in my_core.get_child_meshsets(meshset):
+            my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
+        tris = my_core.get_entities_by_type(entities, types.MBTRI)
+    else:
+        tris = my_core.get_entities_by_type(meshset, types.MBTRI)
 
-    tris = my_core.get_entities_by_type(meshset, types.MBTRI)
+    t_a_r = []
 
     for triangle in tris:
         side_lengths = []
@@ -187,6 +194,7 @@ def get_triangle_aspect_ratio(my_core, meshset):
             side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
             # The indices of coord_list includes the "-2" because this way each side will be matched up with both
             # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
+      
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*np.prod(s-side_lengths)
