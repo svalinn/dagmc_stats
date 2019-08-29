@@ -152,16 +152,25 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
         s_p_v[volumeset] = my_core.get_child_meshsets(volumeset).size()
     return s_p_v
 
+<<<<<<< HEAD
 
 def get_triangle_aspect_ratio(my_core, meshset):
+=======
+  
+def get_triangle_aspect_ratio(my_core, meshset):
+
+>>>>>>> 6cad4268cdb5abfa0b47634a8c3b184064089118
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
     
     inputs
     ------
     my_core : a MOAB Core instance
+<<<<<<< HEAD
     entityset_ranges : a dictionary with one entry for each entityset type, and the value is the range of entities that corrospond to 
                         each type
+=======
+>>>>>>> 6cad4268cdb5abfa0b47634a8c3b184064089118
     meshset : a meshset containing a certain part of the mesh
     
     outputs
@@ -177,20 +186,20 @@ def get_triangle_aspect_ratio(my_core, meshset):
         side_lengths = []
         s = 0
         coord_list = []
-        
+
         verts = list(my_core.get_adjacencies(triangle, 0))
-        
+
         for vert in verts:
             coords = my_core.get_coords(vert)
             coord_list.append(coords)
-        
+
         for side in range(3):    
-            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2])) 
+            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
             # The indices of coord_list includes the "-2" because this way each side will be matched up with both
             # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*np.prod(s-side_lengths)
         t_a_r.append(top/bottom)
-    
+
     return t_a_r
