@@ -5,12 +5,10 @@ Dependencies
 ============
 
 [PyMOAB](https://press3.mcs.anl.gov/sigma/moab-library/)
-(PyMOAB.Core, PyMOAB.Range)
 
 [NumPy](https://www.numpy.org/)
 
 [MatPlotLib](https://matplotlib.org/)
-(Matplotlib.pyplot)
 
 [Argparse](https://docs.python.org/3/library/argparse.html)
 
