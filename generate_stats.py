@@ -29,7 +29,7 @@ def report_stats(stats, data, verbose, display_options):
     display_options : a dictionary with different settings to determine which statistics
                       get printed
     """
-  
+
     if verbose: #if the user wants verbosity, print with more words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
@@ -87,6 +87,7 @@ def report_stats(stats, data, verbose, display_options):
         for surface, global_id, triangles in data['TPS_Entity']:
             print("{}, ({}):    {}".format(surface, global_id, triangles))
 
+
 def get_stats(data):
     """
     gets the minimum, maximum, median, and mean for a dataset
@@ -135,37 +136,44 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
                                                         dagmc_tags['geom_dim'])
     if display_options['NR']:
         stats['native_ranges'] = native_ranges
+        
     if display_options['ER']:
         stats['entity_ranges'] = entityset_ranges
+        
     if display_options['SPV'] or display_options['SPV_data']:
         spv_key = 'S_P_V'
         data[spv_key] = dagmc_stats.get_surfaces_per_volume(
                                     my_core, entityset_ranges)
         stats[spv_key] = get_stats(data[spv_key].values())
+        
     if display_options['TPS'] or display_options['SPV']:
         tps_key = 'T_P_S'
         data[tps_key] = dagmc_stats.get_triangles_per_surface(
                                     my_core, entityset_ranges)
         stats[tps_key] = get_stats(data[tps_key].values())
+        
     if display_options['TPV']:
         tpv_key = 'T_P_V'
         data[tpv_key] = dagmc_stats.get_triangles_per_vertex(
                                     my_core, native_ranges)
         stats[tpv_key] = get_stats(data[tpv_key])
+        
     if display_options['TAR'] or (tar_meshset != my_core.get_root_set()):
         tar_key = 'T_A_R'
         data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
                                     my_core, tar_meshset, dagmc_tags['geom_dim'])
         stats[tar_key] = get_stats(data[tar_key])
+        
     if display_options['SPV_data']:
         data['SPV_Entity'] = entity_specific_stats.get_spv_data(my_core,
                                                                 entityset_ranges, dagmc_tags['global_id'])
     if display_options['TPS_data']:
         data['TPS_Entity'] = entity_specific_stats.get_tps_data(my_core,
                                                                 entityset_ranges, dagmc_tags['global_id'])
+        
     return stats, data
     
-
+    
 def main():
 
     # allows the user to input the file name into the command line
@@ -203,7 +211,7 @@ def main():
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
-    
+
     tar_meshset = args.tar_meshset
     if tar_meshset == None:
         tar_meshset = root_set
