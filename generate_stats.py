@@ -54,7 +54,7 @@ def report_stats(stats, data, verbose, display_options):
             for statistic, value in stats['T_A_R'].items():
                 print("The {} Triangle Aspect Ratio in this model is {}.".format(
                     statistic, value))
-        if diaplay_options['AT']:
+        if display_options['AT']:
             for statistic, value in stats['A_T'].items():
                 print("The {} Triangle Area in this model is {}.".format(
                     statistic, value))
@@ -81,7 +81,7 @@ def report_stats(stats, data, verbose, display_options):
             print("Triangle Aspect Ratio:")
             for statistic, value in stats['T_A_R'].items():
                 print("{} : {}".format(statistic, value))
-        if diaplay_options['AT']:
+        if display_options['AT']:
             print("Triangle Area:")
             for statistic, value in stats['A_T'].items():
                 print("{} : {}".format(statistic, value))
@@ -172,7 +172,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
                                     my_core, tar_meshset, dagmc_tags['geom_dim'])
         stats[tar_key] = get_stats(data[tar_key])
    
-    if display_options['AT_data']:
+    if display_options['AT']:
         at_key = 'A_T'
         data[at_key] = dagmc_stats.get_area_triangle(my_core, tar_meshset)
         stats[at_key] = get_stats(data[at_key])

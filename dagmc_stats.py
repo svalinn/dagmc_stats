@@ -1,6 +1,8 @@
 # set the path to find the current installation of pyMOAB
 import sys
 import numpy as np
+import math
+
 sys.path.append(
     '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab.rng import Range
