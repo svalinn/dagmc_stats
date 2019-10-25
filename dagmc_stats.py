@@ -205,6 +205,20 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     return t_a_r
 
 def get_area_triangle(my_core, meshset):
+	
+	"""
+    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = a + b + c)
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    meshset : a meshset containing a certain part of the mesh
+    
+    outputs
+    -------
+    area : (list) the triangle areas for all triangles in the meshset
+    """
+    
     area = []
     tris = my_core.get_entities_by_type(meshset, types.MBTRI)
 

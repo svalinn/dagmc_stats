@@ -99,3 +99,11 @@ def test_get_surfaces_per_volume():
     for eh in range(known_volumes.size()):
         surfs = my_core.get_child_meshsets(known_volumes[eh]).size()
         assert(surfs == s_p_v_data[eh])
+
+def test_get_area_triangle():
+	"""
+    Tests part of the get__area_triangle function
+    """
+    a_t_data = dagmc_stats.get_area_triangle(my_core, root_set)
+    known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
+    assert(len(a_t_data) == known_triangles.size())
