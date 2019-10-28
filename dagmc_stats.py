@@ -155,7 +155,6 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
 
 def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
-
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
     
@@ -203,9 +202,8 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
     return t_a_r
 
-def get_area_triangle(my_core, meshset):
-	
-	"""
+def get_area_triangle(my_core, meshset):	
+    """
     Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
     
     inputs
@@ -237,7 +235,7 @@ def get_area_triangle(my_core, meshset):
             # The indices of coord_list includes the "-2" because this way each side will be matched up with both
             # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
 
-		s = sum(side_lengths)/2
+	s = sum(side_lengths)/2
         s = np.sqrt(s * np.prod(s - side_lengths))
         area.append(s)
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2

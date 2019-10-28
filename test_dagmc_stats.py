@@ -101,7 +101,7 @@ def test_get_surfaces_per_volume():
         assert(surfs == s_p_v_data[eh])
 
 def test_get_area_triangle():
-	"""
+    """
     Tests part of the get__area_triangle function
     """
     a_t_data = dagmc_stats.get_area_triangle(my_core, root_set)
