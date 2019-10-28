@@ -222,7 +222,7 @@ def main():
                        'TPS':args.tps, 'TAR':args.tar, 'AT': args.at, 'TPS_data':args.tps_data, 'SPV_data':args.spv_data} 
     if not(True in display_options.values()):
         display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
-			   'TAR':True, 'AT':True, 'TPS_data':False, 'SPV_data':False}
+                           'TAR':True, 'AT':True, 'TPS_data':False, 'SPV_data':False}
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
