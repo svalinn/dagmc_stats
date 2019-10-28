@@ -1,7 +1,6 @@
 # set the path to find the current installation of pyMOAB
 import sys
 import numpy as np
-import math
 
 sys.path.append(
     '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
@@ -207,7 +206,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 def get_area_triangle(my_core, meshset):
 	
 	"""
-    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = a + b + c)
+    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
     
     inputs
     ------
@@ -238,8 +237,9 @@ def get_area_triangle(my_core, meshset):
             # The indices of coord_list includes the "-2" because this way each side will be matched up with both
             # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
 
-        s = math.sqrt(sum(side_lengths) * np.prod(sum(side_lengths) - side_lengths))
+		s = sum(side_lengths)/2
+        s = np.sqrt(s * np.prod(s - side_lengths))
         area.append(s)
-        # sqrt(s(s - a)(s - b)(s - c)), where s = a + b + c
+        # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
 
     return area
