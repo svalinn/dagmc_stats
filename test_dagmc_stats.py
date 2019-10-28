@@ -106,4 +106,4 @@ def test_get_area_triangle():
     """
     a_t_data = dagmc_stats.get_area_triangle(my_core, root_set)
     known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
-    assert(len(a_t_data) == known_triangles.size())	
+    assert(len(a_t_data) == known_triangles.size())
