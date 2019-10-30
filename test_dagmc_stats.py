@@ -7,6 +7,7 @@ from pymoab.rng import Range
 # import the new module that defines each of the functions
 import dagmc_stats
 import nose
+import numpy as np
 
 test_input = "3vols.h5m"
 
@@ -78,16 +79,6 @@ def test_get_triangles_per_surface():
     triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
     assert(sum(t_p_s_data) == triangles)
     
-
-def test_get_triangle_aspect_ratio():
-    """
-    Tests part of the get_triangle_aspect_ratio function
-    """
-    t_a_r_data = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)
-    known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
-    assert(len(t_a_r_data) == known_triangles.size())
-    
-    
 def test_get_surfaces_per_volume():
     """
     Tests different aspects of the get_surfaces_per_volume function
@@ -100,10 +91,32 @@ def test_get_surfaces_per_volume():
         surfs = my_core.get_child_meshsets(known_volumes[eh]).size()
         assert(surfs == s_p_v_data[eh])
 
+def test_get_triangle_aspect_ratio():
+    """
+    Tests part of the get_triangle_aspect_ratio function
+    """
+    test_input2 = "single-cube.h5m"
+    my_core = core.Core()
+    my_core.load_file(test_input2)
+    root_set = my_core.get_root_set()
+
+    assert(abs(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set) - 1000*np.sqrt(2)/400/(10-5*np.sqrt(2))) < 0.01)
+
+    t_a_r_data = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)
+    known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
+    assert(len(t_a_r_data) == known_triangles.size())
+
 def test_get_area_triangle():
     """
     Tests part of the get__area_triangle function
     """
+    test_input2 = "single-cube.h5m"
+    my_core = core.Core()
+    my_core.load_file(test_input2)
+    root_set = my_core.get_root_set()
+
+    assert(get_area_triangle(my_core, root_set) == 5)
+
     a_t_data = dagmc_stats.get_area_triangle(my_core, root_set)
     known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
     assert(len(a_t_data) == known_triangles.size())
