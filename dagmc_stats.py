@@ -179,7 +179,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
     t_a_r = []
 
-    for triangle in tris:
+    for tri in tris:
         side_lengths = []
         s = 0
         coord_list = []
@@ -219,7 +219,7 @@ def get_area_triangle(my_core, meshset):
     area = []
     tris = my_core.get_entities_by_type(meshset, types.MBTRI)
 
-    for triangle in tris:
+    for tri in tris:
         side_lengths = []
         s = 0
         coord_list = []
@@ -235,9 +235,9 @@ def get_area_triangle(my_core, meshset):
             # The indices of coord_list includes the "-2" because this way each side will be matched up with both
             # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
 
+        # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
         s = sum(side_lengths)/2
         s = np.sqrt(s * np.prod(s - side_lengths))
         area.append(s)
-        # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
 
     return area
