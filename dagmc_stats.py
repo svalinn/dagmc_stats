@@ -184,7 +184,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
         s = 0
         coord_list = []
 
-        verts = list(my_core.get_adjacencies(triangle, 0))
+        verts = list(my_core.get_adjacencies(tri, 0))
 
         for vert in verts:
             coords = my_core.get_coords(vert)
@@ -224,7 +224,7 @@ def get_area_triangle(my_core, meshset):
         s = 0
         coord_list = []
 
-        verts = list(my_core.get_adjacencies(triangle, 0))
+        verts = list(my_core.get_adjacencies(tri, 0))
 
         for vert in verts:
             coords = my_core.get_coords(vert)
@@ -241,3 +241,50 @@ def get_area_triangle(my_core, meshset):
         area.append(s)
 
     return area
+
+def get_coarseness(my_core,meshset,entity_ranges):
+    """
+    Gets the coarseness of area
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    meshset : a meshset containing a certain part of the mesh
+
+    outputs
+    -------
+    coarseness : (list) the coarseness for all surfaces in the meshset
+    """
+    t_p_s = {}
+    coarseness = {}
+    c_data = []
+    for surface in entity_ranges['Surfaces']:
+        t_p_s[surface] = my_core.get_entities_by_type(
+                                 surface, types.MBTRI)
+        surf_area = 0
+        for triangle in t_p_s[surface]:
+            side_lengths = []
+            s = 0
+            coord_list = []
+
+            verts = list(my_core.get_adjacencies(triangle, 0))
+
+            for vert in verts:
+                coords = my_core.get_coords(vert)
+                coord_list.append(coords)
+
+            for side in range(3):
+                side_lengths.append(np.linalg.norm(coord_list[side] - coord_list[side - 2]))
+                # The indices of coord_list includes the "-2" because this way each side will be matched up with both
+                # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
+
+            # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
+            s = sum(side_lengths)/2
+            s = np.sqrt(s * np.prod(s - side_lengths))
+            surf_area += s
+        coarseness[surface] = t_p_s[surface].size()/surf_area
+
+    for index in coarseness:
+        c_data.append(coarseness.get(index))
+
+    return c_data
