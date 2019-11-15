@@ -154,9 +154,87 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
     return s_p_v
 
 
+def get_tris(my_core, meshset, geom_dim):
+    """
+    get triangles
+    inputs
+    ------
+    my_core : a MOAB core instance
+    entity_ranges : a dictionary of the entityset ranges of each tag in a file
+    geom_dim : a MOAB Tag that holds the dimension of an entity.
+
+    outputs
+    -------
+    tris : (list)triangles
+    """
+    if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
+        entities = my_core.create_meshset()
+        for surface in my_core.get_child_meshsets(meshset):
+            my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
+        tris = my_core.get_entities_by_type(entities, types.MBTRI)
+    else:
+        tris = my_core.get_entities_by_type(meshset, types.MBTRI)
+    return tris
+
+
+def get_tri_side_length(my_core, tri):
+    """
+    get side lengths of triangle
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    tri : triangle
+
+    outputs
+    -------
+    side_lengths : (list)side lengths of triangle
+    """
+    side_lengths = []
+    s = 0
+    coord_list = []
+
+    verts = list(my_core.get_adjacencies(tri, 0))
+
+    for vert in verts:
+        coords = my_core.get_coords(vert)
+        coord_list.append(coords)
+
+    for side in range(3):
+        side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
+        # The indices of coord_list includes the "-2" because this way each side will be matched up with both
+        # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
+    return side_lengths
+
+
 def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     """
     Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    meshset : a meshset containing a certain part of the mesh
+    geom_dim : a MOAB Tag that holds the dimension of an entity.
+
+    outputs
+    -------
+    t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
+    """
+    tris = get_tris(my_core, meshset, geom_dim)
+    t_a_r = []
+
+    for tri in tris:
+        side_lengths = get_tri_side_length(my_core, tri)
+        s = .5*(sum(side_lengths))
+        top = np.prod(side_lengths)
+        bottom = 8*np.prod(s-side_lengths)
+        t_a_r.append(top/bottom)
+
+    return t_a_r
+
+def get_area_triangle(my_core, meshset, geom_dim):	
+    """
+    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
     
     inputs
     ------
@@ -166,75 +244,14 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     
     outputs
     -------
-    t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
-    """
-
-    if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
-        entities = my_core.create_meshset()
-        for surface in my_core.get_child_meshsets(meshset):
-            my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
-        tris = my_core.get_entities_by_type(entities, types.MBTRI)
-    else:
-        tris = my_core.get_entities_by_type(meshset, types.MBTRI)
-
-    t_a_r = []
-
-    for tri in tris:
-        side_lengths = []
-        s = 0
-        coord_list = []
-
-        verts = list(my_core.get_adjacencies(triangle, 0))
-
-        for vert in verts:
-            coords = my_core.get_coords(vert)
-            coord_list.append(coords)
-
-        for side in range(3):    
-            side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
-            # The indices of coord_list includes the "-2" because this way each side will be matched up with both
-            # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
-      
-        s = .5*(sum(side_lengths))
-        top = np.prod(side_lengths)
-        bottom = 8*np.prod(s-side_lengths)
-        t_a_r.append(top/bottom)
-
-    return t_a_r
-
-def get_area_triangle(my_core, meshset):	
-    """
-    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
-    
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    meshset : a meshset containing a certain part of the mesh
-    
-    outputs
-    -------
     area : (list) the triangle areas for all triangles in the meshset
     """
     
     area = []
-    tris = my_core.get_entities_by_type(meshset, types.MBTRI)
+    tris = get_tris(my_core, meshset, geom_dim)
 
     for tri in tris:
-        side_lengths = []
-        s = 0
-        coord_list = []
-
-        verts = list(my_core.get_adjacencies(triangle, 0))
-
-        for vert in verts:
-            coords = my_core.get_coords(vert)
-            coord_list.append(coords)
-
-        for side in range(3):
-            side_lengths.append(np.linalg.norm(coord_list[side] - coord_list[side - 2]))
-            # The indices of coord_list includes the "-2" because this way each side will be matched up with both
-            # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
-
+        side_lengths = get_tri_side_length(my_core, tri)
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
         s = sum(side_lengths)/2
         s = np.sqrt(s * np.prod(s - side_lengths))
