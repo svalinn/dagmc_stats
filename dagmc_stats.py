@@ -172,6 +172,10 @@ def get_tris(my_core, meshset, geom_dim):
         for surface in my_core.get_child_meshsets(meshset):
             my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
         tris = my_core.get_entities_by_type(entities, types.MBTRI)
+    elif my_core.tag_get_data(geom_dim, meshset)[0][0] == 2:
+        entities = my_core.create_meshset()
+        my_core.add_entities(entities, my_core.get_entities_by_type(meshset, types.MBTRI))
+        tris = my_core.get_entities_by_type(entities, types.MBTRI)
     else:
         tris = my_core.get_entities_by_type(meshset, types.MBTRI)
     return tris
