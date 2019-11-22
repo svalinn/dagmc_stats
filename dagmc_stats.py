@@ -156,7 +156,10 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
 def get_tris(my_core, meshset, geom_dim):
     """
-    get triangles
+    get triangles of a volume if geom_dim is 3
+    get triangles of a surface if geom_dim is 2
+    else get all the triangles
+
     inputs
     ------
     my_core : a MOAB core instance
@@ -165,18 +168,21 @@ def get_tris(my_core, meshset, geom_dim):
 
     outputs
     -------
-    tris : (list)triangles
+    tris : (list)triangle entities
     """
+    # get triangles of a volume
     if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
         entities = my_core.create_meshset()
         for surface in my_core.get_child_meshsets(meshset):
             my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
         tris = my_core.get_entities_by_type(entities, types.MBTRI)
+    # get triangles of a surface
     elif my_core.tag_get_data(geom_dim, meshset)[0][0] == 2:
         entities = my_core.create_meshset()
         my_core.add_entities(entities, my_core.get_entities_by_type(meshset, types.MBTRI))
         tris = my_core.get_entities_by_type(entities, types.MBTRI)
     else:
+    # get all the triangles
         tris = my_core.get_entities_by_type(meshset, types.MBTRI)
     return tris
 
@@ -184,10 +190,11 @@ def get_tris(my_core, meshset, geom_dim):
 def get_tri_side_length(my_core, tri):
     """
     get side lengths of triangle
+
     inputs
     ------
     my_core : a MOAB Core instance
-    tri : triangle
+    tri : triangle entity
 
     outputs
     -------
@@ -236,10 +243,11 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
     return t_a_r
 
+
 def get_area_triangle(my_core, meshset, geom_dim):	
     """
     Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
-    
+
     inputs
     ------
     my_core : a MOAB Core instance
