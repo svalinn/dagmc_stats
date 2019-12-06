@@ -206,6 +206,10 @@ def get_tri_side_length(my_core, tri):
 
     verts = list(my_core.get_adjacencies(tri, 0))
 
+    for vert in verts:
+        coords = my_core.get_coords(vert)
+        coord_list.append(coords)
+
     for side in range(3):
         side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
         # The indices of coord_list includes the "-2" because this way each side will be matched up with both
@@ -259,6 +263,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     tris = get_tris(my_core, meshset, geom_dim)
 
     for tri in tris:
+        side_lengths = get_tri_side_length(my_core, tri)
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
         s = sum(side_lengths)/2
         s = np.sqrt(s * np.prod(s - side_lengths))
