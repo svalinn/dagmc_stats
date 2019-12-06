@@ -25,7 +25,7 @@ def test_get_tags():
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
     assert(len(dagmc_tags) == 3)
 
-    
+
 def test_get_native_ranges():
     """
     Tests different aspects of the get_native_ranges function
@@ -38,7 +38,7 @@ def test_get_native_ranges():
     entityset_range = my_core.get_entities_by_type(root_set, types.MBENTITYSET)
     assert(entityset_range == native_ranges[11])
 
-    
+
 def test_get_entityset_ranges():
     """
     Tests different aspects of the get_entityset_ranges function
@@ -54,7 +54,7 @@ def test_get_entityset_ranges():
     volume_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
     assert(volume_range == entityset_ranges['Volumes'])
 
-    
+
 def test_get_triangles_per_vertex():
     "Tests part of the get_triangles_per_vertex function"
     dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
@@ -62,7 +62,7 @@ def test_get_triangles_per_vertex():
     t_p_v_data = dagmc_stats.get_triangles_per_vertex(my_core, native_ranges)
     vertices = my_core.get_entities_by_type(root_set, types.MBVERTEX).size()
     assert(len(t_p_v_data) == vertices)
-    
+
 
 def test_get_triangles_per_surface():
     """
@@ -78,7 +78,8 @@ def test_get_triangles_per_surface():
     assert(len(t_p_s_data) == surfaces)
     triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
     assert(sum(t_p_s_data) == triangles)
-    
+
+
 def test_get_surfaces_per_volume():
     """
     Tests different aspects of the get_surfaces_per_volume function
@@ -91,6 +92,7 @@ def test_get_surfaces_per_volume():
         surfs = my_core.get_child_meshsets(known_volumes[eh]).size()
         assert(surfs == s_p_v_data[eh])
 
+
 def test_get_triangle_aspect_ratio():
     """
     Tests part of the get_triangle_aspect_ratio function
@@ -100,11 +102,14 @@ def test_get_triangle_aspect_ratio():
     my_core.load_file(test_input2)
     root_set = my_core.get_root_set()
 
-    assert(abs(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set) - 1000*np.sqrt(2)/400/(10-5*np.sqrt(2))) < 0.01)
+    exp = 1000*np.sqrt(2)/400/(10-5*np.sqrt(2))
+    obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)
+    assertAlmostEqual(exp,obs)
+    
+    exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
+    obs = len(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set))
+    assertEqual(exp,obs)
 
-    t_a_r_data = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)
-    known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
-    assert(len(t_a_r_data) == known_triangles.size())
 
 def test_get_area_triangle():
     """
@@ -115,8 +120,10 @@ def test_get_area_triangle():
     my_core.load_file(test_input2)
     root_set = my_core.get_root_set()
 
-    assert(get_area_triangle(my_core, root_set) == 5)
+    exp = 5
+    obs = get_area_triangle(my_core, root_set)
+    assertEqual(exp,obs)
 
-    a_t_data = dagmc_stats.get_area_triangle(my_core, root_set)
-    known_triangles = my_core.get_entities_by_type(root_set, types.MBTRI)
-    assert(len(a_t_data) == known_triangles.size())
+    exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
+    obs = len(dagmc_stats.get_area_triangle(my_core, root_set))
+    assertEqual(exp,obs)

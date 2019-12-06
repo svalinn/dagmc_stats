@@ -182,7 +182,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
    
     if display_options['AT']:
         at_key = 'A_T'
-        data[at_key] = dagmc_stats.get_area_triangle(my_core, tar_meshset)
+        data[at_key] = dagmc_stats.get_area_triangle(my_core, tar_meshset, dagmc_tags['geom_dim'])
         stats[at_key] = get_stats(data[at_key])
 
     if display_options['C']:
