@@ -187,7 +187,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
 
     if display_options['C']:
         c_key = 'C'
-        data[c_key] = dagmc_stats.get_coarseness(my_core,root_set,entityset_ranges)
+        data[c_key] = dagmc_stats.get_coarseness(my_core,root_set,entityset_ranges['Surfaces'])
         stats[c_key] = get_stats(data[c_key])
 
     if display_options['SPV_data']:
