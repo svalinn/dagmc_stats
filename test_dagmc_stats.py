@@ -103,7 +103,7 @@ def test_get_triangle_aspect_ratio():
     root_set = my_core.get_root_set()
 
     exp = 1000*np.sqrt(2)/400/(10-5*np.sqrt(2))
-    obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)
+    obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)[0]
     assertAlmostEqual(exp,obs)
     
     exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
@@ -120,8 +120,8 @@ def test_get_area_triangle():
     my_core.load_file(test_input2)
     root_set = my_core.get_root_set()
 
-    exp = 5
-    obs = get_area_triangle(my_core, root_set)
+    exp = 50
+    obs = get_area_triangle(my_core, root_set)[0]
     assertEqual(exp,obs)
 
     exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
