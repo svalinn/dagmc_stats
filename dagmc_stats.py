@@ -280,6 +280,7 @@ def get_coarseness(my_core,meshset,entity_ranges):
     ------
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
+    entity_ranges : the surface entities
 
     outputs
     -------
@@ -288,11 +289,11 @@ def get_coarseness(my_core,meshset,entity_ranges):
     t_p_s = {}
     coarseness = []
     
-    for surface in entity_ranges['Surfaces']:
+    for surface in entity_ranges:
         t_p_s[surface] = my_core.get_entities_by_type(
                                  surface, types.MBTRI)
         surf_area = 0
-        for tri in t_p_s[surface]:
+        for tri in t_p_s[surface]:	
             side_lengths = get_tri_side_length(my_core, tri)
             # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
             s = sum(side_lengths)/2
