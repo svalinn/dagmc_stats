@@ -99,7 +99,7 @@ def get_triangles_per_vertex(my_core, native_ranges):
     -------
     t_p_v_data : a list of the number of triangles each vertex touches
     """
-    
+
     t_p_v_data = []
     tri_dimension = 2
     for vertex in native_ranges[types.MBVERTEX]:
@@ -170,6 +170,7 @@ def get_tris(my_core, meshset, geom_dim):
     -------
     tris : (list)triangle entities
     """
+
     # get triangles of a volume
     if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
         entities = my_core.create_meshset()
@@ -200,6 +201,7 @@ def get_tri_side_length(my_core, tri):
     -------
     side_lengths : (list)side lengths of triangle
     """
+
     side_lengths = []
     s = 0
     coord_list = []
@@ -231,6 +233,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     -------
     t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
     """
+
     tris = get_tris(my_core, meshset, geom_dim)
     t_a_r = []
 
@@ -258,7 +261,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     -------
     area : (list) the triangle areas for all triangles in the meshset
     """
-    
+
     area = []
     tris = get_tris(my_core, meshset, geom_dim)
 
@@ -272,7 +275,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     return area
 
 
-def get_coarseness(my_core,meshset,entity_ranges):
+def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     """
     Gets the coarseness of area
 
@@ -281,24 +284,19 @@ def get_coarseness(my_core,meshset,entity_ranges):
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
     entity_ranges : the surface entities
+    geom_dim : a MOAB Tag that holds the dimension of an entity.
 
     outputs
     -------
-    coarseness : (list) the coarseness for all surfaces in the meshset
+    coarseness : (list) the coarseness for all surfaces in the meshset.
+                 Coarseness is calculated by dividing surface area of
+                 a surface by number of triangles in that surface.
     """
-    t_p_s = {}
+
     coarseness = []
     
     for surface in entity_ranges:
-        t_p_s[surface] = my_core.get_entities_by_type(
-                                 surface, types.MBTRI)
-        surf_area = 0
-        for tri in t_p_s[surface]:	
-            side_lengths = get_tri_side_length(my_core, tri)
-            # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
-            s = sum(side_lengths)/2
-            s = np.sqrt(s * np.prod(s - side_lengths))
-            surf_area += s
-        coarseness.append(t_p_s[surface].size()/surf_area)
+        surf_area = get_area_triangle(my_core, surface, geom_dim)
+        coarseness.append(len(surf_area)/sum(surf_area))
 
     return coarseness
