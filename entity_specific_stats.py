@@ -40,4 +40,3 @@ def get_tps_data(my_core, entityset_ranges, global_id):
         tps_data.append((surface, my_core.tag_get_data(global_id, surface)[0][0], my_core.get_entities_by_type(
                                                                                     surface, types.MBTRI).size()))
     return tps_data
-        
