@@ -163,12 +163,12 @@ def get_tris(my_core, meshset, geom_dim):
     inputs
     ------
     my_core : a MOAB core instance
-    entity_ranges : a dictionary of the entityset ranges of each tag in a file
+    meshset : the root meshset for the file
     geom_dim : a MOAB Tag that holds the dimension of an entity.
 
     outputs
     -------
-    tris : (list)triangle entities
+    tris : a list of triangle entities
     """
 
     # get triangles of a volume
@@ -199,7 +199,7 @@ def get_tri_side_length(my_core, tri):
 
     outputs
     -------
-    side_lengths : (list)side lengths of triangle
+    side_lengths : a list of side lengths of triangle
     """
 
     side_lengths = []
@@ -231,7 +231,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
     outputs
     -------
-    t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
+    t_a_r : (list) the triangle aspect ratios for triangles in the meshset
     """
 
     tris = get_tris(my_core, meshset, geom_dim)
@@ -259,7 +259,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     
     outputs
     -------
-    area : (list) the triangle areas for all triangles in the meshset
+    area : (list) the triangle areas in the meshset
     """
 
     area = []
@@ -288,7 +288,7 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
 
     outputs
     -------
-    coarseness : (list) the coarseness for all surfaces in the meshset.
+    coarseness : (list) the coarseness for surfaces in the meshset.
                  Coarseness is calculated by dividing surface area of
                  a surface by number of triangles in that surface.
     """
