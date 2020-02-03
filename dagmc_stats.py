@@ -99,7 +99,7 @@ def get_triangles_per_vertex(my_core, native_ranges):
     -------
     t_p_v_data : a list of the number of triangles each vertex touches
     """
-    
+
     t_p_v_data = []
     tri_dimension = 2
     for vertex in native_ranges[types.MBVERTEX]:
@@ -156,20 +156,21 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
 def get_tris(my_core, meshset, geom_dim):
     """
-    get triangles of a volume if geom_dim is 3
-    get triangles of a surface if geom_dim is 2
-    else get all the triangles
+    Get triangles of a volume if geom_dim is 3
+    Get triangles of a surface if geom_dim is 2
+    Else get all the triangles
 
     inputs
     ------
     my_core : a MOAB core instance
-    entity_ranges : a dictionary of the entityset ranges of each tag in a file
+    meshset : the root meshset for the file
     geom_dim : a MOAB Tag that holds the dimension of an entity.
 
     outputs
     -------
-    tris : (list)triangle entities
+    tris : a list of triangle entities
     """
+
     # get triangles of a volume
     if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
         entities = my_core.create_meshset()
@@ -189,7 +190,7 @@ def get_tris(my_core, meshset, geom_dim):
 
 def get_tri_side_length(my_core, tri):
     """
-    get side lengths of triangle
+    Get side lengths of triangle
 
     inputs
     ------
@@ -198,8 +199,9 @@ def get_tri_side_length(my_core, tri):
 
     outputs
     -------
-    side_lengths : (list)side lengths of triangle
+    side_lengths : a list of side lengths of triangle
     """
+
     side_lengths = []
     s = 0
     coord_list = []
@@ -219,7 +221,7 @@ def get_tri_side_length(my_core, tri):
 
 def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     """
-    Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
+    Get the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
 
     inputs
     ------
@@ -229,8 +231,9 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
     outputs
     -------
-    t_a_r : (list) the triangle aspect ratios for all triangles in the meshset
+    t_a_r : (list) the triangle aspect ratios for triangles in the meshset
     """
+
     tris = get_tris(my_core, meshset, geom_dim)
     t_a_r = []
 
@@ -246,7 +249,8 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
 def get_area_triangle(my_core, meshset, geom_dim):	
     """
-    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
+    Get the triangle area (according to the Heron's formula: 
+    sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
     inputs
     ------
@@ -256,9 +260,9 @@ def get_area_triangle(my_core, meshset, geom_dim):
     
     outputs
     -------
-    area : (list) the triangle areas for all triangles in the meshset
+    area : (list) the triangle areas in the meshset
     """
-    
+
     area = []
     tris = get_tris(my_core, meshset, geom_dim)
 
@@ -270,3 +274,29 @@ def get_area_triangle(my_core, meshset, geom_dim):
         area.append(s)
 
     return area
+
+
+def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
+    """
+    Get the coarseness of area. Coarseness is calculated by dividing 
+    surface area of a surface by number of triangles in that surface.
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    meshset : a meshset containing a certain part of the mesh
+    entity_ranges : the surface entities
+    geom_dim : a MOAB Tag that holds the dimension of an entity.
+
+    outputs
+    -------
+    coarseness : (list) the coarseness for surfaces in the meshset.
+    """
+
+    coarseness = []
+    
+    for surface in entity_ranges:
+        surf_area = get_area_triangle(my_core, surface, geom_dim)
+        coarseness.append(len(surf_area)/sum(surf_area))
+
+    return coarseness

@@ -102,7 +102,7 @@ def test_get_triangle_aspect_ratio():
     my_core.load_file(test_input2)
     root_set = my_core.get_root_set()
 
-    exp = 1000*np.sqrt(2)/400/(10-5*np.sqrt(2))
+    exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
     obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)[0]
     assertAlmostEqual(exp,obs)
     

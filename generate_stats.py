@@ -58,6 +58,10 @@ def report_stats(stats, data, verbose, display_options):
             for statistic, value in stats['A_T'].items():
                 print("The {} Triangle Area in this model is {}.".format(
                     statistic, value))
+        if display_options['C']:
+            for statistic, value in stats['C'].items():
+                print("The {} Coarseness in this model is {}.".format(
+                    statistic, value))
     else: #or, print with minimal words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
@@ -84,6 +88,10 @@ def report_stats(stats, data, verbose, display_options):
         if display_options['AT']:
             print("Triangle Area:")
             for statistic, value in stats['A_T'].items():
+                print("{} : {}".format(statistic, value))
+        if display_options['C']:
+            print("Coarseness:")
+            for statistic, value in stats['C'].items():
                 print("{} : {}".format(statistic, value))
 
     if display_options['SPV_data']:
@@ -177,6 +185,12 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
         data[at_key] = dagmc_stats.get_area_triangle(my_core, tar_meshset, dagmc_tags['geom_dim'])
         stats[at_key] = get_stats(data[at_key])
 
+    if display_options['C']:
+        c_key = 'C'
+        data[c_key] = dagmc_stats.get_coarseness(my_core, root_set, 
+                                                                entityset_ranges['Surfaces'], dagmc_tags['geom_dim'])
+        stats[c_key] = get_stats(data[c_key])
+
     if display_options['SPV_data']:
         data['SPV_Entity'] = entity_specific_stats.get_spv_data(my_core,
                                                                 entityset_ranges, dagmc_tags['global_id'])
@@ -210,8 +224,10 @@ def main():
                         help = "display triangle aspect ratio stats")
     parser.add_argument("--tar_meshset", type = np.uint64, help =
                         "meshset for triangle aspect ratio stats")
-    parser.add_argument("--at", action="store_true", 
+    parser.add_argument("--at", action="store_true",
                         help="display triangle area stats")
+    parser.add_argument("--c", action="store_true",
+                        help="display coarseness stats")
     args = parser.parse_args() 
 
     input_file = args.filename
@@ -219,10 +235,11 @@ def main():
     tps_data = args.tps_data
     spv_data = args.spv_data
     display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv,
-                       'TPS':args.tps, 'TAR':args.tar, 'AT': args.at, 'TPS_data':args.tps_data, 'SPV_data':args.spv_data} 
+                       'TPS':args.tps, 'TAR':args.tar, 'AT': args.at, 'C': args.c,
+                       'TPS_data':args.tps_data, 'SPV_data':args.spv_data}
     if not(True in display_options.values()):
         display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
-                           'TAR':True, 'AT':True, 'TPS_data':False, 'SPV_data':False}
+                           'TAR':True, 'AT':True, 'C':True, 'TPS_data':False, 'SPV_data':False}
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets
