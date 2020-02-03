@@ -156,9 +156,9 @@ def get_surfaces_per_volume(my_core, entityset_ranges):
 
 def get_tris(my_core, meshset, geom_dim):
     """
-    get triangles of a volume if geom_dim is 3
-    get triangles of a surface if geom_dim is 2
-    else get all the triangles
+    Get triangles of a volume if geom_dim is 3
+    Get triangles of a surface if geom_dim is 2
+    Else get all the triangles
 
     inputs
     ------
@@ -249,7 +249,8 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
 def get_area_triangle(my_core, meshset, geom_dim):	
     """
-    Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
+    Gets the triangle area (according to the Heron's formula: 
+    sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
     inputs
     ------
