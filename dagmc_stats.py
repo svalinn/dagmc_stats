@@ -190,7 +190,7 @@ def get_tris(my_core, meshset, geom_dim):
 
 def get_tri_side_length(my_core, tri):
     """
-    get side lengths of triangle
+    Get side lengths of triangle
 
     inputs
     ------
@@ -221,7 +221,7 @@ def get_tri_side_length(my_core, tri):
 
 def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     """
-    Gets the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
+    Get the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
 
     inputs
     ------
@@ -249,7 +249,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
 
 def get_area_triangle(my_core, meshset, geom_dim):	
     """
-    Gets the triangle area (according to the Heron's formula: 
+    Get the triangle area (according to the Heron's formula: 
     sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
     inputs
@@ -278,7 +278,8 @@ def get_area_triangle(my_core, meshset, geom_dim):
 
 def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     """
-    Gets the coarseness of area
+    Get the coarseness of area. Coarseness is calculated by dividing 
+    surface area of a surface by number of triangles in that surface.
 
     inputs
     ------
@@ -290,8 +291,6 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     outputs
     -------
     coarseness : (list) the coarseness for surfaces in the meshset.
-                 Coarseness is calculated by dividing surface area of
-                 a surface by number of triangles in that surface.
     """
 
     coarseness = []
