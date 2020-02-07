@@ -301,7 +301,8 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
 
     return coarseness
 
-def get_angles(my_core, tri):
+
+def get_angles(my_core, tri, vert = None):
     """
     Gets the alpha angles or the beta angles of the given meshset
 
@@ -319,16 +320,29 @@ def get_angles(my_core, tri):
     """
     
     angles = []
+    side_lengths = []
+    coord_list = []
+    index = 3
     
-    side_lengths = get_tri_side_length(my_core, tri)
-    #side length: side c, side a, side b
+    if vert != None:
+        verts = my_core.get_adjacencies(tri, 0, op_type=1)
+        for i in range(len(verts)):
+            if verts[i] == vert:
+                index = i
+        for vert in verts:
+            coords = my_core.get_coords(vert)
+            coord_list.append(coords)
+        side_lengths.append(np.linalg.norm(coord_list[index]-coord_list[index-1]))
+        side_lengths.append(np.linalg.norm(coord_list[index]-coord_list[index-2]))
+        side_lengths.append(np.linalg.norm(coord_list[index-1]-coord_list[index-2]))
+    else:
+        side_lengths = get_tri_side_length(my_core, tri)
     
     for side in range(3):
         angles.append(np.arccos((side_lengths[side] * side_lengths[side] 
                             + side_lengths[side - 2] * side_lengths[side - 2] 
                             - side_lengths[side - 1] * side_lengths[side - 1])
                             /(2.0 * side_lengths[side] * side_lengths[side - 2])))
-    #angle A, angle B, angle C
     
     return angles
 
@@ -353,9 +367,9 @@ def gaussian_curvature(my_core, vert):
     alpha_angles = 0
     
     for tri in tris:
-        alpha_angles += get_angles(my_core, tri)[0]
+        alpha_angles += get_angles(my_core, tri, vert = vert)[0]
     
-    gc = np.abs(360 - alpha_angles)
+    gc = np.abs(2*np.pi - alpha_angles)
     
     return gc
 
@@ -391,14 +405,14 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
         gc_j.append(gaussian_curvature(my_core, v))
 
     for tri in adj_tris:
-        angles = get_angles(my_core, tri)
+        angles = get_angles(my_core, tri, vert)
         beta_angles.append(angles[1])
         beta_angles.append(angles[2])
     
-    for i in range (0, len(beta_angles), 2):
+    for i in range (0, len(adj_tris)*2, 2):
         d.append((np.arctan(beta_angles[i]) + np.arctan(beta_angles[(i+3)%len(beta_angles)])) / 2)
-       
-    for i in range(4):
+    
+    for i in range(len(adj_verts)):
         sum_d_gc += d[i] * gc_j[i]
 
     lr = np.abs(gc_i - sum_d_gc / sum(d))
