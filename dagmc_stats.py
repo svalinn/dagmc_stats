@@ -302,28 +302,63 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     return coarseness
 
 
-def get_angles(my_core, tri, vert = None):
+def get_beta_angles(my_core, pair_tris, common_vert):
     """
-    Gets the alpha angles or the beta angles of the given meshset
+    Gets the beta angles of given triangle pairs
 
     inputs
     ------
     my_core : a MOAB Core instance
-    meshset : a meshset containing a certain part of the mesh
-    geom_dim : a MOAB Tag that holds the dimension of an entity.
-    option : 0 for alpha angles and 1 for beta angles
+    pair_tris: triangle pair
+    common_vert: common vertices in the triangle pair
 
     outputs
     -------
-    alpha_angles : (list) the alpha angles
     beta_angles : (list) the beta angles
+    """
+    beta_angles = []
+    vert1 = common_vert[0]
+    vert2 = common_vert[1]
+    side_lengths = []
+    
+    #print(pair_tris[0][0])
+    #print(len(pair_tris))
+    
+    for m in range(2):
+        adj_verts = my_core.get_adjacencies(pair_tris[m], 0, op_type=1)#TODO debug
+        for n in range(3):
+            if adj_verts[n] != vert1 and adj_verts[n] != vert2:
+                other_vert = adj_verts[n]
+                
+        side_lengths.append(np.linalg.norm(my_core.get_coords(vert1)-my_core.get_coords(vert2)))
+        side_lengths.append(np.linalg.norm(my_core.get_coords(vert1)-my_core.get_coords(other_vert)))
+        side_lengths.append(np.linalg.norm(my_core.get_coords(vert2)-my_core.get_coords(other_vert)))
+        beta_angles.append(np.arccos((side_lengths[1] * side_lengths[1]
+                            + side_lengths[2] * side_lengths[2]
+                            - side_lengths[0] * side_lengths[0])
+                            /(2.0 * side_lengths[1] * side_lengths[2])))
+    return beta_angles
+    
+
+def get_angles(my_core, tri, vert = None):
+    """
+    Gets the angles of the given triangle
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    tri: triangle
+    vert: the vertex which generates the triangle by get_adj
+
+    outputs
+    -------
+    angles : (list) the angles
     """
     
     angles = []
     side_lengths = []
     coord_list = []
     index = 3
-    
     if vert != None:
         verts = my_core.get_adjacencies(tri, 0, op_type=1)
         for i in range(len(verts)):
@@ -337,13 +372,11 @@ def get_angles(my_core, tri, vert = None):
         side_lengths.append(np.linalg.norm(coord_list[index-1]-coord_list[index-2]))
     else:
         side_lengths = get_tri_side_length(my_core, tri)
-    
     for side in range(3):
-        angles.append(np.arccos((side_lengths[side] * side_lengths[side] 
-                            + side_lengths[side - 2] * side_lengths[side - 2] 
+        angles.append(np.arccos((side_lengths[side] * side_lengths[side]
+                            + side_lengths[side - 2] * side_lengths[side - 2]
                             - side_lengths[side - 1] * side_lengths[side - 1])
                             /(2.0 * side_lengths[side] * side_lengths[side - 2])))
-    
     return angles
 
 
@@ -354,9 +387,7 @@ def gaussian_curvature(my_core, vert):
     inputs
     ------
     my_core : a MOAB Core instance
-    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
-    geom_dim : a MOAB Tag that holds the dimension of an entity.
-    vertex : vertex
+    vert : vertex
 
     outputs
     -------
@@ -384,7 +415,6 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
     geom_dim : a MOAB Tag that holds the dimension of an entity.
     meshset : a meshset containing a certain part of the mesh
-    vert : vertex
 
     outputs
     -------
@@ -398,19 +428,43 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     
     gc_i = gaussian_curvature(my_core, vert)
     
-    adj_tris = list(my_core.get_adjacencies(vert, 2, op_type=0))
+    adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
+    
+    #pair tris
+    pair_tris = []
+    tri_vert = []
+    for tri in adj_tris:
+        tri_vert.append(my_core.get_adjacencies(tri, 0, op_type=1))
+    for tri1 in tri_vert:
+        for tri2 in tri_vert:
+            count = 0
+            common_vert = []
+            for m in range(3):
+                for n in range(3):
+                    if tri1[m] == tri2[n]:
+                        count += 1
+                        common_vert.append(tri1[m])
+            if count == 2:
+                pair = []
+                pair.append(tri1)
+                pair.append(tri2)
+                exist = False
+                for p in pair_tris:
+                    if (p[0] == tri1 and p[1] == tri2) or (p[1] == tri1 and p[0] == tri2):
+                        exist = True
+                if not exist:
+                    print(pair)#test
+                    pair_tris.append(pair)
+    for p in pair_tris:
+        beta_angles = get_beta_angles(my_core, p, common_vert)
+    #d
+    d.append((np.arctan(beta_angles[0]) + np.arctan(beta_angles[1])) / 2)
+    
+    #gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
     adj_verts.remove(vert)
     for v in adj_verts:
         gc_j.append(gaussian_curvature(my_core, v))
-
-    for tri in adj_tris:
-        angles = get_angles(my_core, tri, vert)
-        beta_angles.append(angles[1])
-        beta_angles.append(angles[2])
-    
-    for i in range (0, len(adj_tris)*2, 2):
-        d.append((np.arctan(beta_angles[i]) + np.arctan(beta_angles[(i+3)%len(beta_angles)])) / 2)
     
     for i in range(len(adj_verts)):
         sum_d_gc += d[i] * gc_j[i]
@@ -427,9 +481,9 @@ def get_roughness(my_core,  meshset, native_ranges, geom_dim):
     inputs
     ------
     my_core : a MOAB Core instance
+    meshset : a meshset containing a certain part of the mesh
     native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
     geom_dim : a MOAB Tag that holds the dimension of an entity.
-    meshset : a meshset containing a certain part of the mesh
 
     outputs
     -------
