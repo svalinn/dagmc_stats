@@ -309,12 +309,9 @@ def get_beta_angles(my_core, pair_tris, common_vert, beta_angles):
     inputs
     ------
     my_core : a MOAB Core instance
-    pair_tris: triangle pair
-    common_vert: common vertices in the triangle pair
-
-    outputs
-    -------
-    beta_angles : (list) the beta angles
+    pair_tris : triangle pair
+    common_vert : common vertices in the triangle pair
+    beta_angles: list that stores the beta angles of given triangle pair
     """
     vert1 = common_vert[0]
     vert2 = common_vert[1]
@@ -346,7 +343,7 @@ def get_angles(my_core, tri, vert = None):
 
     outputs
     -------
-    angles : (list) the angles
+    angles : (list) the angles in the tri
     """
     
     angles = []
@@ -376,7 +373,7 @@ def get_angles(my_core, tri, vert = None):
 
 def gaussian_curvature(my_core, vert):
     """
-    Gets the gaussian curvature
+    Gets gaussian curvature of a vert
 
     inputs
     ------
@@ -385,7 +382,7 @@ def gaussian_curvature(my_core, vert):
 
     outputs
     -------
-    gc : the gaussian curvature
+    gc : the gaussian curvature of the vert
     """ 
     
     tris = my_core.get_adjacencies(vert, 2)
@@ -399,20 +396,18 @@ def gaussian_curvature(my_core, vert):
     return gc
 
 
-def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
+def get_local_roughness(my_core, vert):
     """
-    Gets the gaussian curvature
+    Gets local roughness of a vert
 
     inputs
     ------
     my_core : a MOAB Core instance
-    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
-    geom_dim : a MOAB Tag that holds the dimension of an entity.
-    meshset : a meshset containing a certain part of the mesh
+    vert : vertex
 
     outputs
     -------
-    lr : the laplacian
+    lr : the laplacian value of the vert
     """ 
     
     beta_angles = []
@@ -468,16 +463,14 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     return lr
 
 
-def get_roughness(my_core,  meshset, native_ranges, geom_dim):
+def get_roughness(my_core, native_ranges):
     """
     Gets the roughness of area
 
     inputs
     ------
     my_core : a MOAB Core instance
-    meshset : a meshset containing a certain part of the mesh
     native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
-    geom_dim : a MOAB Tag that holds the dimension of an entity.
 
     outputs
     -------
@@ -486,5 +479,5 @@ def get_roughness(my_core,  meshset, native_ranges, geom_dim):
     
     roughness = []
     for vert in native_ranges[types.MBVERTEX]:
-        roughness.append(get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset))
+        roughness.append(get_local_roughness(my_core, vert))
     return roughness
