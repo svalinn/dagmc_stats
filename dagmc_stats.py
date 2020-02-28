@@ -302,7 +302,7 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     return coarseness
 
 
-def get_beta_angles(my_core, pair_tris, common_vert):
+def get_beta_angles(my_core, pair_tris, common_vert, beta_angles):
     """
     Gets the beta angles of given triangle pairs
 
@@ -316,20 +316,15 @@ def get_beta_angles(my_core, pair_tris, common_vert):
     -------
     beta_angles : (list) the beta angles
     """
-    beta_angles = []
     vert1 = common_vert[0]
     vert2 = common_vert[1]
     side_lengths = []
     
-    #print(pair_tris[0][0])
-    #print(len(pair_tris))
-    
     for m in range(2):
-        adj_verts = my_core.get_adjacencies(pair_tris[m], 0, op_type=1)#TODO debug
+        adj_verts = my_core.get_adjacencies(pair_tris[m], 0, op_type=1)
         for n in range(3):
             if adj_verts[n] != vert1 and adj_verts[n] != vert2:
-                other_vert = adj_verts[n]
-                
+                other_vert = adj_verts[n]        
         side_lengths.append(np.linalg.norm(my_core.get_coords(vert1)-my_core.get_coords(vert2)))
         side_lengths.append(np.linalg.norm(my_core.get_coords(vert1)-my_core.get_coords(other_vert)))
         side_lengths.append(np.linalg.norm(my_core.get_coords(vert2)-my_core.get_coords(other_vert)))
@@ -337,7 +332,6 @@ def get_beta_angles(my_core, pair_tris, common_vert):
                             + side_lengths[2] * side_lengths[2]
                             - side_lengths[0] * side_lengths[0])
                             /(2.0 * side_lengths[1] * side_lengths[2])))
-    return beta_angles
     
 
 def get_angles(my_core, tri, vert = None):
@@ -423,8 +417,8 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     
     beta_angles = []
     d = []
-    sum_d_gc = 0
     gc_j = []
+    sum_d_gc = 0
     
     gc_i = gaussian_curvature(my_core, vert)
     
@@ -433,17 +427,16 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     #pair tris
     pair_tris = []
     tri_vert = []
+    common_vert = []
     for tri in adj_tris:
         tri_vert.append(my_core.get_adjacencies(tri, 0, op_type=1))
     for tri1 in tri_vert:
         for tri2 in tri_vert:
             count = 0
-            common_vert = []
             for m in range(3):
                 for n in range(3):
                     if tri1[m] == tri2[n]:
                         count += 1
-                        common_vert.append(tri1[m])
             if count == 2:
                 pair = []
                 pair.append(tri1)
@@ -453,12 +446,18 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
                     if (p[0] == tri1 and p[1] == tri2) or (p[1] == tri1 and p[0] == tri2):
                         exist = True
                 if not exist:
-                    print(pair)#test
+                    same_vert = []
+                    for m in range(3):
+                        for n in range(3):
+                            if tri1[m] == tri2[n]:
+                                same_vert.append(tri1[m])
+                    common_vert.append(same_vert)
                     pair_tris.append(pair)
-    for p in pair_tris:
-        beta_angles = get_beta_angles(my_core, p, common_vert)
     #d
-    d.append((np.arctan(beta_angles[0]) + np.arctan(beta_angles[1])) / 2)
+    for p in range(len(pair_tris)):
+        get_beta_angles(my_core, pair_tris[p], common_vert[p],beta_angles)
+    for x in range(0,len(beta_angles),2):
+        d.append((1/np.tan(beta_angles[x]) + 1/np.tan(beta_angles[x+1])) / 2)
     
     #gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
@@ -468,9 +467,7 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     
     for i in range(len(adj_verts)):
         sum_d_gc += d[i] * gc_j[i]
-
     lr = np.abs(gc_i - sum_d_gc / sum(d))
-    
     return lr
 
 
