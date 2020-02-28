@@ -247,7 +247,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     return t_a_r
 
 
-def get_area_triangle(my_core, meshset, geom_dim):  
+def get_area_triangle(my_core, meshset, geom_dim):
     """
     Gets the triangle area (according to the equation: sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
