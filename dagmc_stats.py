@@ -433,10 +433,12 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
     for tri1 in tri_vert:
         for tri2 in tri_vert:
             count = 0
+            same_vert = []
             for m in range(3):
                 for n in range(3):
                     if tri1[m] == tri2[n]:
                         count += 1
+                        same_vert.append(tri1[m])
             if count == 2:
                 pair = []
                 pair.append(tri1)
@@ -446,11 +448,6 @@ def get_local_roughness(my_core, native_ranges, vert, geom_dim, meshset):
                     if (p[0] == tri1 and p[1] == tri2) or (p[1] == tri1 and p[0] == tri2):
                         exist = True
                 if not exist:
-                    same_vert = []
-                    for m in range(3):
-                        for n in range(3):
-                            if tri1[m] == tri2[n]:
-                                same_vert.append(tri1[m])
                     common_vert.append(same_vert)
                     pair_tris.append(pair)
     #d
