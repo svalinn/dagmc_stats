@@ -319,7 +319,7 @@ def get_beta_angles(my_core, pair_tris, common_vert, beta_angles):
     
     for tri in pair_tris:
         adj_verts = my_core.get_adjacencies(pair_tris[m], 0, op_type=1)
-        for n in range(3):
+        for vert in adj_verts:
             if adj_verts[n] != vert1 and adj_verts[n] != vert2:
                 other_vert = adj_verts[n]        
         side_lengths.append(np.linalg.norm(my_core.get_coords(vert1)-my_core.get_coords(vert2)))
