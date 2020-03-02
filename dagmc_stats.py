@@ -310,7 +310,7 @@ def get_beta_angles(my_core, pair_tris, common_vert, beta_angles):
     ------
     my_core : a MOAB Core instance
     pair_tris : triangle pair
-    common_vert : common vertices in the triangle pair
+    common_vert : entity handles of common vertices in the triangle pair
     beta_angles: list that stores the beta angles of given triangle pair
     """
     vert1 = common_vert[0]
