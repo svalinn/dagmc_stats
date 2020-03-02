@@ -317,7 +317,7 @@ def get_beta_angles(my_core, pair_tris, common_vert, beta_angles):
     vert2 = common_vert[1]
     side_lengths = []
     
-    for m in range(2):
+    for tri in pair_tris:
         adj_verts = my_core.get_adjacencies(pair_tris[m], 0, op_type=1)
         for n in range(3):
             if adj_verts[n] != vert1 and adj_verts[n] != vert2:
