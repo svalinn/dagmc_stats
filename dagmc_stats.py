@@ -302,34 +302,38 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     return coarseness
 
 
-def get_beta_angles(my_core, pair_tris, common_vert, beta_angles):
+def get_beta_angles(my_core, vert, verts, vert_dic):
     """
     Gets the beta angles of given triangle pairs
 
     inputs
     ------
-    my_core : a MOAB Core instance
-    pair_tris : triangle pair
-    common_vert : entity handles of common vertices in the triangle pair
-    beta_angles: list that stores the beta angles of given triangle pair
+    vert
+    verts
     """
-    side_lengths = []
     
-    for tri in pair_tris:
-        adj_verts = my_core.get_adjacencies(tri, 0, op_type=1)
-        for vert in adj_verts:
-            if vert != common_vert[0] and vert != common_vert[1]:
-                other_vert = vert        
-        side_lengths.append(np.linalg.norm(my_core.get_coords(common_vert[0])
-                                                -my_core.get_coords(common_vert[1])))
-        side_lengths.append(np.linalg.norm(my_core.get_coords(common_vert[0])
-                                                -my_core.get_coords(other_vert)))
-        side_lengths.append(np.linalg.norm(my_core.get_coords(common_vert[1])
-                                                -my_core.get_coords(other_vert)))
-        beta_angles.append(np.arccos((side_lengths[1] * side_lengths[1]
+    verts.remove(vert)
+    side_lengths = []
+    lst1 = sorted([vert, verts[0]])
+    lst2 = sorted([vert, verts[1]])
+    
+    side_lengths.append(np.linalg.norm(my_core.get_coords(verts[0])
+                                                -my_core.get_coords(verts[1])))
+    side_lengths.append(np.linalg.norm(my_core.get_coords(verts[0])
+                                                -my_core.get_coords(vert)))
+    side_lengths.append(np.linalg.norm(my_core.get_coords(verts[1])
+                                                -my_core.get_coords(vert)))
+    beta_angle1 = np.arccos((side_lengths[0] * side_lengths[0]
                             + side_lengths[2] * side_lengths[2]
-                            - side_lengths[0] * side_lengths[0])
-                            /(2.0 * side_lengths[1] * side_lengths[2])))
+                            - side_lengths[1] * side_lengths[1])
+                            /(2.0 * side_lengths[0] * side_lengths[2]))                                            
+    vert_dic.get(str(lst1)).append(1/np.tan(beta_angle1))
+    
+    beta_angle2 = np.arccos((side_lengths[0] * side_lengths[0]
+                            + side_lengths[1] * side_lengths[1]
+                            - side_lengths[2] * side_lengths[2])
+                            /(2.0 * side_lengths[0] * side_lengths[1]))
+    vert_dic.get(str(lst2)).append(1/np.tan(beta_angle2))
     
 
 def get_angles(my_core, tri, vert = None):
@@ -400,50 +404,6 @@ def gaussian_curvature(my_core, vert):
     return gc
 
 
-def get_paired_triangles(my_core, adj_tris, common_vert):
-    """
-    Gets common vertices of adjacent triangles along with paired triangles
-
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    adj_tris : entities of triangles that are adjacent
-    common_vert : common vertices of paired triangles
-
-    outputs
-    -------
-    pair_tris : a list that contains paired triangles in the range of adj_tris
-    """
-    pair_tris = []
-    tri_vert = []
-    for tri in adj_tris:
-        tri_vert.append(my_core.get_adjacencies(tri, 0, op_type=1))
-    # find common vertices
-    for tri_v1 in tri_vert:
-        for tri_v2 in tri_vert:
-            count = 0
-            same_vert = []
-            for m in range(3):
-                for n in range(3):
-                    if tri_v1[m] == tri_v2[n]:
-                        count += 1
-                        same_vert.append(tri_v1[m])
-            # if two triangles are paired
-            if count == 2:
-                pair = []
-                pair.append(tri_v1)
-                pair.append(tri_v2)
-                exist = False
-                # check if this pair of triangles already exists in the list
-                for p in pair_tris:
-                    if (p[0] == tri_v1 and p[1] == tri_v2) or (p[1] == tri_v1 and p[0] == tri_v2):
-                        exist = True
-                if not exist:
-                    common_vert.append(same_vert)
-                    pair_tris.append(pair)
-    return pair_tris
-
-
 def get_local_roughness(my_core, vert):
     """
     Gets local roughness of a vert
@@ -460,23 +420,25 @@ def get_local_roughness(my_core, vert):
     lr : the local roughness value of the vert
     """ 
     
-    beta_angles = []
-    common_vert = []
     d = []
     gc_j = []
     sum_d_gc = 0
     
     gc_i = gaussian_curvature(my_core, vert)
     adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
-    pair_tris = get_paired_triangles(my_core, adj_tris, common_vert)
     
     #d
-    for p in range(len(pair_tris)):
-        get_beta_angles(my_core, pair_tris[p], common_vert[p], beta_angles)
-    for x in range(0,len(beta_angles),2):
-        d.append((1/np.tan(beta_angles[x]) + 1/np.tan(beta_angles[x+1])) / 2)
-    
-    
+    vert_dic = {}
+    for tri in adj_tris:
+        verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        verts.remove(vert)
+        vert_dic[str(sorted([vert, verts[0]]))] = []
+        vert_dic[str(sorted([vert, verts[1]]))] = []
+    for tri in adj_tris:
+        verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        get_beta_angles(my_core, vert, list(verts), vert_dic)
+    for value in vert_dic.values():
+        d.append(sum(value)/2)
     #gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
     adj_verts.remove(vert)
@@ -486,6 +448,9 @@ def get_local_roughness(my_core, vert):
     for i in range(len(adj_verts)):
         sum_d_gc += d[i] * gc_j[i]
     lr = np.abs(gc_i - sum_d_gc / sum(d))
+    print(lr)
+    print(gc_i, sum_d_gc, sum(d))
+    print(" ")
     return lr
 
 
