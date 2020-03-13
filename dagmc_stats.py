@@ -304,12 +304,14 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
 
 def get_beta_angles(my_core, vert, verts, vert_dic):
     """
-    Gets the beta angles of given triangle pairs
+    Gets the beta angles of corresponding vertices pairs
 
     inputs
     ------
-    vert
-    verts
+    my_core : a MOAB Core instance
+    vert : entity handle of the central vertex
+    verts : entity handles of the adjacent vertices of vert
+    vert_dic : a dictionary storing common vertex:beta angles
     """
     
     verts.remove(vert)
@@ -327,13 +329,13 @@ def get_beta_angles(my_core, vert, verts, vert_dic):
                             + side_lengths[2] * side_lengths[2]
                             - side_lengths[1] * side_lengths[1])
                             /(2.0 * side_lengths[0] * side_lengths[2]))                                            
-    vert_dic.get(str(lst1)).append(1/np.tan(beta_angle1))
+    vert_dic.get(str(lst1)).append(beta_angle1)
     
     beta_angle2 = np.arccos((side_lengths[0] * side_lengths[0]
                             + side_lengths[1] * side_lengths[1]
                             - side_lengths[2] * side_lengths[2])
                             /(2.0 * side_lengths[0] * side_lengths[1]))
-    vert_dic.get(str(lst2)).append(1/np.tan(beta_angle2))
+    vert_dic.get(str(lst2)).append(beta_angle2)
     
 
 def get_angles(my_core, tri, vert = None):
@@ -438,7 +440,7 @@ def get_local_roughness(my_core, vert):
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         get_beta_angles(my_core, vert, list(verts), vert_dic)
     for value in vert_dic.values():
-        d.append(sum(value)/2)
+        d.append((1/np.tan(value[0])+1/np.tan(value[1]))/2)
     #gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
     adj_verts.remove(vert)
@@ -448,9 +450,6 @@ def get_local_roughness(my_core, vert):
     for i in range(len(adj_verts)):
         sum_d_gc += d[i] * gc_j[i]
     lr = np.abs(gc_i - sum_d_gc / sum(d))
-    print(lr)
-    print(gc_i, sum_d_gc, sum(d))
-    print(" ")
     return lr
 
 
