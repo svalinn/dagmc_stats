@@ -325,6 +325,7 @@ def get_beta_angles(my_core, vert, verts, vert_dic):
                                                 -my_core.get_coords(vert)))
     side_lengths.append(np.linalg.norm(my_core.get_coords(verts[1])
                                                 -my_core.get_coords(vert)))
+                                                
     beta_angle1 = np.arccos((side_lengths[0] * side_lengths[0]
                             + side_lengths[2] * side_lengths[2]
                             - side_lengths[1] * side_lengths[1])
