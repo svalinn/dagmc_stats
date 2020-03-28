@@ -128,7 +128,8 @@ def test_get_area_triangle():
     exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
     obs = len(dagmc_stats.get_area_triangle(my_core, root_set))
     assertEqual(exp,obs)
-    
+
+
 def test_get_roughness():
     """
     Tests part of the get_roughness function
@@ -141,9 +142,6 @@ def test_get_roughness():
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
     
     exp = 0
-    obs = get_roughness(my_core, native_ranges)[0]
-    assertEqual(True, np.abs(obs-exp) < 0.01)
-
-    exp = my_core.get_entities_by_type(root_set, types.MBVERTEX).size()
-    obs = len(get_roughness(my_core, native_ranges))
-    assertEqual(exp,obs)
+    for i in range (8):
+        obs = get_roughness(my_core, native_ranges)[i]
+        assertAlmostEqual(exp,obs)

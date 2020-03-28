@@ -23,13 +23,13 @@ def get_dagmc_tags(my_core):
 
     dagmc_tags = {}
 
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,   
+    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
 
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  
+    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
 
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  
+    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,
 
                                                      storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
 
@@ -72,7 +72,7 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     
     outputs
     -------
-    entityset_ranges : a dictionary with one entry for each entityset type, 
+    entityset_ranges : a dictionary with one entry for each entityset type,
                        and the value is the range of entities that corrospond to each
                        type
     """
@@ -115,7 +115,7 @@ def get_triangles_per_surface(my_core, entity_ranges):
     inputs
     ------
     my_core : a MOAB Core instance
-    entity_ranges : a dictionary containing ranges for each type in the file 
+    entity_ranges : a dictionary containing ranges for each type in the file
                     (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
     
     outputs
@@ -328,7 +328,7 @@ def get_beta_angles(my_core, vert, verts, vert_dic):
     beta_angle1 = np.arccos((side_lengths[0] * side_lengths[0]
                             + side_lengths[2] * side_lengths[2]
                             - side_lengths[1] * side_lengths[1])
-                            /(2.0 * side_lengths[0] * side_lengths[2]))                                            
+                            /(2.0 * side_lengths[0] * side_lengths[2]))
     vert_dic.get(str(lst1)).append(beta_angle1)
     
     beta_angle2 = np.arccos((side_lengths[0] * side_lengths[0]
@@ -345,7 +345,7 @@ def get_angles(my_core, tri, vert = None):
     inputs
     ------
     my_core : a MOAB Core instance
-    tri: triangle
+    tri: a triangle entity handle
     vert: the vertex which generates the triangle by get_adj
 
     outputs
@@ -357,14 +357,17 @@ def get_angles(my_core, tri, vert = None):
     side_lengths = []
     coord_list = []
     index = 3
+    # if need alpha angle (for calculating roughness)
     if vert != None:
         verts = my_core.get_adjacencies(tri, 0, op_type=1)
+        # find the origin vert
         for i in range(len(verts)):
             if verts[i] == vert:
                 index = i
         for v in verts:
             coords = my_core.get_coords(v)
             coord_list.append(coords)
+        # get side lengths with order
         side_lengths.append(np.linalg.norm(coord_list[index]-coord_list[index-1]))
         side_lengths.append(np.linalg.norm(coord_list[index]-coord_list[index-2]))
         side_lengths.append(np.linalg.norm(coord_list[index-1]-coord_list[index-2]))
@@ -393,7 +396,7 @@ def gaussian_curvature(my_core, vert):
     outputs
     -------
     gc : the gaussian curvature of the vert
-    """ 
+    """
     
     tris = my_core.get_adjacencies(vert, 2)
     sum_alpha_angles = 0
@@ -420,7 +423,7 @@ def get_local_roughness(my_core, vert):
     outputs
     -------
     lr : the local roughness value of the vert
-    """ 
+    """
     
     d = []
     gc_j = []
@@ -429,19 +432,22 @@ def get_local_roughness(my_core, vert):
     gc_i = gaussian_curvature(my_core, vert)
     adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
     
-    #d
+    # get dictionary in the form of verts:beta_angles
     vert_dic = {}
+    # get keys (vert pair)
     for tri in adj_tris:
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         verts.remove(vert)
         vert_dic[str(sorted([vert, verts[0]]))] = []
         vert_dic[str(sorted([vert, verts[1]]))] = []
+    # get values (beta angles)
     for tri in adj_tris:
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         get_beta_angles(my_core, vert, list(verts), vert_dic)
+    # d
     for value in vert_dic.values():
         d.append((1/np.tan(value[0])+1/np.tan(value[1]))/2)
-    #gc
+    # gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
     adj_verts.remove(vert)
     for v in adj_verts:
