@@ -130,15 +130,42 @@ def test_get_area_triangle():
     assertEqual(exp,obs)
 
 
-def test_get_roughness():
+def test_get_angles():
     """
-    Tests part of the get_roughness function
+    Tests part of get_angles function
+    """
+    my_core = core.Core()
+    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
+    vert = native_ranges[types.MBVERTEX][0]
+    tri = my_core.get_adjacencies(vert, 2)[0]
+
+    exp = np.pi
+    obs = sum(get_angles(my_core, tri))
+    assertAlmostEqual(exp,obs)
+
+
+def test_gaussian_curvature():
+    """
+    Tests gaussian_curvature function
     """
     test_input2 = "single-cube.h5m"
     my_core = core.Core()
     my_core.load_file(test_input2)
-    root_set = my_core.get_root_set()
-    entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+    native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
+    
+    exp = 0.5*np.pi
+    for vert in native_ranges[types.MBVERTEX]:
+        obs = dagmc_stats.gaussian_curvature(my_core, vert)
+        assertAlmostEqual(exp,obs)
+
+
+def test_get_roughness():
+    """
+    Tests get_roughness function
+    """
+    test_input2 = "single-cube.h5m"
+    my_core = core.Core()
+    my_core.load_file(test_input2)
     native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
     
     exp = 0
