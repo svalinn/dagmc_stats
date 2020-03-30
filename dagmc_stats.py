@@ -316,8 +316,8 @@ def get_beta_angles(my_core, vert, verts, vert_dic):
     
     verts.remove(vert)
     side_lengths = []
-    lst1 = sorted([vert, verts[0]])
-    lst2 = sorted([vert, verts[1]])
+    lst1 = str(sorted([vert, verts[0]]))
+    lst2 = str(sorted([vert, verts[1]]))
     
     side_lengths.append(np.linalg.norm(my_core.get_coords(verts[0])
                                                 -my_core.get_coords(verts[1])))
@@ -330,13 +330,13 @@ def get_beta_angles(my_core, vert, verts, vert_dic):
                             + side_lengths[2] * side_lengths[2]
                             - side_lengths[1] * side_lengths[1])
                             /(2.0 * side_lengths[0] * side_lengths[2]))
-    vert_dic[lst1].append(beta_angle1)
+    vert_dic.get(str(lst1)).append(beta_angle1)
     
     beta_angle2 = np.arccos((side_lengths[0] * side_lengths[0]
                             + side_lengths[1] * side_lengths[1]
                             - side_lengths[2] * side_lengths[2])
                             /(2.0 * side_lengths[0] * side_lengths[1]))
-    vert_dic[lst2].append(beta_angle2)
+    vert_dic.get(str(lst2)).append(beta_angle2)
     
 
 def get_angles(my_core, tri, vert = None):
