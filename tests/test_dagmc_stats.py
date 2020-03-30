@@ -1,6 +1,4 @@
 # set the path to find the current installation of pyMOAB
-import sys
-sys.path.append('/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab import core, types
 from pymoab.rng import Range
 
@@ -105,7 +103,7 @@ def test_get_triangle_aspect_ratio():
     exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
     obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)[0]
     assertAlmostEqual(exp,obs)
-    
+
     exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
     obs = len(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set))
     assertEqual(exp,obs)
