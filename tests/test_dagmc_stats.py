@@ -24,6 +24,9 @@ class TestDagmcStats(unittest.TestCase):
         """
         dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
         assert(len(dagmc_tags) == 3)
+        assert(dagmc_tags['category'])
+        assert(dagmc_tags['geom_dim'])
+        assert(dagmc_tags['global_id'])
 
 
     def test_get_native_ranges(self):
