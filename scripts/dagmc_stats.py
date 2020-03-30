@@ -2,8 +2,6 @@
 import sys
 import numpy as np
 
-sys.path.append(
-    '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab.rng import Range
 from pymoab import core, types
 
@@ -11,11 +9,11 @@ from pymoab import core, types
 def get_dagmc_tags(my_core):
     """
     Get a dictionary with the important tags for DAGMC geometries
-    
+
     inputs
     ------
     my_core : a MOAB Core instance
-    
+
     outputs
     -------
     dagmc_tags : a dictionary of relevant tags
@@ -23,13 +21,13 @@ def get_dagmc_tags(my_core):
 
     dagmc_tags = {}
 
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,   
+    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
 
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,  
+    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,
                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
 
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,  
+    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,
 
                                                      storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
 
@@ -39,13 +37,13 @@ def get_dagmc_tags(my_core):
 def get_native_ranges(my_core, meshset, entity_types):
     """
     Get a dictionary with MOAB ranges for each of the requested entity types
-    
+
     inputs
     ------
     my_core : a MOAB Core instance
     meshset : a MOAB meshset to query for the ranges of entities
     entity_types : a list of valid pyMOAB types to be retrieved
-    
+
     outputs
     -------
     native_ranges : a dictionary with one entry for each entity type that is a
@@ -63,20 +61,20 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     """
     Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET
     type
-    
+
     inputs
     ------
     my_core : a MOAB Core instance
     meshset : the root meshset for the file
     geom_dim : the tag that specifically denotes the dimesion of the entity
-    
+
     outputs
     -------
-    entityset_ranges : a dictionary with one entry for each entityset type, 
+    entityset_ranges : a dictionary with one entry for each entityset type,
                        and the value is the range of entities that corrospond to each
                        type
     """
-    
+
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     for dimension, set_type in enumerate(entityset_types):
@@ -89,12 +87,12 @@ def get_triangles_per_vertex(my_core, native_ranges):
     """
     This function will return data about the number of triangles on each
     vertex in a file
-    
+
     inputs
     ------
     my_core : a MOAB Core instance
     native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
-    
+
     outputs
     -------
     t_p_v_data : a list of the number of triangles each vertex touches
@@ -105,19 +103,19 @@ def get_triangles_per_vertex(my_core, native_ranges):
     for vertex in native_ranges[types.MBVERTEX]:
         t_p_v_data.append(my_core.get_adjacencies(vertex, tri_dimension).size())
     return np.array(t_p_v_data)
-  
-  
+
+
 def get_triangles_per_surface(my_core, entity_ranges):
     """
     This function will return data about the number of triangles on each
     surface in a file
-    
+
     inputs
     ------
     my_core : a MOAB Core instance
-    entity_ranges : a dictionary containing ranges for each type in the file 
+    entity_ranges : a dictionary containing ranges for each type in the file
                     (VOLUME, SURFACE, CURVE, VERTEX, TRIANGLE, ENTITYSET)
-    
+
     outputs
     -------
     t_p_s : a dictionary containing the entityhandle of the surface,
@@ -131,16 +129,16 @@ def get_triangles_per_surface(my_core, entity_ranges):
                                  surface, types.MBTRI).size()
     return t_p_s
 
-  
+
 def get_surfaces_per_volume(my_core, entityset_ranges):
     """
     Get the number of surfaces that each volume in a given file contains
-    
+
     inputs
     ------
     my_core : a MOAB core instance
     entity_ranges : a dictionary of the entityset ranges of each tag in a file
-    
+
     outputs
     -------
     s_p_v : a dictionary containing the volume entityhandle
@@ -247,9 +245,9 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     return t_a_r
 
 
-def get_area_triangle(my_core, meshset, geom_dim):	
+def get_area_triangle(my_core, meshset, geom_dim):
     """
-    Get the triangle area (according to the Heron's formula: 
+    Get the triangle area (according to the Heron's formula:
     sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
     inputs
@@ -257,7 +255,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
     geom_dim : a MOAB Tag that holds the dimension of an entity.
-    
+
     outputs
     -------
     area : (list) the triangle areas in the meshset
@@ -278,7 +276,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
 
 def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     """
-    Get the coarseness of area. Coarseness is calculated by dividing 
+    Get the coarseness of area. Coarseness is calculated by dividing
     surface area of a surface by number of triangles in that surface.
 
     inputs
@@ -294,7 +292,7 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     """
 
     coarseness = []
-    
+
     for surface in entity_ranges:
         surf_area = get_area_triangle(my_core, surface, geom_dim)
         coarseness.append(len(surf_area)/sum(surf_area))
