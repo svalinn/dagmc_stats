@@ -1,5 +1,4 @@
 # set the path to find the current installation of pyMOAB
-import sys
 import numpy as np
 
 from pymoab.rng import Range
