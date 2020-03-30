@@ -59,7 +59,7 @@ class TestDagmcStats(unittest.TestCase):
 
 
     def test_get_triangles_per_vertex(self):
-        "Tests part of the get_triangles_per_vertex function"
+        """Tests part of the get_triangles_per_vertex function"""
         dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
         native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
         t_p_v_data = dagmc_stats.get_triangles_per_vertex(my_core, native_ranges)
@@ -124,7 +124,7 @@ class TestDagmcStats(unittest.TestCase):
         root_set = my_core.get_root_set()
 
         exp = 50
-        obs = get_area_triangle(my_core, root_set)[0]
+        obs = dagmc_stats.get_area_triangle(my_core, root_set)[0]
         assertEqual(exp,obs)
 
         exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
