@@ -6,8 +6,9 @@ jobs:
             - image: kkiesling/dagmc_stats_depends:0.2
         steps:
             - checkout
-            - run: cd tests
-            - run: pytest
+            - run:
+                working_directory: tests/
+                command: pytest
 
 workflows:
     build:
