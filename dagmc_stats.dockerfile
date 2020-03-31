@@ -54,3 +54,4 @@ RUN cd $HOME \
 ENV PATH $HOME/opt/moab/bin/:$PATH
 ENV LD_LIBRARY_PATH $HOME/opt/moab/lib:$LD_LIBRARY_PATH
 ENV PYTHONPATH $HOME/opt/moab/lib/python2.7/site-packages/:$PYTHONPATH
+ENV PYTHONPATH /root/project/scripts:$PYTHONPATH
