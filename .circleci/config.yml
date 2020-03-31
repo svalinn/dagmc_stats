@@ -3,7 +3,7 @@ version: 2.1
 jobs:
     Test:
         docker:
-            - image: kkiesling/dagmc_stats_depends
+            - image: kkiesling/dagmc_stats_depends:0.1
         steps:
             - checkout
             - run: pytest
