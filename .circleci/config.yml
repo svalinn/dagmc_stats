@@ -6,6 +6,7 @@ jobs:
             - image: kkiesling/pymoab-py3-18.04
         environment:
             PYTHONPATH: /root/project/dagmc_stats:$PYTHONPATH
+            PYTHONPATH: /root/opt/moab/lib/python3.6/site-packages/:$PYTHONPATH
         steps:
             - checkout
             - run:
