@@ -3,7 +3,9 @@ version: 2.1
 jobs:
     Test:
         docker:
-            - image: kkiesling/dagmc_stats_depends:0.2
+            - image: kkiesling/pymoab-py3-18.04
+        environment:
+            PYTHONPATH: /root/project/dagmc_stats:$PYTHONPATH
         steps:
             - checkout
             - run:
