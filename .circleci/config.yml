@@ -3,7 +3,7 @@ version: 2.1
 jobs:
     test_py3:
         docker:
-            - image: kkiesling/pymoab-py3-18.04
+            - image: svalinn/pymoab-py3-18.04
         steps:
             - checkout
             - run:  pip install -e . --user
@@ -12,7 +12,7 @@ jobs:
                 command: pytest
     test_py2:
         docker:
-            - image: kkiesling/pymoab-py2-18.04
+            - image: svalinn/pymoab-py2-18.04
         steps:
             - checkout
             - run:  pip install -e . --user
