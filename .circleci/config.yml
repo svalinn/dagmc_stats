@@ -7,9 +7,10 @@ jobs:
         steps:
             - checkout
             - run:
-                command: pip install -e . --user
                 working_directory: tests/
-                command: pytest
+                command: |
+                    pip install -e .. --user
+                    pytest
 
 workflows:
     build:
