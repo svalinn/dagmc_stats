@@ -6,21 +6,19 @@ jobs:
             - image: kkiesling/pymoab-py3-18.04
         steps:
             - checkout
+            - run:  pip install -e . --user
             - run:
                 working_directory: tests/
-                command: |
-                    pip install -e .. --user
-                    pytest
+                command: pytest
     test_py2:
         docker:
             - image: kkiesling/pymoab-py2-18.04
         steps:
             - checkout
+            - run:  pip install -e . --user
             - run:
                 working_directory: tests/
-                command: |
-                    pip install -e .. --user
-                    pytest
+                command: pytest
 
 workflows:
     build:
