@@ -3,7 +3,7 @@ from pymoab import core, types
 from pymoab.rng import Range
 
 # import the new module that defines each of the functions
-import dagmc_stats
+import dagmc_stats.dagmc_stats as ds
 import numpy as np
 import unittest
 
@@ -22,7 +22,7 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_dagmc_tags function
         """
-        dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
+        dagmc_tags = ds.get_dagmc_tags(my_core)
         assert(len(dagmc_tags) == 3)
         assert(dagmc_tags['category'])
         assert(dagmc_tags['geom_dim'])
@@ -33,7 +33,7 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_native_ranges function
         """
-        native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
+        native_ranges = ds.get_native_ranges(my_core, root_set, entity_types)
         vertex_range = my_core.get_entities_by_type(root_set, types.MBVERTEX)
         assert(vertex_range == native_ranges[0])
         triangle_range = my_core.get_entities_by_type(root_set, types.MBTRI)
@@ -46,8 +46,8 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_entityset_ranges function
         """
-        dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-        entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+        dagmc_tags = ds.get_dagmc_tags(my_core)
+        entityset_ranges = ds.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
         node_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [0])
         assert(node_range == entityset_ranges['Nodes'])
         curve_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [1])
@@ -60,9 +60,9 @@ class TestDagmcStats(unittest.TestCase):
 
     def test_get_triangles_per_vertex(self):
         """Tests part of the get_triangles_per_vertex function"""
-        dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-        native_ranges = dagmc_stats.get_native_ranges(my_core, root_set, entity_types)
-        t_p_v_data = dagmc_stats.get_triangles_per_vertex(my_core, native_ranges)
+        dagmc_tags = ds.get_dagmc_tags(my_core)
+        native_ranges = ds.get_native_ranges(my_core, root_set, entity_types)
+        t_p_v_data = ds.get_triangles_per_vertex(my_core, native_ranges)
         vertices = my_core.get_entities_by_type(root_set, types.MBVERTEX).size()
         assert(len(t_p_v_data) == vertices)
 
@@ -71,10 +71,10 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests some parts of the get_triangles_per_surface function
         """
-        dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-        entityset_ranges = dagmc_stats.get_entityset_ranges(
+        dagmc_tags = ds.get_dagmc_tags(my_core)
+        entityset_ranges = ds.get_entityset_ranges(
             my_core, root_set, dagmc_tags['geom_dim'])
-        t_p_s_data = dagmc_stats.get_triangles_per_surface(
+        t_p_s_data = ds.get_triangles_per_surface(
             my_core, entityset_ranges)
         surfaces = my_core.get_entities_by_type_and_tag(
             root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [2]).size()
@@ -91,9 +91,9 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_surfaces_per_volume function
         """
-        dagmc_tags = dagmc_stats.get_dagmc_tags(my_core)
-        entityset_ranges = dagmc_stats.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
-        s_p_v_data = dagmc_stats.get_surfaces_per_volume(my_core, entityset_ranges)
+        dagmc_tags = ds.get_dagmc_tags(my_core)
+        entityset_ranges = ds.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
+        s_p_v_data = ds.get_surfaces_per_volume(my_core, entityset_ranges)
         known_volumes = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
         for vol_eh in known_volumes:
             surfs = my_core.get_child_meshsets(vol_eh)
