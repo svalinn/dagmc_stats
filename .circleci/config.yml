@@ -1,9 +1,19 @@
 version: 2.1
 
 jobs:
-    Test:
+    test_py3:
         docker:
             - image: kkiesling/pymoab-py3-18.04
+        steps:
+            - checkout
+            - run:
+                working_directory: tests/
+                command: |
+                    pip install -e .. --user
+                    pytest
+    test_py2:
+        docker:
+            - image: kkiesling/pymoab-py2-18.04
         steps:
             - checkout
             - run:
@@ -15,4 +25,5 @@ jobs:
 workflows:
     build:
         jobs:
-            - Test
+            - test_py3
+            - test_py2
