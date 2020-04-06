@@ -1,0 +1,27 @@
+version: 2.1
+
+jobs:
+    test_py3:
+        docker:
+            - image: svalinn/pymoab-py3-18.04
+        steps:
+            - checkout
+            - run:  pip install -e . --user
+            - run:
+                working_directory: tests/
+                command: pytest
+    test_py2:
+        docker:
+            - image: svalinn/pymoab-py2-18.04
+        steps:
+            - checkout
+            - run:  pip install -e . --user
+            - run:
+                working_directory: tests/
+                command: pytest
+
+workflows:
+    build:
+        jobs:
+            - test_py3
+            - test_py2
