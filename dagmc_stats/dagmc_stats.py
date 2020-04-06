@@ -407,7 +407,7 @@ def gaussian_curvature(my_core, vert):
     return gc
 
 
-def get_local_roughness(my_core, vert):
+def get_local_roughness(my_core, vert, adj_tris):
     """
     Gets local roughness of a vert
     Reference: https://www.sciencedirect.com/science/article/pii/S0097849312001203
@@ -417,6 +417,7 @@ def get_local_roughness(my_core, vert):
     ------
     my_core : a MOAB Core instance
     vert : entity handle of vertex being assessed
+    adj_tris : adjacent triangles
 
     outputs
     -------
@@ -428,8 +429,6 @@ def get_local_roughness(my_core, vert):
     sum_d_gc = 0
     
     gc_i = gaussian_curvature(my_core, vert)
-    adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
-    
     # get dictionary in the form of verts:beta_angles
     vert_dic = {}
     # get keys (vert pair)
@@ -442,8 +441,13 @@ def get_local_roughness(my_core, vert):
     for tri in adj_tris:
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         get_beta_angles(my_core, vert, list(verts), vert_dic)
+        
+    if (len(vert_dic)==0):
+        print(vert_dic))
     # d
     for value in vert_dic.values():
+        if (len(value)==0):
+            print(value))
         d.append((1/np.tan(value[0])+1/np.tan(value[1]))/2)
     # gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
@@ -477,5 +481,7 @@ def get_roughness(my_core, native_ranges):
     
     roughness = []
     for vert in native_ranges[types.MBVERTEX]:
-        roughness.append(get_local_roughness(my_core, vert))
+        adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
+        if len(adj_tris) != 0:
+            roughness.append(get_local_roughness(my_core, vert, adj_tris))
     return roughness
