@@ -15,6 +15,12 @@ my_core.load_file(test_input)
 root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
+test_input_2 = "single-cube.h5m"
+my_core_2 = core.Core()
+my_core_2.load_file(test_input_2)
+root_set_2 = my_core.get_root_set()
+native_ranges_2 = ds.get_native_ranges(my_core_2, root_set_2, entity_types)
+
 class TestDagmcStats(unittest.TestCase):
 
 
@@ -140,3 +146,34 @@ class TestDagmcStats(unittest.TestCase):
         #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
         #obs = len(dagmc_stats.get_area_triangle(my_core, root_set))
         #assertEqual(exp,obs)
+
+    def test_get_angles(self):
+        """
+        Tests part of get_angles function
+        """
+        vert = native_ranges_2[0][0]
+        tri = my_core_2.get_adjacencies(vert, 2)[0]
+
+        exp = np.pi
+        obs = sum(ds.get_angles(my_core_2, tri))
+        self.assertAlmostEqual(exp,obs)
+
+
+    def test_gaussian_curvature(self):
+        """
+        Tests gaussian_curvature function
+        """
+        exp = 0.5*np.pi
+        for vert in native_ranges_2[types.MBVERTEX]:
+            obs = ds.gaussian_curvature(my_core_2, vert)
+            self.assertAlmostEqual(exp,obs)
+
+
+    def test_get_roughness(self):
+        """
+        Tests get_roughness function
+        """
+        exp = 0
+        for i in range (8):
+            obs = ds.get_roughness(my_core_2, native_ranges_2)[i]
+            self.assertAlmostEqual(exp,obs)
