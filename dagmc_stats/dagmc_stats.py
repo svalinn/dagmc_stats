@@ -442,12 +442,8 @@ def get_local_roughness(my_core, vert, adj_tris):
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         get_beta_angles(my_core, vert, list(verts), vert_dic)
         
-    if (len(vert_dic)==0):
-        print(vert_dic))
     # d
-    for value in vert_dic.values():
-        if (len(value)==0):
-            print(value))
+    for value in vert_dic.values()
         d.append((1/np.tan(value[0])+1/np.tan(value[1]))/2)
     # gc
     adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
