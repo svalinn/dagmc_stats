@@ -7,7 +7,9 @@ jobs:
         steps:
             - checkout
             - run: pip install . --user
-            - run: python -c "import dagmc_stats"
+            - run:
+                working_directory: /home/root/
+                command: python -c "import dagmc_stats"
 
     install_py2:
         docker:
@@ -15,7 +17,9 @@ jobs:
         steps:
             - checkout
             - run: pip install . --user
-            - run: python -c "import dagmc_stats"
+            - run:
+                working_directory: /home/root/
+                command: python -c "import dagmc_stats"
 
     test_py3:
         docker:
