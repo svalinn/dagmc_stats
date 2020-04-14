@@ -1,27 +1,45 @@
 version: 2.1
 
 jobs:
+    install_py3:
+        docker:
+            - image: svalinn/pymoab-py3-18.04
+        steps:
+            - checkout
+            - run: pip install . --user
+            - run:
+                working_directory: /home/root/
+                command: python -c "import dagmc_stats"
+
+    install_py2:
+        docker:
+            - image: svalinn/pymoab-py2-18.04
+        steps:
+            - checkout
+            - run: pip install . --user
+            - run:
+                working_directory: /home/root/
+                command: python -c "import dagmc_stats"
+
     test_py3:
         docker:
             - image: svalinn/pymoab-py3-18.04
         steps:
             - checkout
-            - run:  pip install -e . --user
             - run:
-                working_directory: tests/
                 command: pytest
     test_py2:
         docker:
             - image: svalinn/pymoab-py2-18.04
         steps:
             - checkout
-            - run:  pip install -e . --user
             - run:
-                working_directory: tests/
                 command: pytest
 
 workflows:
     build:
         jobs:
+            - install_py3
+            - install_py2
             - test_py3
             - test_py2

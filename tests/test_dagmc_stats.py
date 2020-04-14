@@ -7,7 +7,7 @@ import dagmc_stats.dagmc_stats as ds
 import numpy as np
 import unittest
 
-test_input = "3vols.h5m"
+test_input = "tests/3vols.h5m"
 
 my_core = core.Core()
 my_core.load_file(test_input)
@@ -104,7 +104,7 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests part of the get_triangle_aspect_ratio function
         """
-        test_input2 = "single-cube.h5m"
+        test_input2 = "tests/single-cube.h5m"
         my_core = core.Core()
         my_core.load_file(test_input2)
         root_set = my_core.get_root_set()
@@ -125,7 +125,7 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests part of the get__area_triangle function
         """
-        test_input2 = "single-cube.h5m"
+        test_input2 = "tests/single-cube.h5m"
         my_core = core.Core()
         my_core.load_file(test_input2)
         root_set = my_core.get_root_set()
