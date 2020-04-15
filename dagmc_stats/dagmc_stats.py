@@ -483,5 +483,5 @@ def get_roughness(my_core, native_ranges):
         if len(adj_tris) != 0:
             r = get_local_roughness(my_core, vert, adj_tris)
             if r != None:
-                roughness.append()
+                roughness.append(r)
     return roughness
