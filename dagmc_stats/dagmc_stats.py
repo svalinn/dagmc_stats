@@ -199,7 +199,7 @@ def get_tri_side_length(my_core, tri):
     side_lengths : a list of side lengths of triangle
     """
 
-    side_lengths = []
+    side_lengths = {}
     s = 0
     coord_list = []
 
@@ -210,7 +210,7 @@ def get_tri_side_length(my_core, tri):
         coord_list.append(coords)
 
     for side in range(3):
-        side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
+        side_lengths.update({verts[side-1]:np.linalg.norm(coord_list[side]-coord_list[side-2])})
         # The indices of coord_list includes the "-2" because this way each side will be matched up with both
         # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
     return side_lengths
@@ -235,7 +235,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     t_a_r = []
 
     for tri in tris:
-        side_lengths = get_tri_side_length(my_core, tri)
+        side_lengths = get_tri_side_length(my_core, tri).values()
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*np.prod(s-side_lengths)
@@ -264,7 +264,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     tris = get_tris(my_core, meshset, geom_dim)
 
     for tri in tris:
-        side_lengths = get_tri_side_length(my_core, tri)
+        side_lengths = get_tri_side_length(my_core, tri).values()
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
         s = sum(side_lengths)/2
         s = np.sqrt(s * np.prod(s - side_lengths))
@@ -299,189 +299,66 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
     return coarseness
 
 
-def get_beta_angles(my_core, vert, verts, vert_dic):
-    """
-    Gets the beta angles of corresponding vertices pairs
-
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    vert : entity handle of the central vertex
-    verts : entity handles of the adjacent vertices of vert
-    vert_dic : a dictionary storing common vertex:beta angles
-    """
-    
-    verts.remove(vert)
-    side_lengths = []
-    lst1 = str(sorted([vert, verts[0]]))
-    lst2 = str(sorted([vert, verts[1]]))
-    
-    side_lengths.append(np.linalg.norm(my_core.get_coords(verts[0])
-                                                -my_core.get_coords(verts[1])))
-    side_lengths.append(np.linalg.norm(my_core.get_coords(verts[0])
-                                                -my_core.get_coords(vert)))
-    side_lengths.append(np.linalg.norm(my_core.get_coords(verts[1])
-                                                -my_core.get_coords(vert)))
-                                                
-    beta_angle1 = np.arccos((side_lengths[0] * side_lengths[0]
-                            + side_lengths[2] * side_lengths[2]
-                            - side_lengths[1] * side_lengths[1])
-                            /(2.0 * side_lengths[0] * side_lengths[2]))
-    vert_dic.get(str(lst1)).append(beta_angle1)
-    
-    beta_angle2 = np.arccos((side_lengths[0] * side_lengths[0]
-                            + side_lengths[1] * side_lengths[1]
-                            - side_lengths[2] * side_lengths[2])
-                            /(2.0 * side_lengths[0] * side_lengths[1]))
-    vert_dic.get(str(lst2)).append(beta_angle2)
-    
-
-def get_angles(my_core, tri, vert = None):
-    """
-    Gets the angles of the given triangle
-
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    tri: a triangle entity handle
-    vert: the vertex which generates the triangle by get_adj
-
-    outputs
-    -------
-    angles : (list) the angles in the tri
-    """
-    
-    angles = []
-    side_lengths = []
-    coord_list = []
-    index = 3
-    # if need alpha angle (for calculating roughness)
-    if vert != None:
-        verts = my_core.get_adjacencies(tri, 0, op_type=1)
-        # find the origin vert
-        for i in range(len(verts)):
-            if verts[i] == vert:
-                index = i
-        for v in verts:
-            coords = my_core.get_coords(v)
-            coord_list.append(coords)
-        # get side lengths with order
-        side_lengths.append(np.linalg.norm(coord_list[index]-coord_list[index-1]))
-        side_lengths.append(np.linalg.norm(coord_list[index]-coord_list[index-2]))
-        side_lengths.append(np.linalg.norm(coord_list[index-1]-coord_list[index-2]))
-    else:
-        side_lengths = get_tri_side_length(my_core, tri)
-    
-    for side in range(3):
-        angles.append(np.arccos((side_lengths[side] * side_lengths[side]
-                            + side_lengths[side - 2] * side_lengths[side - 2]
-                            - side_lengths[side - 1] * side_lengths[side - 1])
-                            /(2.0 * side_lengths[side] * side_lengths[side - 2])))
-    return angles
+def get_tri_vert_data(my_core, native_ranges):
+    all_tris = native_ranges[types.MBTRI]#
+    for tri in all_tris:
+        side_lengths = get_tri_side_length(my_core, tri)   # {vert : side_length}
+        side_length_sum_sq = sum(map(lambda i : i * i, side_lengths.values()))
+        side_length_prod = np.prod(side_lengths.values())
+        
+        
+        tri_vert_struct = np.dtype({'names':['tri_vert','angle','side_length'], 'formats':[('i8','i8'),'f8','f8']})
+        tri_vert_data = np.zeros(0,dtype=tri_vert_struct)
+        
+        
+        verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        for vert_i in verts:
+            side_i = side_lengths[vert_i]
+            d_i = np.arccos((side_length_sum_sq - 2 * (side_i**2)) * side_i/(2 * side_length_prod))
+            # need correct structured array syntax:
+            # TODO
+            bar = np.array({'tri_vert':(tri,vert_i),'angle':d_i,'side':side_i},dtype=tri_vert_struct)
+            tri_vert_data = np.append(tri_vert_data,bar)
+    return tri_vert_data
 
 
-def gaussian_curvature(my_core, vert):
-    """
-    Gets gaussian curvature of a vert
-    Reference: https://www.sciencedirect.com/science/article/pii/S0097849312001203
-               Formula 1
+def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
+    gc_all = {}
+    for vert_i in all_verts:
+        gc_all[vert_i] = gaussian_curvature(vert_i, tri_vert_data)
+    return gc_all
 
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    vert : entity handle of vertex
 
-    outputs
-    -------
-    gc : the gaussian curvature of the vert
-    """
-    
-    tris = my_core.get_adjacencies(vert, 2)
-    sum_alpha_angles = 0
-    
-    for tri in tris:
-        sum_alpha_angles += get_angles(my_core, tri, vert = vert)[0]
-    
+def gaussian_curvature(vert_i, tri_vert_data):
+    vert_entries = tri_vert_data[tri_vert_data['vert' == vert_i]]#TODO
+    sum_alpha_angles = sum(vert_entries['angle'])
     gc = np.abs(2*np.pi - sum_alpha_angles)
-    
     return gc
 
 
-def get_local_roughness(my_core, vert, adj_tris):
-    """
-    Gets local roughness of a vert
-    Reference: https://www.sciencedirect.com/science/article/pii/S0097849312001203
-               Formula 2
-
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    vert : entity handle of vertex being assessed
-    adj_tris : adjacent triangles
-
-    outputs
-    -------
-    lr : the local roughness value of the vert
-    """
-    
-    d = []
-    gc_j = []
-    sum_d_gc = 0
-    
-    gc_i = gaussian_curvature(my_core, vert)
-    # get dictionary in the form of verts:beta_angles
-    vert_dic = {}
-    # get keys (vert pair)
-    for tri in adj_tris:
-        verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
-        verts.remove(vert)
-        vert_dic[str(sorted([vert, verts[0]]))] = []
-        vert_dic[str(sorted([vert, verts[1]]))] = []
-    # get values (beta angles)
-    for tri in adj_tris:
-        verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
-        get_beta_angles(my_core, vert, list(verts), vert_dic)
-        
-    # d
-    for value in vert_dic.values():
-        if len(value) < 2:
-            return
-        d.append((1/np.tan(value[0])+1/np.tan(value[1]))/2)
-    # gc
-    adj_verts = list(my_core.get_adjacencies(adj_tris, 0, op_type=1))
-    adj_verts.remove(vert)
-    for v in adj_verts:
-        gc_j.append(gaussian_curvature(my_core, v))
-    
-    for i in range(len(adj_verts)):
-        sum_d_gc += d[i] * gc_j[i]
-    lr = np.abs(gc_i - sum_d_gc / sum(d))
-    return lr
+def get_lri(vert_i, gc_all, tri_vert_data):
+    DIJgc_sum = 0
+    DII_sum = 0
+    for vert_j in vert_j_list:
+        # setting for only triangles that are adjacent to both of these
+        tri_i_list = my_core.get_adjacencies(vert_i, 2, op_type=0)
+        tri_j_list = my_core.get_adjacencies(vert_j, 2, op_type=0)
+        tri_ij_list = set(tri_i_list) & set(tri_j_list)
+        # get entries that have verts==other_verts and tris==tri_ij_list
+        four_vert = tri_vert_data[tri_vert_data['tri'] in tri_ij_list]
+        other_angles = four_vert[four_vert['vert'] not in [vert_i, vert_j]]['angle']
+        Dij = 0.5*(1/tan(other_angles[0]) + 1/tan(other_angles[1]))
+        DIJgc_sum += ( Dij * gc_all[vert_j] )
+        Dii_sum += Dij
+    Lri = abs(gc_all[vert_i] - DIJgc_sum/Dii_sum )
+    return Lri
 
 
 def get_roughness(my_core, native_ranges):
-    """
-    Gets the roughness of area
-    Reference: https://www.sciencedirect.com/science/article/pii/S0097849312001203
-               Formula 3
-    
-
-    inputs
-    ------
-    my_core : a MOAB Core instance
-    native_ranges : a dictionary containing ranges for each native type in the file
-                    (VERTEX, TRIANGLE, ENTITYSET)
-
-    outputs
-    -------
-    roughness: (list) the roughness for all surfaces in the meshset.
-    """
-    
+    all_verts = native_ranges[types.MBVERTEX]
+    tri_vert_data = get_tri_vert_data(my_core, native_ranges)
+    gc_all = get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data)
     roughness = []
-    for vert in native_ranges[types.MBVERTEX]:
-        adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
-        if len(adj_tris) != 0:
-            r = get_local_roughness(my_core, vert, adj_tris)
-            if r != None:
-                roughness.append(r)
+    for vert_i in all_verts:
+        roughness.append(get_lri(vert_i, gc_all, tri_vert_data))
     return roughness
