@@ -300,26 +300,26 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
 
 
 def get_tri_vert_data(my_core, native_ranges):
-    all_tris = native_ranges[types.MBTRI]#
+    all_tris = native_ranges[types.MBTRI]
+    all_verts = []
+    
+    tri_vert_struct = np.dtype({'names':['tri','vert','angle','side_length'], 'formats':[np.uint64, np.uint64, np.float64, np.float64]})
+    tri_vert_data = np.zeros(0,dtype=tri_vert_struct)
+    
+    
     for tri in all_tris:
         side_lengths = get_tri_side_length(my_core, tri)   # {vert : side_length}
         side_length_sum_sq = sum(map(lambda i : i * i, side_lengths.values()))
         side_length_prod = np.prod(side_lengths.values())
-        
-        
-        tri_vert_struct = np.dtype({'names':['tri_vert','angle','side_length'], 'formats':[('i8','i8'),'f8','f8']})
-        tri_vert_data = np.zeros(0,dtype=tri_vert_struct)
-        
-        
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         for vert_i in verts:
+            if vert_i not in all_verts:
+                all_verts.append(vert_i)
             side_i = side_lengths[vert_i]
             d_i = np.arccos((side_length_sum_sq - 2 * (side_i**2)) * side_i/(2 * side_length_prod))
-            # need correct structured array syntax:
-            # TODO
-            bar = np.array({'tri_vert':(tri,vert_i),'angle':d_i,'side':side_i},dtype=tri_vert_struct)
+            bar = np.array((tri,vert_i,d_i,side_i),dtype=[('tri',np.uint64), ('vert',np.uint64), ('angle',np.float64), ('side_length',np.float64)])
             tri_vert_data = np.append(tri_vert_data,bar)
-    return tri_vert_data
+    return tri_vert_data, all_verts
 
 
 def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
@@ -330,24 +330,34 @@ def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
 
 
 def gaussian_curvature(vert_i, tri_vert_data):
-    vert_entries = tri_vert_data[tri_vert_data['vert' == vert_i]]#TODO
+    vert_entries = tri_vert_data[tri_vert_data['vert']==vert_i]
     sum_alpha_angles = sum(vert_entries['angle'])
     gc = np.abs(2*np.pi - sum_alpha_angles)
     return gc
 
 
-def get_lri(vert_i, gc_all, tri_vert_data):
+def get_lri(vert_i, gc_all, tri_vert_data,my_core):
     DIJgc_sum = 0
-    DII_sum = 0
+    Dii_sum = 0
+    vert_j_list = list(my_core.get_adjacencies(my_core.get_adjacencies(vert_i,2,op_type=0),0,op_type=1))
+    vert_j_list.remove(vert_i)
     for vert_j in vert_j_list:
         # setting for only triangles that are adjacent to both of these
         tri_i_list = my_core.get_adjacencies(vert_i, 2, op_type=0)
         tri_j_list = my_core.get_adjacencies(vert_j, 2, op_type=0)
-        tri_ij_list = set(tri_i_list) & set(tri_j_list)
+        tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
         # get entries that have verts==other_verts and tris==tri_ij_list
-        four_vert = tri_vert_data[tri_vert_data['tri'] in tri_ij_list]
-        other_angles = four_vert[four_vert['vert'] not in [vert_i, vert_j]]['angle']
-        Dij = 0.5*(1/tan(other_angles[0]) + 1/tan(other_angles[1]))
+        four_vert_0 = tri_vert_data[tri_vert_data['tri'] == tri_ij_list[0]]
+        four_vert_1 = tri_vert_data[tri_vert_data['tri'] == tri_ij_list[1]]
+        four_vert = np.concatenate([four_vert_1,four_vert_0]) #1,1,2,2,3,8
+        
+        other_angles = []
+        for entry in four_vert:
+            matched = four_vert[four_vert['vert'] == entry['vert']]
+            if len(matched) < 2:
+               # entry is one of the other angles
+                other_angles.append(entry['angle'])
+        Dij = 0.5*(1/np.tan(other_angles[0]) + 1/np.tan(other_angles[1]))
         DIJgc_sum += ( Dij * gc_all[vert_j] )
         Dii_sum += Dij
     Lri = abs(gc_all[vert_i] - DIJgc_sum/Dii_sum )
@@ -355,10 +365,9 @@ def get_lri(vert_i, gc_all, tri_vert_data):
 
 
 def get_roughness(my_core, native_ranges):
-    all_verts = native_ranges[types.MBVERTEX]
-    tri_vert_data = get_tri_vert_data(my_core, native_ranges)
+    tri_vert_data, all_verts = get_tri_vert_data(my_core, native_ranges)
     gc_all = get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data)
     roughness = []
     for vert_i in all_verts:
-        roughness.append(get_lri(vert_i, gc_all, tri_vert_data))
+        roughness.append(get_lri(vert_i, gc_all, tri_vert_data,my_core))
     return roughness
