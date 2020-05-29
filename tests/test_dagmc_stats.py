@@ -151,32 +151,49 @@ class TestDagmcStats(unittest.TestCase):
         """
         Test part of the get_tri_vert_data function
         """
+        tri_vert_data, all_verts = ds.get_tri_vert_data(my_core_2, native_ranges_2)
+        
         exp = 2*6*3
-        obs = len(ds.get_tri_vert_data(my_core_2, native_ranges_2)[0])
+        obs = len(tri_vert_data)
         self.assertEqual(exp,obs)
         
         exp = 8
-        obs = len(ds.get_tri_vert_data(my_core_2, native_ranges_2)[1])
+        obs = len(all_verts)
         self.assertEqual(exp,obs)
         
-        #add more tests
-        #specific value
+        for i in range(8):
+            obs = len(tri_vert_data[tri_vert_data['vert'] == all_verts[i]])
+            self.assertTrue(obs == 4 or obs == 5)
         
         
     def test_get_gaussian_curvature(self):
         """
         Test part of the get_gaussian_curvature function
         """
-        exp = 8
         tri_vert_data, all_verts = ds.get_tri_vert_data(my_core_2, native_ranges_2)
-        obs = len(ds.get_gaussian_curvature(my_core_2, native_ranges_2,all_verts, tri_vert_data))
+        gc_all = ds.get_gaussian_curvature(my_core_2, native_ranges_2,all_verts, tri_vert_data)
+        
+        exp = 8
+        obs = len(gc_all)
         self.assertEqual(exp,obs)
+        
+        print(gc_all)
+        exp = 0.5*np.pi
+        for i in range(8):
+            obs = gc_all[all_verts[i]]
+            self.assertAlmostEqual(exp,obs)
 
     
     def test_get_roughness(self):
         """
         Test part of the get_roughness function
         """
+        roughness = ds.get_roughness(my_core_2, native_ranges_2)
         exp = 8
-        obs = len(ds.get_roughness(my_core_2, native_ranges_2))
+        obs = len(roughness)
         self.assertEqual(exp,obs)
+        
+        exp = 0
+        for i in range(8):
+            obs = roughness[i]
+            self.assertAlmostEqual(exp,obs)
