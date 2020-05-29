@@ -300,12 +300,26 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
 
 
 def get_tri_vert_data(my_core, native_ranges):
+    """
+    Build a numpy strcutured array to store triangle and vertex related data in the form of
+    triangle entity handle | vertex entity handle | angle connected to the vertex | side length of side opposite to vertex in the triangle
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
+    
+    outputs
+    -------
+    tri_vert_data : a numpy structured array that stores the triangle and vertex related data
+    all_verts : (list) all the vertices that are connected to triangle in the geometry
+    """
+    
     all_tris = native_ranges[types.MBTRI]
     all_verts = []
     
     tri_vert_struct = np.dtype({'names':['tri','vert','angle','side_length'], 'formats':[np.uint64, np.uint64, np.float64, np.float64]})
     tri_vert_data = np.zeros(0,dtype=tri_vert_struct)
-    
     
     for tri in all_tris:
         side_lengths = get_tri_side_length(my_core, tri)   # {vert : side_length}
@@ -323,6 +337,21 @@ def get_tri_vert_data(my_core, native_ranges):
 
 
 def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
+    """
+    Get gaussian curvature values of all non-isolated vertices
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
+    all_verts : all the vertices that are connected to triangle in the geometry
+    tri_vert_data : numpy structured array that stores the triangle and vertex related data
+    
+    outputs
+    -------
+    gc_all : dictionary in the form of vertex : gaussian curvature value of the vertex
+    """
+    
     gc_all = {}
     for vert_i in all_verts:
         gc_all[vert_i] = gaussian_curvature(vert_i, tri_vert_data)
@@ -330,34 +359,71 @@ def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
 
 
 def gaussian_curvature(vert_i, tri_vert_data):
+    """
+    Get gaussian curvature value of a vertex
+    Reference: https://www.sciencedirect.com/science/article/pii/S0097849312001203
+    Formula 1
+    
+    inputs
+    ------
+    vert_i : vertex entity handle
+    tri_vert_data : numpy structured array that stores the triangle and vertex related data
+    
+    outputs
+    -------
+    gc : gaussian curvature value of the vertex
+    
+    """
+    
     vert_entries = tri_vert_data[tri_vert_data['vert']==vert_i]
     sum_alpha_angles = sum(vert_entries['angle'])
     gc = np.abs(2*np.pi - sum_alpha_angles)
     return gc
 
 
-def get_lri(vert_i, gc_all, tri_vert_data,my_core):
+def get_lri(vert_i, gc_all, tri_vert_data, my_core):
+    """
+    Get local roughness value of a vertex
+    Reference: https://www.sciencedirect.com/science/article/pii/S0097849312001203
+    Formula 2, 3
+    
+    inputs
+    ------
+    vert_i : vertex entity handle
+    gc_all : dictionary in the form of vertex : gaussian curvature value of the vertex
+    tri_vert_data : numpy structured array that stores the triangle and vertex related data
+    my_core : a MOAB Core instance
+    
+    outputs
+    -------
+    Lri : local roughness value of the vertex
+    
+    """
+    
     DIJgc_sum = 0
     Dii_sum = 0
     vert_j_list = list(my_core.get_adjacencies(my_core.get_adjacencies(vert_i,2,op_type=0),0,op_type=1))
     vert_j_list.remove(vert_i)
     for vert_j in vert_j_list:
-        # setting for only triangles that are adjacent to both of these
+        # get tri_ij_list (the list of the two triangles connected to both vert_i and vert_j)
         tri_i_list = my_core.get_adjacencies(vert_i, 2, op_type=0)
         tri_j_list = my_core.get_adjacencies(vert_j, 2, op_type=0)
         tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
-        # get entries that have verts==other_verts and tris==tri_ij_list
+        # get vertices that are in triangles in tri_ij_list
+        # there will be six elements representing four vertices
+        # vert_i and vert_j will appear twice
         four_vert_0 = tri_vert_data[tri_vert_data['tri'] == tri_ij_list[0]]
         four_vert_1 = tri_vert_data[tri_vert_data['tri'] == tri_ij_list[1]]
-        four_vert = np.concatenate([four_vert_1,four_vert_0]) #1,1,2,2,3,8
+        four_vert = np.concatenate([four_vert_0, four_vert_1])
         
-        other_angles = []
+        #get beta angles
+        beta_angles = []
         for entry in four_vert:
             matched = four_vert[four_vert['vert'] == entry['vert']]
             if len(matched) < 2:
-               # entry is one of the other angles
-                other_angles.append(entry['angle'])
-        Dij = 0.5*(1/np.tan(other_angles[0]) + 1/np.tan(other_angles[1]))
+                beta_angles.append(entry['angle'])
+                
+        Dij = 0.5*(1/np.tan(beta_angles[0]) + 1/np.tan(beta_angles[1]))
         DIJgc_sum += ( Dij * gc_all[vert_j] )
         Dii_sum += Dij
     Lri = abs(gc_all[vert_i] - DIJgc_sum/Dii_sum )
@@ -365,6 +431,20 @@ def get_lri(vert_i, gc_all, tri_vert_data,my_core):
 
 
 def get_roughness(my_core, native_ranges):
+    """
+    Get local roughness values of all the non-isolated vertices
+    
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
+    
+    outputs
+    -------
+    roughness : (list) the roughness for all surfaces in the meshset
+    
+    """
+    
     tri_vert_data, all_verts = get_tri_vert_data(my_core, native_ranges)
     gc_all = get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data)
     roughness = []
