@@ -8,11 +8,10 @@ import numpy as np
 import unittest
 
 test_input = "tests/3vols.h5m"
-
 my_core = core.Core()
 my_core.load_file(test_input)
-
 root_set = my_core.get_root_set()
+
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
 test_input_2 = "tests/single-cube.h5m"
@@ -83,20 +82,13 @@ class TestDagmcStats(unittest.TestCase):
             my_core_2, root_set_2, dagmc_tags['geom_dim'])
         t_p_s_data = ds.get_triangles_per_surface(
             my_core_2, entityset_ranges)
-        #surfaces = my_core_2.get_entities_by_type_and_tag(
-            #root_set_2, types.MBENTITYSET, dagmc_tags['geom_dim'], [2]).size()
+            
         assert(len(t_p_s_data) == 6)
-
-        #triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        print(t_p_s_data)
-        print(my_core.get_entities_by_type(root_set, types.MBTRI))
+        
         assert(sum(t_p_s_data.values()) == 12)
         
-        #t_p_s_data = ds.get_triangles_per_surface(
-                                #my_core_2, entityset_ranges)
-        exp = 2
         for v in t_p_s_data.values():
-            assert(v == exp)
+            assert(v == 2)
 
 
     def test_get_surfaces_per_volume(self):
@@ -120,25 +112,22 @@ class TestDagmcStats(unittest.TestCase):
         obs = ds.get_triangle_aspect_ratio(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
         self.assertAlmostEqual(exp,obs)
         
-        #TODO
-        #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #obs = len(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set))
-        #assertEqual(exp,obs)
+        exp = my_core_2.get_entities_by_type(root_set_2, types.MBTRI).size()
+        obs = len(ds.get_triangle_aspect_ratio(my_core_2, root_set_2, dagmc_tags_2['geom_dim']))
+        self.assertEqual(exp,obs)
 
 
     def test_get_area_triangle(self):
         """
         Tests part of the get__area_triangle function
         """
-        dagmc_tags = ds.get_dagmc_tags(my_core_2)
         exp = 50
         obs = ds.get_area_triangle(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
         self.assertAlmostEqual(exp,obs)
         
-        #TODO: what is MOAB range
-        #exp = my_core.get_entities_by_type(root_set_2, types.MBTRI)
-        #obs = len(ds.get_area_triangle(my_core_2, root_set_2,dagmc_tags['geom_dim']))
-        #self.assertEqual(exp,obs)
+        exp = my_core_2.get_entities_by_type(root_set_2, types.MBTRI).size()
+        obs = len(ds.get_area_triangle(my_core_2, root_set_2, dagmc_tags_2['geom_dim']))
+        self.assertEqual(exp,obs)
 
 
     def test_get_tri_vert_data(self):

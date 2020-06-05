@@ -271,7 +271,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
         side_lengths = get_tri_side_length(my_core, tri).values()
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
         s = sum(side_lengths)/2
-        s = np.sqrt(s * np.prod(s - side_lengths))
+        s = np.sqrt(s * np.prod(s - list(side_lengths)))
         area.append(s)
 
     return area
