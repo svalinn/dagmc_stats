@@ -239,7 +239,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     t_a_r = []
 
     for tri in tris:
-        side_lengths = get_tri_side_length(my_core, tri).values()
+        side_lengths = list(get_tri_side_length(my_core, tri).values())
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*np.prod(s-side_lengths)
@@ -334,7 +334,7 @@ def get_tri_vert_data(my_core, native_ranges):
     for tri in all_tris:
         side_lengths = get_tri_side_length(my_core, tri)   # {vert : side_length}
         side_length_sum_sq = sum(map(lambda i : i**2, side_lengths.values()))
-        side_length_prod = np.prod(side_lengths.values())
+        side_length_prod = list(np.prod(side_lengths.values()))
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         for vert_i in verts:
             if vert_i not in all_verts:
