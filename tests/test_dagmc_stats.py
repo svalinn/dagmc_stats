@@ -78,20 +78,25 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests some parts of the get_triangles_per_surface function
         """
-        dagmc_tags = ds.get_dagmc_tags(my_core)
+        dagmc_tags = ds.get_dagmc_tags(my_core_2)
         entityset_ranges = ds.get_entityset_ranges(
-            my_core, root_set, dagmc_tags['geom_dim'])
+            my_core_2, root_set_2, dagmc_tags['geom_dim'])
         t_p_s_data = ds.get_triangles_per_surface(
-            my_core, entityset_ranges)
-        surfaces = my_core.get_entities_by_type_and_tag(
-            root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [2]).size()
-        assert(len(t_p_s_data) == surfaces)
+            my_core_2, entityset_ranges)
+        #surfaces = my_core_2.get_entities_by_type_and_tag(
+            #root_set_2, types.MBENTITYSET, dagmc_tags['geom_dim'], [2]).size()
+        assert(len(t_p_s_data) == 6)
 
-        # !! This does not pass the tests and I do not know what it is supposed to do
-        # needs updating !
-        #TODO: what is MOAB range
         #triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #assert(sum(t_p_s_data) == triangles)# TODO
+        print(t_p_s_data)
+        print(my_core.get_entities_by_type(root_set, types.MBTRI))
+        assert(sum(t_p_s_data.values()) == 12)
+        
+        #t_p_s_data = ds.get_triangles_per_surface(
+                                #my_core_2, entityset_ranges)
+        exp = 2
+        for v in t_p_s_data.values():
+            assert(v == exp)
 
 
     def test_get_surfaces_per_volume(self):
