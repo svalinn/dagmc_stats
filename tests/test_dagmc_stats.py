@@ -15,7 +15,7 @@ my_core.load_file(test_input)
 root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
-test_input_2 = "single-cube.h5m"
+test_input_2 = "tests/single-cube.h5m"
 my_core_2 = core.Core()
 my_core_2.load_file(test_input_2)
 root_set_2 = my_core.get_root_set()
