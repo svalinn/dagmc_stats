@@ -304,8 +304,7 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
 
 
 def get_tri_vert_data(my_core, native_ranges):
-    """
-    Build a numpy strcutured array to store triangle and vertex related
+    """Build a numpy strcutured array to store triangle and vertex related
     data in the form of triangle entity handle | vertex entity handle
     | angle connected to the vertex | side length of side opposite to
     vertex in the triangle
@@ -323,7 +322,6 @@ def get_tri_vert_data(my_core, native_ranges):
     all_verts : (list) all the vertices that are connected to
     triangle in the geometry
     """
-    
     all_tris = native_ranges[types.MBTRI]
     all_verts = []
     
@@ -350,8 +348,7 @@ def get_tri_vert_data(my_core, native_ranges):
 
 
 def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
-    """
-    Get gaussian curvature values of all non-isolated vertices
+    """Get gaussian curvature values of all non-isolated vertices
     
     inputs
     ------
@@ -368,7 +365,6 @@ def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
     gc_all : dictionary in the form of vertex : gaussian curvature value
     of the vertex
     """
-    
     gc_all = {}
     for vert_i in all_verts:
         gc_all[vert_i] = gaussian_curvature(vert_i, tri_vert_data)
@@ -376,8 +372,7 @@ def get_gaussian_curvature(my_core, native_ranges, all_verts, tri_vert_data):
 
 
 def gaussian_curvature(vert_i, tri_vert_data):
-    """
-    Get gaussian curvature value of a vertex
+    """Get gaussian curvature value of a vertex
     Reference: https://www.sciencedirect.com/science/article/pii/
     S0097849312001203
     Formula 1
@@ -392,7 +387,6 @@ def gaussian_curvature(vert_i, tri_vert_data):
     -------
     gc : gaussian curvature value of the vertex
     """
-    
     vert_entries = tri_vert_data[tri_vert_data['vert'] == vert_i]
     sum_alpha_angles = sum(vert_entries['angle'])
     gc = np.abs(2 * np.pi - sum_alpha_angles)
@@ -400,8 +394,7 @@ def gaussian_curvature(vert_i, tri_vert_data):
 
 
 def get_lri(vert_i, gc_all, tri_vert_data, my_core):
-    """
-    Get local roughness value of a vertex
+    """Get local roughness value of a vertex
     Reference: https://www.sciencedirect.com/science/article/pii/
     S0097849312001203
     Formula 2, 3
@@ -419,7 +412,6 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
     -------
     Lri : local roughness value of the vertex
     """
-    
     DIJgc_sum = 0
     Dii_sum = 0
     vert_j_list = list(my_core.get_adjacencies(my_core.get_adjacencies(
@@ -455,8 +447,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
 
 
 def get_roughness(my_core, native_ranges):
-    """
-    Get local roughness values of all the non-isolated vertices
+    """Get local roughness values of all the non-isolated vertices
     
     inputs
     ------
@@ -468,7 +459,6 @@ def get_roughness(my_core, native_ranges):
     -------
     roughness : (list) the roughness for all surfaces in the meshset
     """
-    
     tri_vert_data, all_verts = get_tri_vert_data(my_core, native_ranges)
     gc_all = get_gaussian_curvature(my_core, native_ranges, all_verts,
                                                                 tri_vert_data)

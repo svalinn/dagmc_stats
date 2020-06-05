@@ -131,8 +131,7 @@ class TestDagmcStats(unittest.TestCase):
 
 
     def test_get_tri_vert_data(self):
-        """
-        Test part of the get_tri_vert_data function
+        """Tests part of the get_tri_vert_data function
         """
         tri_vert_data, all_verts = ds.get_tri_vert_data(my_core_2, native_ranges_2)
         
@@ -150,8 +149,7 @@ class TestDagmcStats(unittest.TestCase):
         
         
     def test_get_gaussian_curvature(self):
-        """
-        Test part of the get_gaussian_curvature function
+        """Tests part of the get_gaussian_curvature function
         """
         tri_vert_data, all_verts = ds.get_tri_vert_data(my_core_2, native_ranges_2)
         gc_all = ds.get_gaussian_curvature(my_core_2, native_ranges_2,all_verts, tri_vert_data)
@@ -167,8 +165,7 @@ class TestDagmcStats(unittest.TestCase):
 
     
     def test_get_roughness(self):
-        """
-        Test part of the get_roughness function
+        """Tests part of the get_roughness function
         """
         roughness = ds.get_roughness(my_core_2, native_ranges_2)
         exp = 8
