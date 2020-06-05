@@ -7,7 +7,7 @@ import dagmc_stats.dagmc_stats as ds
 import numpy as np
 import unittest
 
-test_input = "3vols.h5m"
+test_input = "tests/3vols.h5m"
 
 my_core = core.Core()
 my_core.load_file(test_input)
@@ -120,7 +120,7 @@ class TestDagmcStats(unittest.TestCase):
         obs = ds.get_triangle_aspect_ratio(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
         self.assertAlmostEqual(exp,obs)
         
-        #TODO: what is MOAB range
+        #TODO
         #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
         #obs = len(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set))
         #assertEqual(exp,obs)
