@@ -20,6 +20,7 @@ my_core_2 = core.Core()
 my_core_2.load_file(test_input_2)
 root_set_2 = my_core.get_root_set()
 native_ranges_2 = ds.get_native_ranges(my_core_2, root_set_2, entity_types)
+dagmc_tags_2 = ds.get_dagmc_tags(my_core_2)
 
 class TestDagmcStats(unittest.TestCase):
 
@@ -88,9 +89,9 @@ class TestDagmcStats(unittest.TestCase):
 
         # !! This does not pass the tests and I do not know what it is supposed to do
         # needs updating !
-
+        #TODO: what is MOAB range
         #triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #assert(sum(t_p_s_data) == triangles)
+        #assert(sum(t_p_s_data) == triangles)# TODO
 
 
     def test_get_surfaces_per_volume(self):
@@ -110,18 +111,11 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests part of the get_triangle_aspect_ratio function
         """
-        test_input2 = "single-cube.h5m"
-        my_core = core.Core()
-        my_core.load_file(test_input2)
-        root_set = my_core.get_root_set()
-
-        # !! Test is failing because functions are not called with proper arguments
-        # needs fixing !
-
-        #exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
-        #obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)[0]
-        #assertAlmostEqual(exp,obs)
-        #
+        exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+        obs = ds.get_triangle_aspect_ratio(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
+        self.assertAlmostEqual(exp,obs)
+        
+        #TODO: what is MOAB range
         #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
         #obs = len(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set))
         #assertEqual(exp,obs)
@@ -131,21 +125,16 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests part of the get__area_triangle function
         """
-        test_input2 = "single-cube.h5m"
-        my_core = core.Core()
-        my_core.load_file(test_input2)
-        root_set = my_core.get_root_set()
+        dagmc_tags = ds.get_dagmc_tags(my_core_2)
+        exp = 50
+        obs = ds.get_area_triangle(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
+        self.assertAlmostEqual(exp,obs)
+        
+        #TODO: what is MOAB range
+        #exp = my_core.get_entities_by_type(root_set_2, types.MBTRI)
+        #obs = len(ds.get_area_triangle(my_core_2, root_set_2,dagmc_tags['geom_dim']))
+        #self.assertEqual(exp,obs)
 
-        # !! Test is failing because functions are not called with proper arguments
-        # needs fixing !
-
-        #exp = 50
-        #obs = dagmc_stats.get_area_triangle(my_core, root_set)[0]
-        #assertEqual(exp,obs)
-        #
-        #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #obs = len(dagmc_stats.get_area_triangle(my_core, root_set))
-        #assertEqual(exp,obs)
 
     def test_get_tri_vert_data(self):
         """
@@ -177,7 +166,6 @@ class TestDagmcStats(unittest.TestCase):
         obs = len(gc_all)
         self.assertEqual(exp,obs)
         
-        print(gc_all)
         exp = 0.5*np.pi
         for i in range(8):
             obs = gc_all[all_verts[i]]
