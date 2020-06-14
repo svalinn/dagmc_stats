@@ -110,11 +110,11 @@ class TestDagmcStats(unittest.TestCase):
         """
         exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
         obs = ds.get_triangle_aspect_ratio(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
-        self.assertAlmostEqual(exp,obs)
+        self.assertAlmostEqual(exp, obs)
         
         exp = my_core_2.get_entities_by_type(root_set_2, types.MBTRI).size()
         obs = len(ds.get_triangle_aspect_ratio(my_core_2, root_set_2, dagmc_tags_2['geom_dim']))
-        self.assertEqual(exp,obs)
+        self.assertEqual(exp, obs)
 
 
     def test_get_area_triangle(self):
@@ -123,11 +123,11 @@ class TestDagmcStats(unittest.TestCase):
         """
         exp = 50
         obs = ds.get_area_triangle(my_core_2, root_set_2, dagmc_tags_2['geom_dim'])[0]
-        self.assertAlmostEqual(exp,obs)
+        self.assertAlmostEqual(exp, obs)
         
         exp = my_core_2.get_entities_by_type(root_set_2, types.MBTRI).size()
         obs = len(ds.get_area_triangle(my_core_2, root_set_2, dagmc_tags_2['geom_dim']))
-        self.assertEqual(exp,obs)
+        self.assertEqual(exp, obs)
 
 
     def test_get_tri_vert_data(self):
@@ -137,11 +137,11 @@ class TestDagmcStats(unittest.TestCase):
         
         exp = 2*6*3
         obs = len(tri_vert_data)
-        self.assertEqual(exp,obs)
+        self.assertEqual(exp, obs)
         
         exp = 8
         obs = len(all_verts)
-        self.assertEqual(exp,obs)
+        self.assertEqual(exp, obs)
         
         for i in range(8):
             obs = len(tri_vert_data[tri_vert_data['vert'] == all_verts[i]])
@@ -156,13 +156,26 @@ class TestDagmcStats(unittest.TestCase):
         
         exp = 8
         obs = len(gc_all)
-        self.assertEqual(exp,obs)
+        self.assertEqual(exp, obs)
         
         exp = 0.5*np.pi
         for i in range(8):
             obs = gc_all[all_verts[i]]
-            self.assertAlmostEqual(exp,obs)
+            self.assertAlmostEqual(exp, obs)
 
+    
+    def test_get_lri(self):
+        """Tests part of the get_lri function
+        """
+        tri_vert_data, all_verts = ds.get_tri_vert_data(my_core_2, native_ranges_2)
+        gc_all = ds.get_gaussian_curvature(my_core_2, native_ranges_2,all_verts, tri_vert_data)
+        
+        exp = 0
+        for i in range(8):
+            vert_i = all_verts[i]
+            obs = ds.get_lri(vert_i, gc_all, tri_vert_data, my_core_2)
+            self.assertAlmostEqual(exp, obs)
+    
     
     def test_get_roughness(self):
         """Tests part of the get_roughness function
@@ -170,9 +183,9 @@ class TestDagmcStats(unittest.TestCase):
         roughness = ds.get_roughness(my_core_2, native_ranges_2)
         exp = 8
         obs = len(roughness)
-        self.assertEqual(exp,obs)
+        self.assertEqual(exp, obs)
         
         exp = 0
         for i in range(8):
             obs = roughness[i]
-            self.assertAlmostEqual(exp,obs)
+            self.assertAlmostEqual(exp, obs)
