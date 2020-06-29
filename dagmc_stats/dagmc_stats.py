@@ -19,17 +19,26 @@ def get_dagmc_tags(my_core):
     """
 
     dagmc_tags = {}
-
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,
-                                                    storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
-
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,
-                                                    storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
-
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,
-
-                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
-
+    # geometric dimension
+    dagmc_tags['geom_dim'] = \
+        my_core.tag_get_handle('GEOM_DIMENSION',
+                               size=1, tag_type=types.MB_TYPE_INTEGER,
+                               storage_type=types.MB_TAG_SPARSE,
+                               create_if_missing=True)
+    # the category
+    dagmc_tags['category'] = \
+        my_core.tag_get_handle('CATEGORY',
+                               size=32,
+                               tag_type=types.MB_TYPE_OPAQUE,
+                               storage_type=types.MB_TAG_SPARSE,
+                               create_if_missing=True)
+    # id
+    dagmc_tags['global_id'] = \
+        my_core.tag_get_handle('GLOBAL_ID',
+                               size=1,
+                               tag_type=types.MB_TYPE_INTEGER,
+                               storage_type=types.MB_TAG_SPARSE,
+                               create_if_missing=True)
     return dagmc_tags
 
 
@@ -58,8 +67,8 @@ def get_native_ranges(my_core, meshset, entity_types):
 
 def get_entityset_ranges(my_core, meshset, geom_dim):
     """
-    Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET
-    type
+    Get a dictionary with MOAB Ranges that are specific to the
+    types.MBENTITYSET type
 
     inputs
     ------
@@ -70,15 +79,16 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     outputs
     -------
     entityset_ranges : a dictionary with one entry for each entityset type,
-                       and the value is the range of entities that corrospond to each
-                       type
+                       and the value is the range of entities that corrospond
+                       to each type
     """
 
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     for dimension, set_type in enumerate(entityset_types):
-        entityset_ranges[set_type] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, geom_dim,
-                                                                          [dimension])
+        entityset_ranges[set_type] = \
+            my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET,
+                                                 geom_dim, [dimension])
     return entityset_ranges
 
 
@@ -90,7 +100,8 @@ def get_triangles_per_vertex(my_core, native_ranges):
     inputs
     ------
     my_core : a MOAB Core instance
-    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
+    native_ranges : a dictionary containing ranges for each native type in the
+                    file (VERTEX, TRIANGLE, ENTITYSET)
 
     outputs
     -------
@@ -215,9 +226,10 @@ def get_tri_side_length(my_core, tri):
 
     for side in range(3):
         side_lengths.update({verts[side-1]:
-                             np.linalg.norm(coord_list[side]-coord_list[side-2])})
-        # The indices of coord_list includes the "-2" because this way each side
-        # will be matched up with both other sides of the triangle
+                             np.linalg.norm(coord_list[side] -
+                             coord_list[side-2])})
+        # The indices of coord_list includes the "-2" because this way each
+        # side will be matched up with both other sides of the triangle
         # (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
     return side_lengths
 
@@ -328,8 +340,9 @@ def get_tri_vert_data(my_core, native_ranges):
     all_tris = native_ranges[types.MBTRI]
     all_verts = []
 
-    tri_vert_struct = np.dtype({'names': ['tri', 'vert', 'angle', 'side_length'],
-                                'formats': [np.uint64, np.uint64, np.float64, np.float64]})
+    tri_vert_struct = np.dtype({'names': ['tri', 'vert', 'angle',
+                                'side_length'], 'formats': [
+                                np.uint64, np.uint64, np.float64, np.float64]})
     tri_vert_data = np.zeros(0, dtype=tri_vert_struct)
 
     for tri in all_tris:
@@ -345,8 +358,10 @@ def get_tri_vert_data(my_core, native_ranges):
             d_i = np.arccos((side_length_sum_sq - 2 * (side_i**2)) * side_i /
                             (2 * side_length_prod))
             bar = np.array((tri, vert_i, d_i, side_i),
-                           dtype=[('tri', np.uint64), ('vert', np.uint64),
-                                  ('angle', np.float64), ('side_length', np.float64)])
+                           dtype=[('tri', np.uint64),
+                                  ('vert', np.uint64),
+                                  ('angle', np.float64),
+                                  ('side_length', np.float64)])
             tri_vert_data = np.append(tri_vert_data, bar)
     return tri_vert_data, all_verts
 
