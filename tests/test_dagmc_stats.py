@@ -96,7 +96,7 @@ class TestDagmcStats(unittest.TestCase):
         assert(sum(t_p_s_data.values()) == 12)
         
         exp = [2,2,2,2,2,2]
-        obs = t_p_s_data.values()
+        obs = list(t_p_s_data.values())
         np.testing.assert_array_equal(exp, obs)
 
 
