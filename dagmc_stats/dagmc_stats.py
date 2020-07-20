@@ -345,7 +345,7 @@ def get_tri_vert_data(my_core, all_tris):
     all_verts : (list) all the vertices that are connected to
     triangle in the geometry
     """
-    all_verts = []
+    all_verts =set()
     tri_vert_data = np.zeros(0, dtype=tri_vert_struct)
 
     for tri in all_tris:
@@ -356,14 +356,13 @@ def get_tri_vert_data(my_core, all_tris):
         side_length_prod = np.prod(list(side_lengths.values()))
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         for vert_i in verts:
-            if vert_i not in all_verts:
-                all_verts.append(vert_i)
+            all_verts.add(vert_i)
             side_i = side_lengths[vert_i]
             d_i = np.arccos((side_length_sum_sq_half - (side_i**2)) * side_i /
                             side_length_prod)
             bar = np.array((tri, vert_i, d_i, side_i), dtype=tri_vert_struct)
             tri_vert_data = np.append(tri_vert_data, bar)
-    return tri_vert_data, all_verts
+    return tri_vert_data, list(all_verts)
 
 
 def get_gaussian_curvature(my_core, all_verts, tri_vert_data):

@@ -166,7 +166,7 @@ class TestDagmcStats(unittest.TestCase):
         obs = len(all_verts)
         self.assertEqual(exp, obs)
         
-        exp = [5, 5, 4, 4, 5, 4, 5, 4]
+        exp = [4, 5, 5, 4, 5, 4, 5, 4]
         for i in range(8):
             obs = len(tri_vert_data[tri_vert_data['vert'] == all_verts[i]])
             self.assertTrue(obs == exp[i])
