@@ -230,10 +230,15 @@ def get_tri_side_length(my_core, tri):
         side_lengths.update({verts[side-1]:
                              np.linalg.norm(coord_list[side] -
                              coord_list[side-2])})
-        # The indiex of vert corresponds with the vert opposite to the side
-        # The indices of coord_list includes the "-2" because this way each
-        # side will be matched up with both other sides of the triangle
-        # (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
+        # Although it may not be intuitive, the indexing of these lists takes
+        # advantage of python's indexing syntax to rotate through
+        # the `verts` of the triangle while simultaneously referencing the side
+        # opposite each of the `verts` by the coordinates of the vertices that
+        # define that side:
+        #    side       side-1   index(side-1)     side-2   index(side-2)
+        #     0           -1           2             -2             1
+        #     1            0           0             -1             2
+        #     2            1           1              0             0
     return side_lengths
 
 
@@ -340,7 +345,8 @@ def get_tri_vert_data(my_core, all_tris):
     all_verts : (list) all the vertices that are connected to
     triangle in the geometry
     """
-    all_verts = []
+    #all_verts = []
+    all_verts = set()
     tri_vert_data = np.zeros(0, dtype=tri_vert_struct)
 
     for tri in all_tris:
@@ -351,8 +357,9 @@ def get_tri_vert_data(my_core, all_tris):
         side_length_prod = np.prod(list(side_lengths.values()))
         verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         for vert_i in verts:
-            if vert_i not in all_verts:
-                all_verts.append(vert_i)
+            #if vert_i not in all_verts:
+            #    all_verts.append(vert_i)
+            all_verts.add(vert_i)
             side_i = side_lengths[vert_i]
             d_i = np.arccos((side_length_sum_sq_half - (side_i**2)) * side_i /
                             side_length_prod)
