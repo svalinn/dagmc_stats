@@ -346,7 +346,8 @@ def get_tri_vert_data(my_core, all_tris):
     triangle in the geometry
     """
     all_verts =set()
-    tri_vert_data = np.zeros(0, dtype=tri_vert_struct)
+    tri_vert_data = np.zeros(len(all_tris)*3, dtype=tri_vert_struct)
+    tri_vert_index = 0
 
     for tri in all_tris:
         side_lengths = get_tri_side_length(
@@ -361,7 +362,8 @@ def get_tri_vert_data(my_core, all_tris):
             d_i = np.arccos((side_length_sum_sq_half - (side_i**2)) * side_i /
                             side_length_prod)
             bar = np.array((tri, vert_i, d_i, side_i), dtype=tri_vert_struct)
-            tri_vert_data = np.append(tri_vert_data, bar)
+            tri_vert_data[tri_vert_index] = bar
+            tri_vert_index += 1
     return tri_vert_data, list(all_verts)
 
 
@@ -445,7 +447,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
         # rows with vert value not equal to vert_i and not equal to vert_j
         exclude_verts = (tri_vert_data['vert'] != vert_i) & \
                                             (tri_vert_data['vert'] != vert_j)
-        beta_angles = tri_vert_data[ select_tris & exclude_verts ]['angle']
+        beta_angles = tri_vert_data[select_tris & exclude_verts]['angle']
 
         Dij = 0.5 * (1/np.tan(beta_angles[0]) + 1/np.tan(beta_angles[1]))
         DIJgc_sum += (Dij * gc_all[vert_j])
@@ -465,12 +467,12 @@ def get_roughness(my_core, native_ranges):
 
     outputs
     -------
-    roughness : (list) the roughness for all surfaces in the meshset
+    roughness : (numpy array) the roughness for all surfaces in the meshset
     """
     tri_vert_data, all_verts = get_tri_vert_data(my_core,
                                                     native_ranges[types.MBTRI])
     gc_all = get_gaussian_curvature(my_core, all_verts, tri_vert_data)
-    roughness = []
-    for vert_i in all_verts:
-        roughness.append(get_lri(vert_i, gc_all, tri_vert_data, my_core))
+    roughness = np.zeros(len(all_verts))
+    for vert_idx, vert_i in enumerate(all_verts):
+        roughness[vert_idx] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
     return roughness
