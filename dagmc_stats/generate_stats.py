@@ -62,6 +62,10 @@ def report_stats(stats, data, verbose, display_options):
             for statistic, value in stats['C'].items():
                 print("The {} Coarseness in this model is {}.".format(
                     statistic, value))
+        if display_options['R']:
+            for statistic, value in stats['R'].items():
+                print("The {} Roughness in this model is {}.".format(
+                    statistic, value))
     else: #or, print with minimal words
         if display_options['NR']:
             for nr, size in stats['native_ranges'].items():
@@ -92,6 +96,10 @@ def report_stats(stats, data, verbose, display_options):
         if display_options['C']:
             print("Coarseness:")
             for statistic, value in stats['C'].items():
+                print("{} : {}".format(statistic, value))
+        if display_options['R']:
+            print("Roughness:")
+            for statistic, value in stats['R'].items():
                 print("{} : {}".format(statistic, value))
 
     if display_options['SPV_data']:
@@ -190,6 +198,11 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
         data[c_key] = dagmc_stats.get_coarseness(my_core, root_set, 
                                                                 entityset_ranges['Surfaces'], dagmc_tags['geom_dim'])
         stats[c_key] = get_stats(data[c_key])
+    
+    if display_options['R']:
+        r_key = 'R'
+        data[r_key] = dagmc_stats.get_roughness(my_core, native_ranges)
+        stats[r_key] = get_stats(data[r_key])
 
     if display_options['SPV_data']:
         data['SPV_Entity'] = entity_specific_stats.get_spv_data(my_core,
@@ -228,6 +241,8 @@ def main():
                         help="display triangle area stats")
     parser.add_argument("--c", action="store_true",
                         help="display coarseness stats")
+    parser.add_argument("--r", action="store_true",
+                        help="display roughness stats")
     args = parser.parse_args() 
 
     input_file = args.filename
@@ -236,10 +251,11 @@ def main():
     spv_data = args.spv_data
     display_options = {'NR':args.nr, 'ER':args.er, 'SPV':args.spv, 'TPV':args.tpv,
                        'TPS':args.tps, 'TAR':args.tar, 'AT': args.at, 'C': args.c,
-                       'TPS_data':args.tps_data, 'SPV_data':args.spv_data}
+                       'R': args.r, 'TPS_data':args.tps_data, 'SPV_data':args.spv_data}
     if not(True in display_options.values()):
         display_options = {'NR':True, 'ER':True, 'SPV':True, 'TPV':True, 'TPS':True,
-                           'TAR':True, 'AT':True, 'C':True, 'TPS_data':False, 'SPV_data':False}
+                           'TAR':True, 'AT':True, 'C':True, 'R':True, 'TPS_data':False,
+                           'SPV_data':False}
     my_core = core.Core() #initiates core
     my_core.load_file(input_file) #loads the file
     root_set = my_core.get_root_set() #dumps all entities into the meshset to be redistributed to other meshsets

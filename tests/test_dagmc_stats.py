@@ -7,13 +7,15 @@ import dagmc_stats.dagmc_stats as ds
 import numpy as np
 import unittest
 
-test_input = "tests/3vols.h5m"
-
-my_core = core.Core()
-my_core.load_file(test_input)
-
-root_set = my_core.get_root_set()
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+test_env = [ { 'input_file' : 'tests/3vols.h5m'}, {'input_file' : 'tests/single-cube.h5m'} ]
+
+for env in test_env:
+     env['core'] = core.Core()
+     env['core'].load_file(env['input_file'])
+     env['root_set'] = env['core'].get_root_set()
+     env['native_ranges'] = ds.get_native_ranges(env['core'], env['root_set'], entity_types)
+     env['dagmc_tags'] = ds.get_dagmc_tags(env['core'])
 
 class TestDagmcStats(unittest.TestCase):
 
@@ -22,7 +24,7 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_dagmc_tags function
         """
-        dagmc_tags = ds.get_dagmc_tags(my_core)
+        dagmc_tags = ds.get_dagmc_tags(test_env[0]['core'])
         assert(len(dagmc_tags) == 3)
         assert(dagmc_tags['category'])
         assert(dagmc_tags['geom_dim'])
@@ -33,7 +35,10 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_native_ranges function
         """
-        native_ranges = ds.get_native_ranges(my_core, root_set, entity_types)
+        my_core = test_env[0]['core']
+        root_set = test_env[0]['root_set']
+        native_ranges = test_env[0]['native_ranges']
+        
         vertex_range = my_core.get_entities_by_type(root_set, types.MBVERTEX)
         assert(vertex_range == native_ranges[0])
         triangle_range = my_core.get_entities_by_type(root_set, types.MBTRI)
@@ -46,7 +51,10 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests different aspects of the get_entityset_ranges function
         """
-        dagmc_tags = ds.get_dagmc_tags(my_core)
+        my_core = test_env[0]['core']
+        root_set = test_env[0]['root_set']
+        dagmc_tags = test_env[0]['dagmc_tags']
+        
         entityset_ranges = ds.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
         node_range = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [0])
         assert(node_range == entityset_ranges['Nodes'])
@@ -60,8 +68,10 @@ class TestDagmcStats(unittest.TestCase):
 
     def test_get_triangles_per_vertex(self):
         """Tests part of the get_triangles_per_vertex function"""
-        dagmc_tags = ds.get_dagmc_tags(my_core)
-        native_ranges = ds.get_native_ranges(my_core, root_set, entity_types)
+        my_core = test_env[0]['core']
+        root_set = test_env[0]['root_set']
+        native_ranges = test_env[0]['native_ranges']
+        
         t_p_v_data = ds.get_triangles_per_vertex(my_core, native_ranges)
         vertices = my_core.get_entities_by_type(root_set, types.MBVERTEX).size()
         assert(len(t_p_v_data) == vertices)
@@ -71,27 +81,33 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests some parts of the get_triangles_per_surface function
         """
+        my_core = test_env[1]['core']
+        root_set = test_env[1]['root_set']
+        dagmc_tags = test_env[1]['dagmc_tags']
+        
         dagmc_tags = ds.get_dagmc_tags(my_core)
         entityset_ranges = ds.get_entityset_ranges(
             my_core, root_set, dagmc_tags['geom_dim'])
         t_p_s_data = ds.get_triangles_per_surface(
             my_core, entityset_ranges)
-        surfaces = my_core.get_entities_by_type_and_tag(
-            root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [2]).size()
-        assert(len(t_p_s_data) == surfaces)
-
-        # !! This does not pass the tests and I do not know what it is supposed to do
-        # needs updating !
-
-        #triangles = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #assert(sum(t_p_s_data) == triangles)
+            
+        assert(len(t_p_s_data) == 6)
+        
+        assert(sum(t_p_s_data.values()) == 12)
+        
+        exp = [2,2,2,2,2,2]
+        obs = list(t_p_s_data.values())
+        np.testing.assert_array_equal(exp, obs)
 
 
     def test_get_surfaces_per_volume(self):
         """
         Tests different aspects of the get_surfaces_per_volume function
         """
-        dagmc_tags = ds.get_dagmc_tags(my_core)
+        my_core = test_env[0]['core']
+        root_set = test_env[0]['root_set']
+        dagmc_tags = test_env[0]['dagmc_tags']
+        
         entityset_ranges = ds.get_entityset_ranges(my_core, root_set, dagmc_tags['geom_dim'])
         s_p_v_data = ds.get_surfaces_per_volume(my_core, entityset_ranges)
         known_volumes = my_core.get_entities_by_type_and_tag(root_set, types.MBENTITYSET, dagmc_tags['geom_dim'], [3])
@@ -104,39 +120,103 @@ class TestDagmcStats(unittest.TestCase):
         """
         Tests part of the get_triangle_aspect_ratio function
         """
-        test_input2 = "tests/single-cube.h5m"
-        my_core = core.Core()
-        my_core.load_file(test_input2)
-        root_set = my_core.get_root_set()
-
-        # !! Test is failing because functions are not called with proper arguments
-        # needs fixing !
-
-        #exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
-        #obs = dagmc_stats.get_triangle_aspect_ratio(my_core, root_set)[0]
-        #assertAlmostEqual(exp,obs)
-        #
-        #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #obs = len(dagmc_stats.get_triangle_aspect_ratio(my_core, root_set))
-        #assertEqual(exp,obs)
+        my_core = test_env[1]['core']
+        root_set = test_env[1]['root_set']
+        dagmc_tags = test_env[1]['dagmc_tags']
+        
+        exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+        obs = ds.get_triangle_aspect_ratio(my_core, root_set, dagmc_tags['geom_dim'])[0]
+        self.assertAlmostEqual(exp, obs)
+        
+        exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
+        obs = len(ds.get_triangle_aspect_ratio(my_core, root_set, dagmc_tags['geom_dim']))
+        self.assertEqual(exp, obs)
 
 
     def test_get_area_triangle(self):
         """
         Tests part of the get__area_triangle function
         """
-        test_input2 = "tests/single-cube.h5m"
-        my_core = core.Core()
-        my_core.load_file(test_input2)
-        root_set = my_core.get_root_set()
+        my_core = test_env[1]['core']
+        root_set = test_env[1]['root_set']
+        dagmc_tags = test_env[1]['dagmc_tags']
+        
+        exp = 50
+        obs = ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'])[0]
+        self.assertAlmostEqual(exp, obs)
+        
+        exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
+        obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim']))
+        self.assertEqual(exp, obs)
 
-        # !! Test is failing because functions are not called with proper arguments
-        # needs fixing !
 
-        #exp = 50
-        #obs = dagmc_stats.get_area_triangle(my_core, root_set)[0]
-        #assertEqual(exp,obs)
-        #
-        #exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
-        #obs = len(dagmc_stats.get_area_triangle(my_core, root_set))
-        #assertEqual(exp,obs)
+    def test_get_tri_vert_data(self):
+        """Tests part of the get_tri_vert_data function
+        """
+        my_core = test_env[1]['core']
+        native_ranges = test_env[1]['native_ranges']
+        
+        tri_vert_data, all_verts = ds.get_tri_vert_data(my_core, native_ranges[types.MBTRI])
+        
+        exp = 2*6*3
+        obs = len(tri_vert_data)
+        self.assertEqual(exp, obs)
+        
+        exp = 8
+        obs = len(all_verts)
+        self.assertEqual(exp, obs)
+        
+        exp = [4, 5, 5, 4, 5, 4, 5, 4]
+        for i in range(8):
+            obs = len(tri_vert_data[tri_vert_data['vert'] == all_verts[i]])
+            self.assertTrue(obs == exp[i])
+        
+        
+    def test_get_gaussian_curvature(self):
+        """Tests part of the get_gaussian_curvature function
+        """
+        my_core = test_env[1]['core']
+        native_ranges = test_env[1]['native_ranges']
+        
+        tri_vert_data, all_verts = ds.get_tri_vert_data(my_core, native_ranges[types.MBTRI])
+        gc_all = ds.get_gaussian_curvature(my_core, all_verts, tri_vert_data)
+        
+        exp = 8
+        obs = len(gc_all)
+        self.assertEqual(exp, obs)
+        
+        exp = 0.5*np.pi
+        for i in range(8):
+            obs = gc_all[all_verts[i]]
+            self.assertAlmostEqual(exp, obs)
+
+    
+    def test_get_lri(self):
+        """Tests part of the get_lri function
+        """
+        my_core = test_env[1]['core']
+        native_ranges = test_env[1]['native_ranges']
+        
+        tri_vert_data, all_verts = ds.get_tri_vert_data(my_core, native_ranges[types.MBTRI])
+        gc_all = ds.get_gaussian_curvature(my_core, all_verts, tri_vert_data)
+        
+        exp = 0
+        for i in range(8):
+            vert_i = all_verts[i]
+            obs = ds.get_lri(vert_i, gc_all, tri_vert_data, my_core)
+            self.assertAlmostEqual(exp, obs)
+    
+    
+    def test_get_roughness(self):
+        """Tests part of the get_roughness function
+        """
+        my_core = test_env[1]['core']
+        native_ranges = test_env[1]['native_ranges']
+        
+        roughness = ds.get_roughness(my_core, native_ranges)
+        exp = 8
+        obs = len(roughness)
+        self.assertEqual(exp, obs)
+        
+        exp = [0,0,0,0,0,0,0,0]
+        np.testing.assert_allclose(roughness, exp, atol = 1e-04)

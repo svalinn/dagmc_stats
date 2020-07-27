@@ -4,6 +4,8 @@ import numpy as np
 from pymoab.rng import Range
 from pymoab import core, types
 
+tri_vert_struct = np.dtype({'names': ['tri', 'vert', 'angle',
+'side_length'], 'formats': [np.uint64, np.uint64, np.float64, np.float64]})
 
 def get_dagmc_tags(my_core):
     """
@@ -19,17 +21,26 @@ def get_dagmc_tags(my_core):
     """
 
     dagmc_tags = {}
-
-    dagmc_tags['geom_dim'] = my_core.tag_get_handle('GEOM_DIMENSION', size=1, tag_type=types.MB_TYPE_INTEGER,
-                                                    storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # geometric dimension
-
-    dagmc_tags['category'] = my_core.tag_get_handle('CATEGORY', size=32, tag_type=types.MB_TYPE_OPAQUE,
-                                                    storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # the category
-
-    dagmc_tags['global_id'] = my_core.tag_get_handle('GLOBAL_ID', size=1, tag_type=types.MB_TYPE_INTEGER,
-
-                                                     storage_type=types.MB_TAG_SPARSE, create_if_missing=True)  # id
-
+    # geometric dimension
+    dagmc_tags['geom_dim'] = \
+        my_core.tag_get_handle('GEOM_DIMENSION',
+                               size=1, tag_type=types.MB_TYPE_INTEGER,
+                               storage_type=types.MB_TAG_SPARSE,
+                               create_if_missing=True)
+    # the category
+    dagmc_tags['category'] = \
+        my_core.tag_get_handle('CATEGORY',
+                               size=32,
+                               tag_type=types.MB_TYPE_OPAQUE,
+                               storage_type=types.MB_TAG_SPARSE,
+                               create_if_missing=True)
+    # id
+    dagmc_tags['global_id'] = \
+        my_core.tag_get_handle('GLOBAL_ID',
+                               size=1,
+                               tag_type=types.MB_TYPE_INTEGER,
+                               storage_type=types.MB_TAG_SPARSE,
+                               create_if_missing=True)
     return dagmc_tags
 
 
@@ -58,8 +69,8 @@ def get_native_ranges(my_core, meshset, entity_types):
 
 def get_entityset_ranges(my_core, meshset, geom_dim):
     """
-    Get a dictionary with MOAB Ranges that are specific to the types.MBENTITYSET
-    type
+    Get a dictionary with MOAB Ranges that are specific to the
+    types.MBENTITYSET type
 
     inputs
     ------
@@ -70,15 +81,16 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     outputs
     -------
     entityset_ranges : a dictionary with one entry for each entityset type,
-                       and the value is the range of entities that corrospond to each
-                       type
+                       and the value is the range of entities that corrospond
+                       to each type
     """
 
     entityset_ranges = {}
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     for dimension, set_type in enumerate(entityset_types):
-        entityset_ranges[set_type] = my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET, geom_dim,
-                                                                          [dimension])
+        entityset_ranges[set_type] = \
+            my_core.get_entities_by_type_and_tag(meshset, types.MBENTITYSET,
+                                                 geom_dim, [dimension])
     return entityset_ranges
 
 
@@ -90,7 +102,8 @@ def get_triangles_per_vertex(my_core, native_ranges):
     inputs
     ------
     my_core : a MOAB Core instance
-    native_ranges : a dictionary containing ranges for each native type in the file (VERTEX, TRIANGLE, ENTITYSET)
+    native_ranges : a dictionary containing ranges for each native type in the
+                    file (VERTEX, TRIANGLE, ENTITYSET)
 
     outputs
     -------
@@ -100,7 +113,8 @@ def get_triangles_per_vertex(my_core, native_ranges):
     t_p_v_data = []
     tri_dimension = 2
     for vertex in native_ranges[types.MBVERTEX]:
-        t_p_v_data.append(my_core.get_adjacencies(vertex, tri_dimension).size())
+        t_p_v_data.append(my_core.get_adjacencies(
+            vertex, tri_dimension).size())
     return np.array(t_p_v_data)
 
 
@@ -125,7 +139,7 @@ def get_triangles_per_surface(my_core, entity_ranges):
     t_p_s = {}
     for surface in entity_ranges['Surfaces']:
         t_p_s[surface] = my_core.get_entities_by_type(
-                                 surface, types.MBTRI).size()
+            surface, types.MBTRI).size()
     return t_p_s
 
 
@@ -172,15 +186,17 @@ def get_tris(my_core, meshset, geom_dim):
     if my_core.tag_get_data(geom_dim, meshset)[0][0] == 3:
         entities = my_core.create_meshset()
         for surface in my_core.get_child_meshsets(meshset):
-            my_core.add_entities(entities, my_core.get_entities_by_type(surface, types.MBTRI))
+            my_core.add_entities(
+                entities, my_core.get_entities_by_type(surface, types.MBTRI))
         tris = my_core.get_entities_by_type(entities, types.MBTRI)
     # get triangles of a surface
     elif my_core.tag_get_data(geom_dim, meshset)[0][0] == 2:
         entities = my_core.create_meshset()
-        my_core.add_entities(entities, my_core.get_entities_by_type(meshset, types.MBTRI))
+        my_core.add_entities(
+            entities, my_core.get_entities_by_type(meshset, types.MBTRI))
         tris = my_core.get_entities_by_type(entities, types.MBTRI)
     else:
-    # get all the triangles
+        # get all the triangles
         tris = my_core.get_entities_by_type(meshset, types.MBTRI)
     return tris
 
@@ -196,10 +212,11 @@ def get_tri_side_length(my_core, tri):
 
     outputs
     -------
-    side_lengths : a list of side lengths of triangle
+    side_lengths : a dictionary that stores vert : the opposite side length of
+    the vert as key-value pair
     """
 
-    side_lengths = []
+    side_lengths = {}
     s = 0
     coord_list = []
 
@@ -210,15 +227,25 @@ def get_tri_side_length(my_core, tri):
         coord_list.append(coords)
 
     for side in range(3):
-        side_lengths.append(np.linalg.norm(coord_list[side]-coord_list[side-2]))
-        # The indices of coord_list includes the "-2" because this way each side will be matched up with both
-        # other sides of the triangle (IDs: (Side 0, Side 1), (Side 1, Side 2), (Side 2, Side 0))
+        side_lengths.update({verts[side-1]:
+                             np.linalg.norm(coord_list[side] -
+                             coord_list[side-2])})
+        # Although it may not be intuitive, the indexing of these lists takes
+        # advantage of python's indexing syntax to rotate through
+        # the `verts` of the triangle while simultaneously referencing the side
+        # opposite each of the `verts` by the coordinates of the vertices that
+        # define that side:
+        #    side       side-1   index(side-1)     side-2   index(side-2)
+        #     0           -1           2             -2             1
+        #     1            0           0             -1             2
+        #     2            1           1              0             0
     return side_lengths
 
 
 def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     """
-    Get the triangle aspect ratio (according to the equation: (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
+    Get the triangle aspect ratio (according to the equation:
+    (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
 
     inputs
     ------
@@ -235,7 +262,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     t_a_r = []
 
     for tri in tris:
-        side_lengths = get_tri_side_length(my_core, tri)
+        side_lengths = list(get_tri_side_length(my_core, tri).values())
         s = .5*(sum(side_lengths))
         top = np.prod(side_lengths)
         bottom = 8*np.prod(s-side_lengths)
@@ -264,7 +291,7 @@ def get_area_triangle(my_core, meshset, geom_dim):
     tris = get_tris(my_core, meshset, geom_dim)
 
     for tri in tris:
-        side_lengths = get_tri_side_length(my_core, tri)
+        side_lengths = list(get_tri_side_length(my_core, tri).values())
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
         s = sum(side_lengths)/2
         s = np.sqrt(s * np.prod(s - side_lengths))
@@ -297,3 +324,155 @@ def get_coarseness(my_core, meshset, entity_ranges, geom_dim):
         coarseness.append(len(surf_area)/sum(surf_area))
 
     return coarseness
+
+
+def get_tri_vert_data(my_core, all_tris):
+    """Build a numpy strcutured array to store triangle and vertex related
+    data in the form of triangle entity handle | vertex entity handle
+    | angle connected to the vertex | side length of side opposite to
+    vertex in the triangle
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    all_tris : a dictionary containing range for TRIANGLE native type
+    in the file
+
+    outputs
+    -------
+    tri_vert_data : a numpy structured array that stores the triangle
+    and vertex related data
+    all_verts : (list) all the vertices that are connected to
+    triangle in the geometry
+    """
+    all_verts =set()
+    tri_vert_data = np.zeros(len(all_tris)*3, dtype=tri_vert_struct)
+    tri_vert_index = 0
+
+    for tri in all_tris:
+        side_lengths = get_tri_side_length(
+            my_core, tri)   # {vert : side_length}
+        side_length_sum_sq_half = sum(map
+                                    (lambda i: i**2, side_lengths.values()))/2
+        side_length_prod = np.prod(list(side_lengths.values()))
+        verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        for vert_i in verts:
+            all_verts.add(vert_i)
+            side_i = side_lengths[vert_i]
+            d_i = np.arccos((side_length_sum_sq_half - (side_i**2)) * side_i /
+                            side_length_prod)
+            bar = np.array((tri, vert_i, d_i, side_i), dtype=tri_vert_struct)
+            tri_vert_data[tri_vert_index] = bar
+            tri_vert_index += 1
+    return tri_vert_data, list(all_verts)
+
+
+def get_gaussian_curvature(my_core, all_verts, tri_vert_data):
+    """Get gaussian curvature values of all non-isolated vertices
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    all_verts : all the vertices that are connected to triangle in the
+    geometry
+    tri_vert_data : numpy structured array that stores the triangle and
+    vertex related data
+
+    outputs
+    -------
+    gc_all : dictionary in the form of vertex : gaussian curvature value
+    of the vertex
+    """
+    gc_all = {}
+    for vert_i in all_verts:
+        gc_all[vert_i] = gaussian_curvature(vert_i, tri_vert_data)
+    return gc_all
+
+
+def gaussian_curvature(vert_i, tri_vert_data):
+    """Get gaussian curvature value of a vertex
+    Reference: https://www.sciencedirect.com/science/article/pii/
+    S0097849312001203
+    Formula 1
+
+    inputs
+    ------
+    vert_i : vertex entity handle
+    tri_vert_data : numpy structured array that stores the triangle and
+    vertex related data
+
+    outputs
+    -------
+    gc : gaussian curvature value of the vertex
+    """
+    vert_entries = tri_vert_data[tri_vert_data['vert'] == vert_i]
+    sum_alpha_angles = sum(vert_entries['angle'])
+    gc = np.abs(2 * np.pi - sum_alpha_angles)
+    return gc
+
+
+def get_lri(vert_i, gc_all, tri_vert_data, my_core):
+    """Get local roughness value of a vertex
+    Reference: https://www.sciencedirect.com/science/article/pii/
+    S0097849312001203
+    Formula 2, 3
+
+    inputs
+    ------
+    vert_i : vertex entity handle
+    gc_all : dictionary in the form of vertex : gaussian curvature
+    value of the vertex
+    tri_vert_data : numpy structured array that stores the triangle
+    and vertex related data
+    my_core : a MOAB Core instance
+
+    outputs
+    -------
+    Lri : local roughness value of the vertex
+    """
+    DIJgc_sum = 0
+    Dii_sum = 0
+    vert_j_list = list(my_core.get_adjacencies(my_core.get_adjacencies(
+        vert_i, 2, op_type=0), 0, op_type=1))
+    vert_j_list.remove(vert_i)
+    for vert_j in vert_j_list:
+        # get tri_ij_list (the list of the two triangles connected to both
+        # vert_i and vert_j)
+        tri_i_list = my_core.get_adjacencies(vert_i, 2, op_type=0)
+        tri_j_list = my_core.get_adjacencies(vert_j, 2, op_type=0)
+        tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
+        # rows with tri value as tri_ij_list[0] or rei_ij_list[1]
+        select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
+                                    (tri_vert_data['tri'] == tri_ij_list[1])
+        # rows with vert value not equal to vert_i and not equal to vert_j
+        exclude_verts = (tri_vert_data['vert'] != vert_i) & \
+                                            (tri_vert_data['vert'] != vert_j)
+        beta_angles = tri_vert_data[select_tris & exclude_verts]['angle']
+
+        Dij = 0.5 * (1/np.tan(beta_angles[0]) + 1/np.tan(beta_angles[1]))
+        DIJgc_sum += (Dij * gc_all[vert_j])
+        Dii_sum += Dij
+    Lri = abs(gc_all[vert_i] - DIJgc_sum/Dii_sum)
+    return Lri
+
+
+def get_roughness(my_core, native_ranges):
+    """Get local roughness values of all the non-isolated vertices
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    native_ranges : a dictionary containing ranges for each native type
+    in the file (VERTEX, TRIANGLE, ENTITYSET)
+
+    outputs
+    -------
+    roughness : (numpy array) the roughness for all surfaces in the meshset
+    """
+    tri_vert_data, all_verts = get_tri_vert_data(my_core,
+                                                    native_ranges[types.MBTRI])
+    gc_all = get_gaussian_curvature(my_core, all_verts, tri_vert_data)
+    roughness = np.zeros(len(all_verts))
+    for vert_idx, vert_i in enumerate(all_verts):
+        roughness[vert_idx] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
+    return roughness
