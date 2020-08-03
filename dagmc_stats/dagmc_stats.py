@@ -472,7 +472,26 @@ def get_roughness(my_core, native_ranges):
     tri_vert_data, all_verts = get_tri_vert_data(my_core,
                                                     native_ranges[types.MBTRI])
     gc_all = get_gaussian_curvature(my_core, all_verts, tri_vert_data)
-    roughness = np.zeros(len(all_verts))
-    for vert_idx, vert_i in enumerate(all_verts):
-        roughness[vert_idx] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
-    return roughness
+    roughness = {}
+    for vert_i in all_verts:
+        roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
+    
+    # to make tag
+    # create the tag handle
+    lr_tag_eh = \
+    my_core.tag_get_handle('FACET_AVG_LR', size=1,
+                            tag_type=types.MB_TYPE_DOUBLE,
+                            storage_type=types.MB_TAG_SPARSE,
+                            create_if_missing=True)
+    # tag tri_avg_lr
+    for tri in native_ranges[types.MBTRI]:
+        three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        sum_lr = 0
+        for vert in three_verts:
+            sum_lr += roughness[vert]
+        avg_lr = sum_lr/3
+        # assign data to the tag:
+        my_core.tag_set_data(lr_tag_eh, tri, avg_lr)
+    
+    return roughness.values()
+    
