@@ -94,7 +94,7 @@ def get_entityset_ranges(my_core, meshset, geom_dim):
     return entityset_ranges
 
 
-def get_triangles_per_vertex(my_core, native_ranges):
+def get_triangles_per_vertex(my_core, native_ranges, ignore_zero=True):
     """
     This function will return data about the number of triangles on each
     vertex in a file
@@ -104,6 +104,8 @@ def get_triangles_per_vertex(my_core, native_ranges):
     my_core : a MOAB Core instance
     native_ranges : a dictionary containing ranges for each native type in the
                     file (VERTEX, TRIANGLE, ENTITYSET)
+    ignore_zero : a boolean value that indicates whether to ignore the zero
+                  values or not
 
     outputs
     -------
@@ -113,8 +115,10 @@ def get_triangles_per_vertex(my_core, native_ranges):
     t_p_v_data = []
     tri_dimension = 2
     for vertex in native_ranges[types.MBVERTEX]:
-        t_p_v_data.append(my_core.get_adjacencies(
-            vertex, tri_dimension).size())
+        tpv_val = my_core.get_adjacencies(vertex, tri_dimension).size()
+        if ignore_zero and tpv_val == 0:
+            continue
+        t_p_v_data.append(tpv_val)
     return np.array(t_p_v_data)
 
 
