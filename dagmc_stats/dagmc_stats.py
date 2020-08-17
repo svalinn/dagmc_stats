@@ -475,23 +475,34 @@ def get_roughness(my_core, native_ranges):
     roughness = {}
     for vert_i in all_verts:
         roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
-    
-    # to make tag
-    # create the tag handle
-    lr_tag_eh = \
-    my_core.tag_get_handle('FACET_AVG_LR', size=1,
-                            tag_type=types.MB_TYPE_DOUBLE,
-                            storage_type=types.MB_TAG_SPARSE,
-                            create_if_missing=True)
-    # tag tri_avg_lr
+    #add triangle average roughness tag
+    lr_tag = {}
     for tri in native_ranges[types.MBTRI]:
         three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
         sum_lr = 0
         for vert in three_verts:
             sum_lr += roughness[vert]
-        avg_lr = sum_lr/3
-        # assign data to the tag:
-        my_core.tag_set_data(lr_tag_eh, tri, avg_lr)
-    
+        lr_tag[tri] = sum_lr/3
+    add_tag(my_core, 'FACET_AVG_LR', lr_tag, types.MB_TYPE_DOUBLE)
     return roughness.values()
     
+    
+def add_tag(my_core, tag_name, tag_dic, tag_type):
+    """Add tag according to given tag information
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    tag_name : tag name
+    tag_dic : a dictionary containing eh:data
+    tag_type : tag type
+    """
+    # create the tag handle
+    tag_eh = \
+    my_core.tag_get_handle(tag_name, size=1,
+                            tag_type=tag_type,
+                            storage_type=types.MB_TAG_SPARSE,
+                            create_if_missing=True)
+    for eh, data in tag_dic.items():
+        # assign data to the tag:
+        my_core.tag_set_data(tag_eh, eh, data)
