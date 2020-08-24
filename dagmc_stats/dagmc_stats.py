@@ -456,7 +456,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
     return Lri
 
 
-def get_roughness(my_core, native_ranges):
+def get_roughness(my_core, native_ranges, tag=True):
     """Get local roughness values of all the non-isolated vertices
 
     inputs
@@ -475,15 +475,16 @@ def get_roughness(my_core, native_ranges):
     roughness = {}
     for vert_i in all_verts:
         roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
-    #add triangle average roughness tag
-    lr_tag = {}
-    for tri in native_ranges[types.MBTRI]:
-        three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
-        sum_lr = 0
-        for vert in three_verts:
-            sum_lr += roughness[vert]
-        lr_tag[tri] = sum_lr/3
-    add_tag(my_core, 'FACET_AVG_LR', lr_tag, types.MB_TYPE_DOUBLE)
+    if tag:
+        #add triangle average roughness tag
+        lr_tag = {}
+        for tri in native_ranges[types.MBTRI]:
+            three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+            sum_lr = 0
+            for vert in three_verts:
+                sum_lr += roughness[vert]
+            lr_tag[tri] = sum_lr/3
+        add_tag(my_core, 'FACET_AVG_LR', lr_tag, types.MB_TYPE_DOUBLE)
     return roughness.values()
     
     
@@ -505,4 +506,4 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
                             create_if_missing=True)
     for eh, data in tag_dic.items():
         # assign data to the tag:
-        my_core.tag_set_data(tag_eh, eh, data)
+        my_core.tag_set_data(tag_eh, eh, data)    
