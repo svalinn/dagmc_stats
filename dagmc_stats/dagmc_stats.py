@@ -271,7 +271,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     return t_a_r
 
 
-def get_area_triangle(my_core, meshset, geom_dim):
+def get_area_triangle(my_core, meshset, geom_dim, tris=[]):
     """
     Get the triangle area (according to the Heron's formula:
     sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
@@ -286,10 +286,15 @@ def get_area_triangle(my_core, meshset, geom_dim):
     -------
     area : (list) the triangle areas in the meshset
     """
-
+    """if tri != None:
+        side_lengths = list(get_tri_side_length(my_core, tri).values())
+        # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
+        s = sum(side_lengths)/2
+        s = np.sqrt(s * np.prod(s - side_lengths))
+        return s"""
     area = []
-    tris = get_tris(my_core, meshset, geom_dim)
-
+    if not tris:
+        tris = get_tris(my_core, meshset, geom_dim)
     for tri in tris:
         side_lengths = list(get_tri_side_length(my_core, tri).values())
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
@@ -441,7 +446,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
         tri_i_list = my_core.get_adjacencies(vert_i, 2, op_type=0)
         tri_j_list = my_core.get_adjacencies(vert_j, 2, op_type=0)
         tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
-        # rows with tri value as tri_ij_list[0] or rei_ij_list[1]
+        # rows with tri value as tri_ij_list[0] or tri_ij_list[1]
         select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
                                     (tri_vert_data['tri'] == tri_ij_list[1])
         # rows with vert value not equal to vert_i and not equal to vert_j
@@ -506,4 +511,18 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
                             create_if_missing=True)
     for eh, data in tag_dic.items():
         # assign data to the tag:
-        my_core.tag_set_data(tag_eh, eh, data)    
+        my_core.tag_set_data(tag_eh, eh, data)
+
+
+def avg_roughness(my_core, roughness, entity_ranges, geom_dim):
+    root_set = my_core.get_root_set()
+    area_sum = get_area_triangle(my_core, root_set, geom_dim)
+    num = 0
+    for vert in roughness:
+        adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
+        #adj_tris = tri_vert_data[tri_vert_data['vert'] = vert]['tri']
+        for tri in adj_tris:
+            s_i = get_area_triangle(my_core, root_set, geom_dim, tri=tri)
+    num += roughness[vert] * s_i / 3
+    avg_roughness = num/area_sums
+    return avg_roughness
