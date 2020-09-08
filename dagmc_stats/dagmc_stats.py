@@ -105,7 +105,7 @@ def get_triangles_per_vertex(my_core, native_ranges, ignore_zero=True):
     native_ranges : a dictionary containing ranges for each native type in the
                     file (VERTEX, TRIANGLE, ENTITYSET)
     ignore_zero : a boolean value that indicates whether to ignore the 
-           vertices that are not connected to any triangles.
+                  vertices that are not connected to any triangles.
 
     outputs
     -------
