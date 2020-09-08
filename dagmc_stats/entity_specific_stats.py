@@ -1,7 +1,4 @@
-import sys
 import numpy as np
-sys.path.append(
-    '/opt/tljh/user/lib/moab/lib/python3.6/site-packages/pymoab-5.1.0-py3.6-linux-x86_64.egg')
 from pymoab.rng import Range
 from pymoab import core, types
 
