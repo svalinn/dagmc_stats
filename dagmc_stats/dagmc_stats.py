@@ -494,7 +494,7 @@ def get_roughness(my_core, native_ranges, tag=True):
                 sum_lr += roughness[vert]
             lr_tag[tri] = sum_lr/3
         add_tag(my_core, 'FACET_AVG_LR', lr_tag, types.MB_TYPE_DOUBLE)
-    return roughness.values()
+    return roughness
     
     
 def add_tag(my_core, tag_name, tag_dic, tag_type):
@@ -518,15 +518,14 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
         my_core.tag_set_data(tag_eh, eh, data)
 
 
-def avg_roughness(my_core, roughness, entity_ranges, geom_dim):
+def avg_roughness(my_core, roughness, geom_dim):
     root_set = my_core.get_root_set()
-    area_sum = get_area_triangle(my_core, root_set, geom_dim)
+    area_sum = sum(get_area_triangle(my_core, root_set, geom_dim))
     num = 0
     for vert in roughness:
         adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
-        #adj_tris = tri_vert_data[tri_vert_data['vert'] = vert]['tri']
         for tri in adj_tris:
-            s_i = get_area_triangle(my_core, root_set, geom_dim, tri=tri)
-    num += roughness[vert] * s_i / 3
-    avg_roughness = num/area_sums
+            s_i = get_area_triangle(my_core, root_set, geom_dim, tris=[tri])
+            num += (roughness[vert] * s_i[0] / 3)
+    avg_roughness = num/area_sum
     return avg_roughness

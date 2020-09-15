@@ -213,10 +213,23 @@ class TestDagmcStats(unittest.TestCase):
         my_core = test_env[1]['core']
         native_ranges = test_env[1]['native_ranges']
         
-        roughness = ds.get_roughness(my_core, native_ranges)
+        roughness = ds.get_roughness(my_core, native_ranges).values()
         exp = 8
         obs = len(roughness)
         self.assertEqual(exp, obs)
         
         exp = [0,0,0,0,0,0,0,0]
         np.testing.assert_allclose(roughness, exp, atol = 1e-04)
+        
+        
+    def test_get_avg_roughness(self):
+        """Tests part of the avg_roughness function
+        """
+        my_core = test_env[1]['core']
+        native_ranges = test_env[1]['native_ranges']
+        roughness = ds.get_roughness(my_core, native_ranges)
+        geom_dim = test_env[1]['dagmc_tags']['geom_dim']
+        
+        exp = 0
+        obs = ds.avg_roughness(my_core, roughness, geom_dim)
+        self.assertAlmostEqual(exp, obs)
