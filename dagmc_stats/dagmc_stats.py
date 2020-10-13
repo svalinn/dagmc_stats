@@ -290,12 +290,7 @@ def get_area_triangle(my_core, meshset, geom_dim, tris=[]):
     -------
     area : (list) the triangle areas in the meshset
     """
-    """if tri != None:
-        side_lengths = list(get_tri_side_length(my_core, tri).values())
-        # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
-        s = sum(side_lengths)/2
-        s = np.sqrt(s * np.prod(s - side_lengths))
-        return s"""
+    
     area = []
     if not tris:
         tris = get_tris(my_core, meshset, geom_dim)
