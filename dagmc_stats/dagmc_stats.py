@@ -290,7 +290,7 @@ def get_area_triangle(my_core, meshset, geom_dim, tris=[]):
     -------
     area : (list) the triangle areas in the meshset
     """
-    
+
     area = []
     if not tris:
         tris = get_tris(my_core, meshset, geom_dim)
