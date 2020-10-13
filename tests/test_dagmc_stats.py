@@ -262,3 +262,4 @@ class TestDagmcStats(unittest.TestCase):
         
         exp = num/denom
         obs = ds.avg_roughness(my_core, roughness, geom_dim)
+        self.assertAlmostEqual(exp, obs, 2)
