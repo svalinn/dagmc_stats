@@ -476,7 +476,7 @@ def get_roughness(my_core, native_ranges, tag=True):
 
     outputs
     -------
-    roughness : (numpy array) the roughness for all surfaces in the meshset
+    roughness : (dictionary) the roughness for all vertices in the meshset
     """
     tri_vert_data, all_verts = get_tri_vert_data(my_core,
                                                     native_ranges[types.MBTRI])
@@ -519,6 +519,21 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
 
 
 def avg_roughness(my_core, roughness, geom_dim):
+    """Get the average roughness value for the geometry
+    Reference: https://www.sciencedirect.com/science/article/pii/
+    S0097849312001203
+    Formula 5
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    roughness : (dictionary) the roughness for all vertices in the meshset
+    geom_dim : the tag that specifically denotes the dimesion of the entity
+    
+    outputs
+    -------
+    avg_roughness : the average roughness value for the geometry
+    """
     root_set = my_core.get_root_set()
     area_sum = sum(get_area_triangle(my_core, root_set, geom_dim))
     num = 0
