@@ -4,6 +4,9 @@ jobs:
     install_py3:
         docker:
             - image: svalinn/pymoab-py3-18.04
+              auth:
+                username: $DOCKERHUB_USER
+                password: $DOCKERHUB_PASS
         steps:
             - checkout
             - run: pip install . --user
@@ -14,6 +17,9 @@ jobs:
     install_py2:
         docker:
             - image: svalinn/pymoab-py2-18.04
+              auth:
+                username: $DOCKERHUB_USER
+                password: $DOCKERHUB_PASS
         steps:
             - checkout
             - run: pip install . --user
@@ -24,6 +30,9 @@ jobs:
     test_py3:
         docker:
             - image: svalinn/pymoab-py3-18.04
+              auth:
+                username: $DOCKERHUB_USER
+                password: $DOCKERHUB_PASS
         steps:
             - checkout
             - run:
@@ -31,6 +40,9 @@ jobs:
     test_py2:
         docker:
             - image: svalinn/pymoab-py2-18.04
+              auth:
+                username: $DOCKERHUB_USER
+                password: $DOCKERHUB_PASS
         steps:
             - checkout
             - run:
