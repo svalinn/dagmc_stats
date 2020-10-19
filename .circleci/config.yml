@@ -51,7 +51,11 @@ jobs:
 workflows:
     build:
         jobs:
-            - install_py3
-            - install_py2
-            - test_py3
-            - test_py2
+            - install_py3:
+                context: dockerhub
+            - install_py2:
+                context: dockerhub
+            - test_py3:
+                context: dockerhub
+            - test_py2:
+                context: dockerhub
