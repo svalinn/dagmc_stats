@@ -460,7 +460,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
     return Lri
 
 
-def get_roughness(my_core, native_ranges, tag=True):
+def get_roughness(my_core, native_ranges, tag=False):
     """Get local roughness values of all the non-isolated vertices
 
     inputs
@@ -468,10 +468,12 @@ def get_roughness(my_core, native_ranges, tag=True):
     my_core : a MOAB Core instance
     native_ranges : a dictionary containing ranges for each native type
     in the file (VERTEX, TRIANGLE, ENTITYSET)
+    tag : whether or not to add the roughness tag
 
     outputs
     -------
     roughness : (dictionary) the roughness for all vertices in the meshset
+    stored in the form of vert : local roughness value
     """
     tri_vert_data, all_verts = get_tri_vert_data(my_core,
                                                     native_ranges[types.MBTRI])
@@ -479,6 +481,7 @@ def get_roughness(my_core, native_ranges, tag=True):
     roughness = {}
     for vert_i in all_verts:
         roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
+
     if tag:
         #add triangle average roughness tag
         lr_tag = {}
@@ -504,10 +507,10 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
     """
     # create the tag handle
     tag_eh = \
-    my_core.tag_get_handle(tag_name, size=1,
-                            tag_type=tag_type,
-                            storage_type=types.MB_TAG_SPARSE,
-                            create_if_missing=True)
+        my_core.tag_get_handle(tag_name, size=1,
+                                tag_type=tag_type,
+                                storage_type=types.MB_TAG_SPARSE,
+                                create_if_missing=True)
     for eh, data in tag_dic.items():
         # assign data to the tag:
         my_core.tag_set_data(tag_eh, eh, data)
