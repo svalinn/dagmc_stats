@@ -210,22 +210,41 @@ class TestDagmcStats(unittest.TestCase):
     def test_get_roughness(self):
         """Tests part of the get_roughness function
         """
-        my_core = test_env[1]['core']
-        native_ranges = test_env[1]['native_ranges']
+        # pyramid
+        # this geometry is a pyramid with height 5 and a sqaure base with side
+        # length 5
+        my_core = test_env[2]['core']
+        native_ranges = test_env[2]['native_ranges']
         
         roughness = ds.get_roughness(my_core, native_ranges).values()
-        exp = 8
+        exp = 5
         obs = len(roughness)
         self.assertEqual(exp, obs)
         
-        exp = [0,0,0,0,0,0,0,0]
-        np.testing.assert_allclose(roughness, exp, atol = 1e-04)
+        gc_top = 2.0/3*np.pi
+        gc_bottom = 5.0/6*np.pi
+        d_bottom = [1/np.tan(np.pi/3),
+                    0.5*(1/np.tan(np.pi/3)+1/np.tan(np.pi/4)), 0]
+        lr_bottom = []
+        lr_top = np.abs(gc_top - gc_bottom)
+        lr_bottom.append(np.abs(gc_bottom - \
+                    (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom) \
+                    /(d_bottom[0]+2*d_bottom[1])))
+        lr_bottom.append(np.abs(gc_bottom - \
+                    (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom+d_bottom[2]*gc_bottom) \
+                    /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
+        exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
+        roughness.sort()
+        for i in range(5):
+            self.assertAlmostEqual(exp[i], roughness[i])
         
         
     def test_get_avg_roughness(self):
         """Tests part of the avg_roughness function
         """
         # pyramid
+        # this geometry is a pyramid with height 5 and a sqaure base with side
+        # length 5
         my_core = test_env[2]['core']
         native_ranges = test_env[2]['native_ranges']
         roughness = ds.get_roughness(my_core, native_ranges)
@@ -245,7 +264,8 @@ class TestDagmcStats(unittest.TestCase):
                     /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
         s_top = 4*25/4*np.sqrt(3)
         s_bottom = [12.5+2*25/4*np.sqrt(3), 25+2*25/4*np.sqrt(3)]
-        # sum of vert * 1/3 total area of the incident facets of vert
+        # sum of vert local roughness* 1/3 total area of the incident facets of
+        # vert
         num = lr_top*s_top/3 + \
                     2*lr_bottom[0]*s_bottom[0]/3 + \
                     2*lr_bottom[1]*s_bottom[1]/3
