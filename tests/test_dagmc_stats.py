@@ -216,7 +216,7 @@ class TestDagmcStats(unittest.TestCase):
         my_core = test_env[2]['core']
         native_ranges = test_env[2]['native_ranges']
         
-        roughness = ds.get_roughness(my_core, native_ranges).values()
+        roughness = list(ds.get_roughness(my_core, native_ranges).values())
         exp = 5
         obs = len(roughness)
         self.assertEqual(exp, obs)
