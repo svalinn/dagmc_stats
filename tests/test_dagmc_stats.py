@@ -285,3 +285,35 @@ class TestDagmcStats(unittest.TestCase):
         exp = num/denom
         obs = ds.avg_roughness(my_core, roughness, geom_dim)
         self.assertAlmostEqual(exp, obs, 2)
+        
+        
+    def test_add_tag(self):
+        """Tests part of the add_tag function
+        """
+        my_core = test_env[1]['core'] #TODO: remove added tag
+        native_ranges = test_env[1]['native_ranges']
+        root_set = test_env[1]['root_set']
+        
+        test_tag_dic = {}
+        for tri in native_ranges[types.MBTRI]:
+            test_tag_dic[tri] = 1
+        ds.add_tag(my_core, 'test_tag', test_tag_dic, types.MB_TYPE_INTEGER)
+        # check tag names, data, and type
+        r = np.full(3, False)
+        try:
+            # try to get tag by expected name
+            tag_out = ds.my_core.tag_get_handle('test_tag')
+            r[0] = True
+        except:
+            # fails if tag does not exist
+            r[0] = False
+        # only test the rest if tag exists
+        if r[0]:
+            data_out = ds.my_core.tag_get_data(tag_out, root_set)
+            # check data value
+            if list(data_out[0]) == 1:
+                r[1] = True
+            # check data type
+            if type(data_out[0][0]) is types.MB_TYPE_INTEGER:
+                r[2] = True
+        assert(all(r))
