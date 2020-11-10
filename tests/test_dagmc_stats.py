@@ -148,6 +148,16 @@ class TestDagmcStats(unittest.TestCase):
         exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
         obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim']))
         self.assertEqual(exp, obs)
+        
+        # test if a subset of tris is added
+        tri = ds.get_tris(my_core, root_set, dagmc_tags['geom_dim'])[0]
+        exp = 1
+        obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri]))
+        self.assertEqual(exp, obs)
+        
+        exp = 50
+        obs = ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri])[0]
+        self.assertAlmostEqual(exp, obs)
 
 
     def test_get_tri_vert_data(self):

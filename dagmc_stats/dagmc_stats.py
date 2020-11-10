@@ -285,6 +285,9 @@ def get_area_triangle(my_core, meshset, geom_dim, tris=[]):
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
     geom_dim : a MOAB Tag that holds the dimension of an entity.
+    tris : (list) triangles whose area will be calculated. The default value is
+    an empty list and will lead to calculation of all triangle areas in the
+    geometry
 
     outputs
     -------
