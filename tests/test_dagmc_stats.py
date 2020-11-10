@@ -302,18 +302,18 @@ class TestDagmcStats(unittest.TestCase):
         r = np.full(3, False)
         try:
             # try to get tag by expected name
-            tag_out = ds.my_core.tag_get_handle('test_tag')
+            tag_out = my_core.tag_get_handle('test_tag')
             r[0] = True
         except:
             # fails if tag does not exist
             r[0] = False
         # only test the rest if tag exists
         if r[0]:
-            data_out = ds.my_core.tag_get_data(tag_out, root_set)
+            data_out = my_core.tag_get_data(tag_out, native_ranges[types.MBTRI][0])
             # check data value
-            if list(data_out[0]) == 1:
+            if data_out[0][0] == 1:
                 r[1] = True
             # check data type
-            if type(data_out[0][0]) is types.MB_TYPE_INTEGER:
+            if type(data_out[0][0]) is np.int32:
                 r[2] = True
         assert(all(r))
