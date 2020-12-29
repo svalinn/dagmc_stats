@@ -507,8 +507,8 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
         my_core.tag_set_data(tag_eh, eh, data)
 
 
-def add_vert_roughness_tag(my_core, native_ranges, roughness):
-    """Add vertex roughness tag
+def add_tri_roughness_tag(my_core, native_ranges, roughness):
+    """Add triangle average roughness tag
 
     inputs
     ------
