@@ -463,7 +463,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
     return Lri
 
 
-def get_roughness(my_core, native_ranges, tag=False):
+def get_roughness(my_core, native_ranges):
     """Get local roughness values of all the non-isolated vertices
 
     inputs
@@ -471,7 +471,6 @@ def get_roughness(my_core, native_ranges, tag=False):
     my_core : a MOAB Core instance
     native_ranges : a dictionary containing ranges for each native type
     in the file (VERTEX, TRIANGLE, ENTITYSET)
-    tag : whether or not to add the roughness tag
 
     outputs
     -------
@@ -484,17 +483,6 @@ def get_roughness(my_core, native_ranges, tag=False):
     roughness = {}
     for vert_i in all_verts:
         roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
-
-    if tag:
-        #add triangle average roughness tag
-        lr_tag = {}
-        for tri in native_ranges[types.MBTRI]:
-            three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
-            sum_lr = 0
-            for vert in three_verts:
-                sum_lr += roughness[vert]
-            lr_tag[tri] = sum_lr/3
-        add_tag(my_core, 'FACET_AVG_LR', lr_tag, types.MB_TYPE_DOUBLE)
     return roughness
     
     
@@ -517,6 +505,31 @@ def add_tag(my_core, tag_name, tag_dic, tag_type):
     for eh, data in tag_dic.items():
         # assign data to the tag:
         my_core.tag_set_data(tag_eh, eh, data)
+
+
+def add_vert_roughness_tag(my_core, native_ranges, roughness):
+    """Add vertex roughness tag
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    native_ranges : a dictionary containing ranges for each native type
+    in the file (VERTEX, TRIANGLE, ENTITYSET)
+    roughness : (dictionary) the roughness for all vertices in the meshset
+    stored in the form of vert : local roughness value
+
+    outputs
+    -------
+    no return value
+    """
+    lr_tag = {}
+    for tri in native_ranges[types.MBTRI]:
+        three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        sum_lr = 0
+        for vert in three_verts:
+            sum_lr += roughness[vert]
+        lr_tag[tri] = sum_lr/3
+    add_tag(my_core, 'FACET_AVG_LR', lr_tag, types.MB_TYPE_DOUBLE)
 
 
 def avg_roughness(my_core, roughness, geom_dim):
