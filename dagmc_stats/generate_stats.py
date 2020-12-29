@@ -3,6 +3,7 @@
 # set the path to find the current installation of pyMOAB
 import sys
 import numpy as np
+import pandas as pd
 import argparse
 
 from pymoab.rng import Range
@@ -12,6 +13,14 @@ from pymoab import core, types
 import dagmc_stats
 import entity_specific_stats
 
+df_vert = pd.DataFrame(columns = ['vert_eh', 'roughness','t_p_v'])
+df_vert = df_vert.set_index('vert_eh')
+df_tri = pd.DataFrame(columns = ['tri_eh', 't_a_r', 'tri_area'])
+df_tri = df_tri.set_index('tri_eh')
+df_surf = pd.DataFrame(columns = ['surf', 't_p_s', 'coarseness'])
+df_surf = df_surf.set_index('surf')
+#df_volume = pd.DataFrame(columns = ['volume', 's_p_v', 'coarseness'])
+#df_volume = df_volume.set_index('volume')
 
 def report_stats(stats, data, verbose, display_options):
 
@@ -166,29 +175,37 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
         data[spv_key] = dagmc_stats.get_surfaces_per_volume(
                                     my_core, entityset_ranges)
         stats[spv_key] = get_stats(data[spv_key].values())
+        #df_volume['s_p_v'] = dagmc_stats.get_surfaces_per_volume(
+        #                            my_core, entityset_ranges)
         
     if display_options['TPS'] or display_options['SPV']:
         tps_key = 'T_P_S'
         data[tps_key] = dagmc_stats.get_triangles_per_surface(
                                     my_core, entityset_ranges)
         stats[tps_key] = get_stats(data[tps_key].values())
+        df_surf['t_p_s'] = dagmc_stats.get_triangles_per_surface(
+                                    my_core, entityset_ranges)
         
     if display_options['TPV']:
         tpv_key = 'T_P_V'
         data[tpv_key] = dagmc_stats.get_triangles_per_vertex(
                                     my_core, native_ranges)
         stats[tpv_key] = get_stats(data[tpv_key])
+        df_vert['t_p_v'] = dagmc_stats.get_triangles_per_vertex(
+                                    my_core, native_ranges)
         
     if display_options['TAR'] or (tar_meshset != my_core.get_root_set()):
         tar_key = 'T_A_R'
         data[tar_key] = dagmc_stats.get_triangle_aspect_ratio(
                                     my_core, tar_meshset, dagmc_tags['geom_dim'])
         stats[tar_key] = get_stats(data[tar_key])
+        df_tri['t_a_r'] = dagmc_stats.get_triangle_aspect_ratio(my_core, tar_meshset, dagmc_tags['geom_dim'])
    
     if display_options['AT']:
         at_key = 'A_T'
         data[at_key] = dagmc_stats.get_area_triangle(my_core, tar_meshset, dagmc_tags['geom_dim'])
         stats[at_key] = get_stats(data[at_key])
+        df_tri['tri_area'] = dagmc_stats.get_area_triangle(my_core, tar_meshset, dagmc_tags['geom_dim'])
 
     if display_options['C']:
         c_key = 'C'
@@ -200,6 +217,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
         r_key = 'R'
         data[r_key] = dagmc_stats.get_roughness(my_core, native_ranges).values()
         stats[r_key] = get_stats(data[r_key])
+        df_vert['roughness'] = dagmc_stats.get_roughness(my_core, native_ranges).values()
 
     if display_options['SPV_data']:
         data['SPV_Entity'] = entity_specific_stats.get_spv_data(my_core,
