@@ -176,7 +176,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
                                     my_core, entityset_ranges)
         stats[spv_key] = get_stats(data[spv_key].values())
         df_volume['s_p_v'] = dagmc_stats.get_surfaces_per_volume(
-                                    my_core, entityset_ranges)
+                                    my_core, entityset_ranges).values()
         
     if display_options['TPS'] or display_options['SPV']:
         tps_key = 'T_P_S'
@@ -184,7 +184,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
                                     my_core, entityset_ranges)
         stats[tps_key] = get_stats(data[tps_key].values())
         df_surf['t_p_s'] = dagmc_stats.get_triangles_per_surface(
-                                    my_core, entityset_ranges)
+                                    my_core, entityset_ranges).values()
         
     if display_options['TPV']:
         tpv_key = 'T_P_V'
@@ -283,6 +283,11 @@ def main():
 
     stats, data = collect_statistics(my_core, root_set, tar_meshset, display_options)
     report_stats(stats, data, verbose, display_options)
+    #test
+    print(df_vert)
+    print(df_surf)
+    print(df_tri)
+    print(df_volume)
 
 if __name__ == "__main__":
     main()
