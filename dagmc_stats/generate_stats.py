@@ -19,8 +19,8 @@ df_tri = pd.DataFrame(columns = ['tri_eh', 't_a_r', 'tri_area'])
 df_tri = df_tri.set_index('tri_eh')
 df_surf = pd.DataFrame(columns = ['surf', 't_p_s', 'coarseness'])
 df_surf = df_surf.set_index('surf')
-#df_volume = pd.DataFrame(columns = ['volume', 's_p_v', 'coarseness'])
-#df_volume = df_volume.set_index('volume')
+df_volume = pd.DataFrame(columns = ['volume', 's_p_v', 'coarseness'])
+df_volume = df_volume.set_index('volume')
 
 def report_stats(stats, data, verbose, display_options):
 
@@ -175,8 +175,8 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
         data[spv_key] = dagmc_stats.get_surfaces_per_volume(
                                     my_core, entityset_ranges)
         stats[spv_key] = get_stats(data[spv_key].values())
-        #df_volume['s_p_v'] = dagmc_stats.get_surfaces_per_volume(
-        #                            my_core, entityset_ranges)
+        df_volume['s_p_v'] = dagmc_stats.get_surfaces_per_volume(
+                                    my_core, entityset_ranges)
         
     if display_options['TPS'] or display_options['SPV']:
         tps_key = 'T_P_S'
@@ -212,6 +212,8 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
         data[c_key] = dagmc_stats.get_coarseness(my_core, root_set, 
                                                                 entityset_ranges['Surfaces'], dagmc_tags['geom_dim'])
         stats[c_key] = get_stats(data[c_key])
+        df_surf['coarseness'] = dagmc_stats.get_coarseness(my_core, root_set,
+                                                                entityset_ranges['Surfaces'], dagmc_tags['geom_dim'])
     
     if display_options['R']:
         r_key = 'R'
