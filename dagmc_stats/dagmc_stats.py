@@ -463,7 +463,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
     return Lri
 
 
-def get_roughness(my_core, native_ranges):
+def get_roughness(my_core, native_ranges, verts=None):
     """Get local roughness values of all the non-isolated vertices
 
     inputs
@@ -471,6 +471,9 @@ def get_roughness(my_core, native_ranges):
     my_core : a MOAB Core instance
     native_ranges : a dictionary containing ranges for each native type
     in the file (VERTEX, TRIANGLE, ENTITYSET)
+    verts : the list of vertices whose roughness values are to be calculated.
+    By default its value is None and the roughness values for all the vertices
+    in the geometry will be calculated
 
     outputs
     -------
@@ -479,9 +482,11 @@ def get_roughness(my_core, native_ranges):
     """
     tri_vert_data, all_verts = get_tri_vert_data(my_core,
                                                     native_ranges[types.MBTRI])
+    if verts is None:
+        verts = all_verts
     gc_all = get_gaussian_curvature(my_core, all_verts, tri_vert_data)
     roughness = {}
-    for vert_i in all_verts:
+    for vert_i in verts:
         roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
     return roughness
     
@@ -499,7 +504,7 @@ def get_tri_roughness(my_core, native_ranges, roughness):
 
     outputs
     -------
-    tri_roughness : (dictionary) the avergae roughness values for all triangles
+    tri_roughness : (dictionary) the average roughness values for all triangles
     in the meshset stored in the form of tri : average roughness value
     """
     tri_roughness = {}
@@ -554,8 +559,7 @@ def avg_roughness(my_core, roughness, geom_dim):
     num = 0
     for vert in roughness:
         adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
-        for tri in adj_tris:
-            s_i = get_area_triangle(my_core, root_set, geom_dim, tris=[tri])
-            num += (roughness[vert] * s_i[0] / 3)
+        s_i = get_area_triangle(my_core, root_set, geom_dim, tris=adj_tris)
+        num += roughness[vert] * sum(s_i) / 3
     avg_roughness = num/area_sum
     return avg_roughness
