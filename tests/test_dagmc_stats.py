@@ -8,7 +8,7 @@ import numpy as np
 import unittest
 
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-test_env = [ { 'input_file' : 'tests/3vols.h5m'}, {'input_file' : 'tests/single-cube.h5m'} ]
+test_env = [ { 'input_file' : 'tests/3vols.h5m'}, {'input_file' : 'tests/single-cube.h5m'}, {'input_file' : 'tests/pyramid.h5m'}]
 
 for env in test_env:
      env['core'] = core.Core()
@@ -148,6 +148,16 @@ class TestDagmcStats(unittest.TestCase):
         exp = my_core.get_entities_by_type(root_set, types.MBTRI).size()
         obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim']))
         self.assertEqual(exp, obs)
+        
+        # test if a subset of tris is added
+        tri = ds.get_tris(my_core, root_set, dagmc_tags['geom_dim'])[0]
+        exp = 1
+        obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri]))
+        self.assertEqual(exp, obs)
+        
+        exp = 50
+        obs = ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri])[0]
+        self.assertAlmostEqual(exp, obs)
 
 
     def test_get_tri_vert_data(self):
@@ -210,13 +220,100 @@ class TestDagmcStats(unittest.TestCase):
     def test_get_roughness(self):
         """Tests part of the get_roughness function
         """
-        my_core = test_env[1]['core']
-        native_ranges = test_env[1]['native_ranges']
+        # pyramid
+        # this geometry is a pyramid with height 5 and a sqaure base with side
+        # length 5
+        my_core = test_env[2]['core']
+        native_ranges = test_env[2]['native_ranges']
         
-        roughness = ds.get_roughness(my_core, native_ranges)
-        exp = 8
+        roughness = list(ds.get_roughness(my_core, native_ranges).values())
+        exp = 5
         obs = len(roughness)
         self.assertEqual(exp, obs)
         
-        exp = [0,0,0,0,0,0,0,0]
-        np.testing.assert_allclose(roughness, exp, atol = 1e-04)
+        gc_top = 2.0/3*np.pi
+        gc_bottom = 5.0/6*np.pi
+        d_bottom = [1/np.tan(np.pi/3),
+                    0.5*(1/np.tan(np.pi/3)+1/np.tan(np.pi/4)), 0]
+        lr_bottom = []
+        lr_top = np.abs(gc_top - gc_bottom)
+        lr_bottom.append(np.abs(gc_bottom - \
+                    (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom) \
+                    /(d_bottom[0]+2*d_bottom[1])))
+        lr_bottom.append(np.abs(gc_bottom - \
+                    (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom+d_bottom[2]*gc_bottom) \
+                    /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
+        exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
+        roughness.sort()
+        for i in range(5):
+            self.assertAlmostEqual(exp[i], roughness[i])
+        
+        
+    def test_get_avg_roughness(self):
+        """Tests part of the avg_roughness function
+        """
+        # pyramid
+        # this geometry is a pyramid with height 5 and a sqaure base with side
+        # length 5
+        my_core = test_env[2]['core']
+        native_ranges = test_env[2]['native_ranges']
+        roughness = ds.get_roughness(my_core, native_ranges)
+        geom_dim = test_env[2]['dagmc_tags']['geom_dim']
+        
+        gc_top = 2.0/3*np.pi
+        gc_bottom = 5.0/6*np.pi
+        d_bottom = [1/np.tan(np.pi/3),
+                    0.5*(1/np.tan(np.pi/3)+1/np.tan(np.pi/4)), 0]
+        lr_bottom = []
+        lr_top = np.abs(gc_top - gc_bottom)
+        lr_bottom.append(np.abs(gc_bottom - \
+                    (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom) \
+                    /(d_bottom[0]+2*d_bottom[1])))
+        lr_bottom.append(np.abs(gc_bottom - \
+                    (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom+d_bottom[2]*gc_bottom) \
+                    /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
+        s_top = 4*25/4*np.sqrt(3)
+        s_bottom = [12.5+2*25/4*np.sqrt(3), 25+2*25/4*np.sqrt(3)]
+        # sum of vert local roughness* 1/3 total area of the incident facets of
+        # vert
+        num = lr_top*s_top/3 + \
+                    2*lr_bottom[0]*s_bottom[0]/3 + \
+                    2*lr_bottom[1]*s_bottom[1]/3
+        # the total surface area
+        denom = 4*25/4*np.sqrt(3)+25
+        
+        exp = num/denom
+        obs = ds.avg_roughness(my_core, roughness, geom_dim)
+        self.assertAlmostEqual(exp, obs, 2)
+        
+        
+    def test_add_tag(self):
+        """Tests part of the add_tag function
+        """
+        my_core = test_env[1]['core'] #TODO: remove added tag
+        native_ranges = test_env[1]['native_ranges']
+        root_set = test_env[1]['root_set']
+        
+        test_tag_dic = {}
+        for tri in native_ranges[types.MBTRI]:
+            test_tag_dic[tri] = 1
+        ds.add_tag(my_core, 'test_tag', test_tag_dic, types.MB_TYPE_INTEGER)
+        # check tag names, data, and type
+        r = np.full(3, False)
+        try:
+            # try to get tag by expected name
+            tag_out = my_core.tag_get_handle('test_tag')
+            r[0] = True
+        except:
+            # fails if tag does not exist
+            r[0] = False
+        # only test the rest if tag exists
+        if r[0]:
+            data_out = my_core.tag_get_data(tag_out, native_ranges[types.MBTRI][0])
+            # check data value
+            if data_out[0][0] == 1:
+                r[1] = True
+            # check data type
+            if type(data_out[0][0]) is np.int32:
+                r[2] = True
+        assert(all(r))

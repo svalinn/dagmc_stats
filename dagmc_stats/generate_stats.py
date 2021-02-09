@@ -198,7 +198,7 @@ def collect_statistics(my_core, root_set, tar_meshset, display_options):
     
     if display_options['R']:
         r_key = 'R'
-        data[r_key] = dagmc_stats.get_roughness(my_core, native_ranges)
+        data[r_key] = dagmc_stats.get_roughness(my_core, native_ranges).values()
         stats[r_key] = get_stats(data[r_key])
 
     if display_options['SPV_data']:

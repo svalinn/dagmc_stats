@@ -275,7 +275,7 @@ def get_triangle_aspect_ratio(my_core, meshset, geom_dim):
     return t_a_r
 
 
-def get_area_triangle(my_core, meshset, geom_dim):
+def get_area_triangle(my_core, meshset, geom_dim, tris=[]):
     """
     Get the triangle area (according to the Heron's formula:
     sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
@@ -285,6 +285,9 @@ def get_area_triangle(my_core, meshset, geom_dim):
     my_core : a MOAB Core instance
     meshset : a meshset containing a certain part of the mesh
     geom_dim : a MOAB Tag that holds the dimension of an entity.
+    tris : (list) triangles whose area will be calculated. The default value is
+    an empty list and will lead to calculation of all triangle areas in the
+    geometry
 
     outputs
     -------
@@ -292,8 +295,8 @@ def get_area_triangle(my_core, meshset, geom_dim):
     """
 
     area = []
-    tris = get_tris(my_core, meshset, geom_dim)
-
+    if not tris:
+        tris = get_tris(my_core, meshset, geom_dim)
     for tri in tris:
         side_lengths = list(get_tri_side_length(my_core, tri).values())
         # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
@@ -445,7 +448,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
         tri_i_list = my_core.get_adjacencies(vert_i, 2, op_type=0)
         tri_j_list = my_core.get_adjacencies(vert_j, 2, op_type=0)
         tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
-        # rows with tri value as tri_ij_list[0] or rei_ij_list[1]
+        # rows with tri value as tri_ij_list[0] or tri_ij_list[1]
         select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
                                     (tri_vert_data['tri'] == tri_ij_list[1])
         # rows with vert value not equal to vert_i and not equal to vert_j
@@ -460,7 +463,7 @@ def get_lri(vert_i, gc_all, tri_vert_data, my_core):
     return Lri
 
 
-def get_roughness(my_core, native_ranges):
+def get_roughness(my_core, native_ranges, verts=None):
     """Get local roughness values of all the non-isolated vertices
 
     inputs
@@ -468,15 +471,95 @@ def get_roughness(my_core, native_ranges):
     my_core : a MOAB Core instance
     native_ranges : a dictionary containing ranges for each native type
     in the file (VERTEX, TRIANGLE, ENTITYSET)
+    verts : the list of vertices whose roughness values are to be calculated.
+    By default its value is None and the roughness values for all the vertices
+    in the geometry will be calculated
 
     outputs
     -------
-    roughness : (numpy array) the roughness for all surfaces in the meshset
+    roughness : (dictionary) the roughness for all vertices in the meshset
+    stored in the form of vert : local roughness value
     """
     tri_vert_data, all_verts = get_tri_vert_data(my_core,
                                                     native_ranges[types.MBTRI])
+    if verts is None:
+        verts = all_verts
     gc_all = get_gaussian_curvature(my_core, all_verts, tri_vert_data)
-    roughness = np.zeros(len(all_verts))
-    for vert_idx, vert_i in enumerate(all_verts):
-        roughness[vert_idx] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
+    roughness = {}
+    for vert_i in verts:
+        roughness[vert_i] = get_lri(vert_i, gc_all, tri_vert_data, my_core)
     return roughness
+    
+
+def get_tri_roughness(my_core, native_ranges, roughness):
+    """Get triangle average roughness
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    native_ranges : a dictionary containing ranges for each native type
+    in the file (VERTEX, TRIANGLE, ENTITYSET)
+    roughness : (dictionary) the roughness for all vertices in the meshset
+    stored in the form of vert : local roughness value
+
+    outputs
+    -------
+    tri_roughness : (dictionary) the average roughness values for all triangles
+    in the meshset stored in the form of tri : average roughness value
+    """
+    tri_roughness = {}
+    for tri in native_ranges[types.MBTRI]:
+        three_verts = list(my_core.get_adjacencies(tri, 0, op_type=1))
+        sum_lr = 0
+        for vert in three_verts:
+            sum_lr += roughness[vert]
+        tri_roughness[tri] = sum_lr/3
+    return tri_roughness
+    
+    
+def add_tag(my_core, tag_name, tag_dic, tag_type):
+    """Add tag according to given tag information
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    tag_name : tag name
+    tag_dic : a dictionary containing eh:data
+    tag_type : tag type
+    """
+    # create the tag handle
+    tag_eh = \
+        my_core.tag_get_handle(tag_name, size=1,
+                                tag_type=tag_type,
+                                storage_type=types.MB_TAG_SPARSE,
+                                create_if_missing=True)
+    for eh, data in tag_dic.items():
+        # assign data to the tag:
+        my_core.tag_set_data(tag_eh, eh, data)
+
+
+def avg_roughness(my_core, roughness, geom_dim):
+    """Get the average roughness value for the geometry
+    Reference: https://www.sciencedirect.com/science/article/pii/
+    S0097849312001203
+    Formula 5
+
+    inputs
+    ------
+    my_core : a MOAB Core instance
+    roughness : (dictionary) the roughness for all vertices in the meshset
+    geom_dim : the tag that specifically denotes the dimesion of the entity
+    
+    outputs
+    -------
+    avg_roughness : the average roughness value for the geometry
+    """
+    root_set = my_core.get_root_set()
+    area_sum = sum(get_area_triangle(my_core, root_set, geom_dim))
+    num = 0
+    for vert in roughness:
+        adj_tris = my_core.get_adjacencies(vert, 2, op_type=0)
+        s_i = get_area_triangle(my_core, root_set, geom_dim, tris=adj_tris)
+        num += roughness[vert] * sum(s_i) / 3
+    avg_roughness = num/area_sum
+    return avg_roughness
