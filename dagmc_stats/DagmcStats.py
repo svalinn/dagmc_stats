@@ -3,11 +3,11 @@ import numpy as np
 from pymoab.rng import Range
 from pymoab import core, types
 
+
 class DagmcStats:
 
-    tri_vert_struct = np.dtype({'names': ['tri', 'vert', 'angle',
-    'side_length'], 'formats': [np.uint64, np.uint64, np.float64, np.float64]})
-
+    tri_vert_struct = np.dtype({'names': ['tri', 'vert', 'angle', 'side_length'],
+                                'formats': [np.uint64, np.uint64, np.float64, np.float64]})
 
     def __init__(self, filename, populate=False):
         # read file
@@ -15,17 +15,22 @@ class DagmcStats:
         self._my_moab_core.load_file(filename)
         self.root_set = self._my_moab_core.get_root_set()
         entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-        
+
         # some metadata
         self.native_ranges = get_native_ranges(root_set, entity_types)
         self.dagmc_tags = get_dagmc_tags()
-        self.entityset_ranges = get_entityset_ranges(root_set, dagmc_tags['geom_dim'])
+        self.entityset_ranges = get_entityset_ranges(
+            root_set, dagmc_tags['geom_dim'])
 
         # initialize data frames
-        self._vert_data = pd.DataFrame(columns = ['vert_eh', 'roughness','t_p_v'], index='vert_eh')
-        self._tri_data = pd.DataFrame(columns = ['tri_eh', 't_a_r', 'tri_area'], index='tri_eh')
-        self._surface_data = pd.DataFrame(columns = ['surf_eh', 't_p_s', 'coarseness'], index='surf_eh')
-        self._volume_data = pd.DataFrame(columns = ['volume', 's_p_v', 'coarseness'], index='volume')
+        self._vert_data = pd.DataFrame(
+            columns=['vert_eh', 'roughness', 'tri_per_vert'], index='vert_eh')
+        self._tri_data = pd.DataFrame(
+            columns=['tri_eh', 'aspect_ratio', 'area'], index='tri_eh')
+        self._surface_data = pd.DataFrame(
+            columns=['surf_eh', 'tri_per_surf', 'coarseness'], index='surf_eh')
+        self._volume_data = pd.DataFrame(
+            columns=['volume', 'surf_per_vol', 'coarseness'], index='volume')
 
         """
         TODO: args(not part of init->user input when query
@@ -39,10 +44,9 @@ class DagmcStats:
         return
         """
 
-
+    # Todo: more documentation for dictionary
     def get_native_ranges(meshset, entity_types):
-        """
-        Get a dictionary with MOAB ranges for each of the requested entity types
+        """Get a dictionary with MOAB ranges for each of the requested entity types
 
         inputs
         ------
@@ -61,10 +65,8 @@ class DagmcStats:
                 meshset, entity_type)
         return native_ranges
 
-
     def get_dagmc_tags(self):
-        """
-        Get a dictionary with the important tags for DAGMC geometries
+        """Get a dictionary with the important tags for DAGMC geometries
 
         inputs
         ------
@@ -74,23 +76,21 @@ class DagmcStats:
         -------
         dagmc_tags : a dictionary of relevant tags
         """
-        tag_data_list = { 'geom_dim' : { 'name': 'GEOM_DIMENSION', 'size': 1, 'type': types.MB_TYPE_INTEGER },
-                  'category' : { 'name': 'CATEGORY', 'size': 32, 'type': types.MB_OPAQUE },
-                  'global_id' : { 'name': 'GLOBAL_ID', 'size': 1, 'type': types.MB_TYPE_INTEGER }
-                  }
+        tag_data_list = {'geom_dim': {'name': 'GEOM_DIMENSION', 'size': 1, 'type': types.MB_TYPE_INTEGER},
+                         'category': {'name': 'CATEGORY', 'size': 32, 'type': types.MB_OPAQUE},
+                         'global_id': {'name': 'GLOBAL_ID', 'size': 1, 'type': types.MB_TYPE_INTEGER}
+                         }
 
         for key, tag_data in tag_data_list:
             dagmc_tags[key] = self._my_moab_core.tag_get_handle(tag_data['name'],
-                                                          size=tag_data['size'],
-                                                          tag_type=tag_data['type'],
-                                                          storage_type=types.MB_TAG_SPARSE,
-                                                          create_if_missing=True)
+                                                                size=tag_data['size'],
+                                                                tag_type=tag_data['type'],
+                                                                storage_type=types.MB_TAG_SPARSE,
+                                                                create_if_missing=True)
         return dagmc_tags
-    
-    
+
     def populate_triangle_data(self, meshset=None, aspect_ratio=True, area=True):
-        """
-        populate triangle areas and triangle aspect ratios
+        """Populate triangle areas and triangle aspect ratios
         inputs
         ------
         meshset : set of entities that are used to populate data. Default value
@@ -105,82 +105,45 @@ class DagmcStats:
         none
         """
         tris = get_tris(meshset)
+        df_tri['tri_eh'] = tris
 
-        area = []
-        t_a_r = []
         for tri in tris:
+            tri_data_row = {'entity_handle': tri}
             side_lengths = list(get_tri_side_length(tri).values())
             s = .5*(sum(side_lengths))
+            p = np.prod(s - side_lengths)
             if area:
                 # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
-                t_a = np.sqrt(s * np.prod(s - side_lengths))
-                area.append(t_a)
+                tri_data_row['area'] = np.sqrt(s * p)
             if aspect_ratio:
-                top = np.prod(side_lengths)
-                bottom = 8*np.prod(s-side_lengths)
-                t_a_r.append(top/bottom)
-        if area:
-            df_tri['tri_area'] = area
-        if aspect_ratio:
-            df_tri['t_a_r'] = t_a_r
-            
-        """if area:
-            area = []
-            for tri in tris:
-                side_lengths = list(get_tri_side_length(tri).values())
-                s = .5*(sum(side_lengths))
-                # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
-                t_a = np.sqrt(s * np.prod(s - side_lengths))
-                area.append(t_a)
-            df_tri['tri_area'] = area
-        if aspect_ratio:
-            t_a_r = []
-            for tri in tris:
-                side_lengths = list(get_tri_side_length(tri).values())
-                s = .5*(sum(side_lengths))
-                top = np.prod(side_lengths)
-                bottom = 8*np.prod(s-side_lengths)
-                t_a_r.append(top/bottom)
-            df_tri['t_a_r'] = t_a_r"""
+                tri_data_row['aspect_ratio'] = np.prod(side_lengths) / (8 * p)
+        df_tri = df_tri.append(tri_data_row, ignore_index=True)
         return
-        
 
+    # Todo
     def get_tris(self, meshset):
-        """
-        Get triangles of a volume if geom_dim is 3
+        """Get triangles of a volume if geom_dim is 3
         Get triangles of a surface if geom_dim is 2
         Else get all the triangles
 
         inputs
         ------
         meshset : set of entities that are used to populate data. Default value
-        is None and data of the whole geometry will be populated.
+            is None and data of the whole geometry will be populated.
 
         outputs
         -------
         tris : a list of triangle entities
         """
-        #Todo: should be here or in init()?
         dim = _my_moab_core.tag_get_data(dagmc_tags['geom_dim'], meshset)[0][0]
-        # get triangles of a volume
-        if dim == 3:
-            entities = _my_moab_core.create_meshset()
-            for surface in _my_moab_core.get_child_meshsets(root_set):
-                _my_moab_core.add_entities(
-                    entities, _my_moab_core.get_entities_by_type(surface, types.MBTRI))
-            tris = _my_moab_core.get_entities_by_type(entities, types.MBTRI)
-        # get triangles of a surface
-        elif dim == 2:
-            entities = _my_moab_core.create_meshset()
-            my_moab_core.add_entities(
-                entities, _my_moab_core.get_entities_by_type(root_set, types.MBTRI))
-            tris = _my_moab_core.get_entities_by_type(entities, types.MBTRI)
+        # get triangles of a volume or a surface
+        if dim == 3 or dim == 2:
+            tris = _my_moab_core.get_entities_by_type(meshset, types.MBTRI)
         else:
             # get all the triangles
             tris = _my_moab_core.get_entities_by_type(root_set, types.MBTRI)
         return tris
-   
-   
+
     def get_tri_side_length(self, tri):
         """
         Get side lengths of triangle
@@ -196,7 +159,6 @@ class DagmcStats:
         """
 
         side_lengths = {}
-        s = 0
         coord_list = []
 
         verts = list(_my_moab_core.get_adjacencies(tri, 0))
@@ -208,7 +170,7 @@ class DagmcStats:
         for side in range(3):
             side_lengths.update({verts[side-1]:
                                  np.linalg.norm(coord_list[side] -
-                                 coord_list[side-2])})
+                                                coord_list[side-2])})
             # Although it may not be intuitive, the indexing of these lists takes
             # advantage of python's indexing syntax to rotate through
             # the `verts` of the triangle while simultaneously referencing the side
@@ -220,12 +182,11 @@ class DagmcStats:
             #     2            1           1              0             0
         return side_lengths
 
-
     # overload this somehow: either optional parameters, or different names
+
     def query_triangle_area(self, tri):
-        """
-        query triangle areas given triangle entity handles
-        
+        """Query triangle areas given triangle entity handles
+
         inputs
         ------
         tri : triangle entity handles
@@ -236,11 +197,10 @@ class DagmcStats:
         """
         return self._tri_data.query('tri_eh == tri')
 
-
     def query_triangle_area_from_surf(self, surf):
         """
         query triangle areas given surface entity handles
-        
+
         inputs
         ------
         surf : surface entity handles
@@ -250,4 +210,5 @@ class DagmcStats:
         triangle areas that correspond to the given surface entity handles
         """
         # gets the areas of the triangles that make up a single surface
-        return self._tri_data.query('surf_eh == surf')
+        tris = get_tris(surf)
+        return self._tri_data.query('surf_eh == @tris')
