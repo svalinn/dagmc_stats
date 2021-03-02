@@ -91,6 +91,7 @@ class DagmcStats:
 
     def populate_triangle_data(self, meshset=None, aspect_ratio=True, area=True):
         """Populate triangle areas and triangle aspect ratios
+
         inputs
         ------
         meshset : set of entities that are used to populate data. Default value
@@ -212,3 +213,32 @@ class DagmcStats:
         # gets the areas of the triangles that make up a single surface
         tris = get_tris(surf)
         return self._tri_data.query('surf_eh == @tris')
+
+    def populate_surface_data(self, coarseness=True, surf_per_vol=True):
+        """Populate surface coarseness and surface per volume values
+
+        inputs
+        ------
+        coarsensss : boolean value that determines whether or not to populate
+                  coarseness values. Default value is True.
+        surf_per_vol : boolean value that determines whether or not to populate
+                  surface per volume values. Default value is True.
+
+        outputs
+        -------
+        none
+        """
+        surfs = entityset_ranges['Surfaces']
+        df_surf['surf_eh'] = surfs
+
+        for surf in surfs:
+            surf_data_row = {'surf_eh': surf}
+            if coarseness:
+                # Todo : need tri data row
+                surf_area = sum(query_triangle_area(surf))
+                surf_data_row['coarseness'] = len(surf_area)/sum(surf_area)
+            if surf_per_vol:
+                surf_data_row['surf_per_vol'] = _my_moab_core.get_entities_by_type(
+                    surf, types.MBTRI).size()
+        df_surf = df_surf.append(surf_data_row, ignore_index=True)
+        return
