@@ -242,3 +242,16 @@ class DagmcStats:
                     surf, types.MBTRI).size()
         df_surf = df_surf.append(surf_data_row, ignore_index=True)
         return
+        
+    def query_surf_coarseness(self, surf):
+        """Query coarseness values given surface entity handles
+
+        inputs
+        ------
+        surf : surface entity handles
+
+        outputs
+        -------
+        surface coarseness value that correspond to the given surface entity handles
+        """
+        return self._tri_data.query('surf_eh == surf')
