@@ -2,8 +2,8 @@ from pymoab import core, types
 from pymoab.rng import Range
 import dagmc_stats.DagmcStats as ds
 
-test_env = [{'input_file': '3vols.h5m'}, {
-    'input_file': 'single-cube.h5m'}, {'input_file': 'pyramid.h5m'}]
+test_env = [{'input_file': 'tests/3vols.h5m'}, {
+    'input_file': 'tests/single-cube.h5m'}, {'input_file': 'tests/pyramid.h5m'}]
 
 
 def test_load_file():
