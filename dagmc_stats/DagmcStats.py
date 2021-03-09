@@ -17,7 +17,6 @@ class DagmcStats:
         outputs
         -------
         none
-
         """
         # read file
         self._my_moab_core = core.Core()
