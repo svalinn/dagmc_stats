@@ -12,8 +12,6 @@ def test_load_file():
     """
 
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
-
-    print(single_cube.root_set)
     assert(single_cube.root_set == 0)
     
     # tests for pandas data frames
