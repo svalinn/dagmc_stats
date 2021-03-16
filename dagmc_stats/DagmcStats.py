@@ -40,3 +40,23 @@ class DagmcStats:
         self._vol_data = pd.DataFrame(
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
         self._vol_data = self._vol_data.set_index('vol_eh')
+
+    def get_native_ranges(self, meshset, entity_types):
+        """Get a dictionary with MOAB ranges for each of the requested entity types
+
+        inputs
+        ------
+        meshset : a MOAB meshset to query for the ranges of entities
+        entity_types : a list of valid pyMOAB types to be retrieved
+
+        outputs
+        -------
+        native_ranges : a dictionary with one entry for each entity type that is a
+                        Range of handles to that type
+        """
+
+        native_ranges = {}
+        for entity_type in entity_types:
+            native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
+                meshset, entity_type)
+        return native_ranges
