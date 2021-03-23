@@ -45,11 +45,12 @@ class DagmcStats:
         self.__set_native_ranges()
 
     def __set_native_ranges(self):
-        """Get a dictionary with MOAB ranges for each of the requested entity types
+        """Set the class native_ranges variable to a dictionary with MOAB
+        ranges for each of the requested entity types
 
         inputs
         ------
-        entity_types : a list of valid pyMOAB types to be retrieved
+        none
 
         outputs
         -------
