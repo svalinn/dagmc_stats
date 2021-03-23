@@ -47,14 +47,9 @@ def test_native_ranges():
     """
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
     meshset = single_cube.root_set
-    native_ranges = single_cube.get_native_ranges(meshset, entity_types)
-
-    vertex_range = single_cube._my_moab_core.get_entities_by_type(
-        meshset, types.MBVERTEX)
-    assert(vertex_range == native_ranges[0])
-    triangle_range = single_cube._my_moab_core.get_entities_by_type(
-        meshset, types.MBTRI)
-    assert(triangle_range == native_ranges[2])
-    entityset_range = single_cube._my_moab_core.get_entities_by_type(
-        meshset, types.MBENTITYSET)
-    assert(entityset_range == native_ranges[11])
+    native_ranges = single_cube._DagmcStats__set_native_ranges(entity_types)
+    
+    for native_range_type in single_cube.entity_types:
+        range = single_cube._my_moab_core.get_entities_by_type(
+            meshset, native_range_type)
+        assert(range == native_ranges[native_range_type])

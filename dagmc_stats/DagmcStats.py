@@ -5,6 +5,7 @@ from pymoab import core, types
 
 
 class DagmcStats:
+    entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
     def __init__(self, filename, populate=False):
         """Constructor
@@ -22,7 +23,6 @@ class DagmcStats:
         self._my_moab_core = core.Core()
         self._my_moab_core.load_file(filename)
         self.root_set = self._my_moab_core.get_root_set()
-        entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
         # initialize data frames
         self._vert_data = pd.DataFrame(
@@ -41,12 +41,11 @@ class DagmcStats:
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
         self._vol_data = self._vol_data.set_index('vol_eh')
 
-    def get_native_ranges(self, meshset, entity_types):
+    def __set_native_ranges(self, entity_types):
         """Get a dictionary with MOAB ranges for each of the requested entity types
 
         inputs
         ------
-        meshset : a MOAB meshset to query for the ranges of entities
         entity_types : a list of valid pyMOAB types to be retrieved
 
         outputs
@@ -55,8 +54,8 @@ class DagmcStats:
                         Range of handles to that type
         """
 
-        native_ranges = {}
+        self.native_ranges = {}
         for entity_type in entity_types:
-            native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
-                meshset, entity_type)
-        return native_ranges
+            self.native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
+                self.root_set, entity_type)
+        return self.native_ranges
