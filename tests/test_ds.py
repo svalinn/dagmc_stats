@@ -4,7 +4,6 @@ import dagmc_stats.DagmcStats as ds
 import pandas as pd
 import numpy as np
 
-entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 test_env = [{'input_file': 'tests/3vols.h5m'}, {
     'input_file': 'tests/single-cube.h5m'}, {'input_file': 'tests/pyramid.h5m'}]
 
