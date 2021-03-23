@@ -2,6 +2,7 @@ from pymoab import core, types
 from pymoab.rng import Range
 import dagmc_stats.DagmcStats as ds
 import pandas as pd
+import numpy as np
 
 entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 test_env = [{'input_file': 'tests/3vols.h5m'}, {
@@ -46,9 +47,9 @@ def test_native_ranges():
     """Tests get_native_ranges
     """
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
-    meshset = single_cube.root_set
-    
-    for native_range_type in single_cube.entity_types:
+    test_pass = np.full(3, False)
+    for i, native_range_type in enumerate(single_cube.entity_types):
         range = single_cube._my_moab_core.get_entities_by_type(
-            meshset, native_range_type)
-        assert(range == single_cube.native_ranges[native_range_type])
+                single_cube.root_set, native_range_type)
+        test_pass[i] = (range == single_cube.native_ranges[native_range_type])
+    assert(all(test_pass))
