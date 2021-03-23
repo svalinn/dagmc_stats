@@ -5,9 +5,8 @@ from pymoab import core, types
 
 
 class DagmcStats:
-    entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
 
-    def __init__(self, filename, populate=False, entity=entity_types):
+    def __init__(self, filename, populate=False):
         """Constructor
 
         inputs
@@ -41,9 +40,11 @@ class DagmcStats:
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
         self._vol_data = self._vol_data.set_index('vol_eh')
         
-        self.native_ranges = self.__set_native_ranges(entity)
+        self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+        self.native_ranges = {}
+        self.__set_native_ranges()
 
-    def __set_native_ranges(self, entity_types):
+    def __set_native_ranges(self):
         """Get a dictionary with MOAB ranges for each of the requested entity types
 
         inputs
@@ -55,9 +56,6 @@ class DagmcStats:
         native_ranges : a dictionary with one entry for each entity type that is a
                         Range of handles to that type
         """
-
-        native_ranges = {}
-        for entity_type in entity_types:
-            native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
+        for entity_type in self.entity_types:
+            self.native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
                 self.root_set, entity_type)
-        return native_ranges
