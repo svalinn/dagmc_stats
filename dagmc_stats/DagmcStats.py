@@ -64,7 +64,8 @@ class DagmcStats:
                 self.root_set, entity_type)
 
     def __set_dagmc_tags(self):
-        """Get a dictionary with the important tags for DAGMC geometries
+        """Set the class dagmc_tags variable to a dictionary with the
+        important tags for DAGMC geometries
 
         inputs
         ------
