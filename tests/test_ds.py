@@ -52,3 +52,13 @@ def test_native_ranges():
                 single_cube.root_set, native_range_type)
         test_pass[i] = (range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
+
+def test_get_tags():
+    """
+    Tests different aspects of the get_dagmc_tags function
+    """
+    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    assert(len(single_cube.dagmc_tags) == 3)
+    assert(single_cube.dagmc_tags['category'])
+    assert(single_cube.dagmc_tags['geom_dim'])
+    assert(single_cube.dagmc_tags['global_id'])
