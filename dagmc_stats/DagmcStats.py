@@ -74,10 +74,15 @@ class DagmcStats:
         -------
         none
         """
-        tag_data_list = {'geom_dim': {'name': 'GEOM_DIMENSION', 'size': 1, 'type': types.MB_TYPE_INTEGER},
-                         'category': {'name': 'CATEGORY', 'size': 32, 'type': types.MB_TYPE_OPAQUE},
-                         'global_id': {'name': 'GLOBAL_ID', 'size': 1, 'type': types.MB_TYPE_INTEGER}
-                         }
+        tag_data_list = {'geom_dim': {'name': 'GEOM_DIMENSION',
+                                      'size': 1,
+                                      'type': types.MB_TYPE_INTEGER},
+                         'category': {'name': 'CATEGORY',
+                                      'size': 32,
+                                      'type': types.MB_TYPE_OPAQUE},
+                         'global_id': {'name': 'GLOBAL_ID',
+                                       'size': 1,
+                                       'type': types.MB_TYPE_INTEGER}}
 
         for key, tag_data in tag_data_list.items():
             self.dagmc_tags[key] = self._my_moab_core.tag_get_handle(tag_data['name'],

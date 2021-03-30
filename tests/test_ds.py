@@ -9,7 +9,8 @@ test_env = [{'input_file': 'tests/3vols.h5m'}, {
 
 
 def test_load_file():
-    """Tests loading file and check the values of all the variables that are set in the constructor
+    """Tests loading file and check the values of all the variables that are
+    set in the constructor
     """
 
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
