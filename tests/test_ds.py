@@ -53,7 +53,7 @@ def test_native_ranges():
         test_pass[i] = (range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
 
-def test_get_tags():
+def test_dagmc_tags():
     """
     Tests different aspects of the get_dagmc_tags function
     """
