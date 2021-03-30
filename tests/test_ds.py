@@ -49,9 +49,10 @@ def test_set_native_ranges():
     test_pass = np.full(3, False)
     for i, native_range_type in enumerate(single_cube.entity_types):
         range = single_cube._my_moab_core.get_entities_by_type(
-                single_cube.root_set, native_range_type)
+            single_cube.root_set, native_range_type)
         test_pass[i] = (range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
+
 
 def test_set_dagmc_tags():
     """

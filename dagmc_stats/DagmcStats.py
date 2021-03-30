@@ -39,7 +39,7 @@ class DagmcStats:
         self._vol_data = pd.DataFrame(
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
         self._vol_data = self._vol_data.set_index('vol_eh')
-        
+
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
         self.native_ranges = {}
         self.__set_native_ranges()
@@ -81,7 +81,7 @@ class DagmcStats:
 
         for key, tag_data in tag_data_list.items():
             self.dagmc_tags[key] = self._my_moab_core.tag_get_handle(tag_data['name'],
-                                                                size=tag_data['size'],
-                                                                tag_type=tag_data['type'],
-                                                                storage_type=types.MB_TAG_SPARSE,
-                                                                create_if_missing=False)
+                                                                     size=tag_data['size'],
+                                                                     tag_type=tag_data['type'],
+                                                                     storage_type=types.MB_TAG_SPARSE,
+                                                                     create_if_missing=False)
