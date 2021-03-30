@@ -56,8 +56,7 @@ class DagmcStats:
 
         outputs
         -------
-        native_ranges : a dictionary with one entry for each entity type that is a
-                        Range of handles to that type
+        none
         """
         for entity_type in self.entity_types:
             self.native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
@@ -73,7 +72,7 @@ class DagmcStats:
 
         outputs
         -------
-        dagmc_tags : a dictionary of relevant tags
+        none
         """
         tag_data_list = {'geom_dim': {'name': 'GEOM_DIMENSION', 'size': 1, 'type': types.MB_TYPE_INTEGER},
                          'category': {'name': 'CATEGORY', 'size': 32, 'type': types.MB_TYPE_OPAQUE},
