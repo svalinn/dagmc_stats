@@ -42,7 +42,7 @@ def test_load_file_populate():
     pass
 
 
-def test_native_ranges():
+def test_set_native_ranges():
     """Tests set_native_ranges
     """
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
@@ -53,7 +53,7 @@ def test_native_ranges():
         test_pass[i] = (range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
 
-def test_dagmc_tags():
+def test_set_dagmc_tags():
     """
     Tests different aspects of the set_dagmc_tags function
     """
