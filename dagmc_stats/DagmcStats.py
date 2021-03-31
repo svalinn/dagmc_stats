@@ -39,10 +39,12 @@ class DagmcStats:
         self._vol_data = pd.DataFrame(
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
         self._vol_data = self._vol_data.set_index('vol_eh')
-        
+
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
         self.native_ranges = {}
         self.__set_native_ranges()
+        self.dagmc_tags = {}
+        self.__set_dagmc_tags()
 
     def __set_native_ranges(self):
         """Set the class native_ranges variable to a dictionary with MOAB
@@ -54,9 +56,37 @@ class DagmcStats:
 
         outputs
         -------
-        native_ranges : a dictionary with one entry for each entity type that is a
-                        Range of handles to that type
+        none
         """
         for entity_type in self.entity_types:
             self.native_ranges[entity_type] = self._my_moab_core.get_entities_by_type(
                 self.root_set, entity_type)
+
+    def __set_dagmc_tags(self):
+        """Set the class dagmc_tags variable to a dictionary with the
+        important tags for DAGMC geometries
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        none
+        """
+        tag_data_list = {'geom_dim': {'name': 'GEOM_DIMENSION',
+                                      'size': 1,
+                                      'type': types.MB_TYPE_INTEGER},
+                         'category': {'name': 'CATEGORY',
+                                      'size': 32,
+                                      'type': types.MB_TYPE_OPAQUE},
+                         'global_id': {'name': 'GLOBAL_ID',
+                                       'size': 1,
+                                       'type': types.MB_TYPE_INTEGER}}
+
+        for key, tag_data in tag_data_list.items():
+            self.dagmc_tags[key] = self._my_moab_core.tag_get_handle(tag_data['name'],
+                                                                     size=tag_data['size'],
+                                                                     tag_type=tag_data['type'],
+                                                                     storage_type=types.MB_TAG_SPARSE,
+                                                                     create_if_missing=False)

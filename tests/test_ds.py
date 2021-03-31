@@ -9,7 +9,8 @@ test_env = [{'input_file': 'tests/3vols.h5m'}, {
 
 
 def test_load_file():
-    """Tests loading file and check the values of all the variables that are set in the constructor
+    """Tests loading file and check the values of all the variables that are
+    set in the constructor
     """
 
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
@@ -42,13 +43,24 @@ def test_load_file_populate():
     pass
 
 
-def test_native_ranges():
-    """Tests get_native_ranges
+def test_set_native_ranges():
+    """Tests set_native_ranges
     """
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
     test_pass = np.full(3, False)
     for i, native_range_type in enumerate(single_cube.entity_types):
         range = single_cube._my_moab_core.get_entities_by_type(
-                single_cube.root_set, native_range_type)
+            single_cube.root_set, native_range_type)
         test_pass[i] = (range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
+
+
+def test_set_dagmc_tags():
+    """
+    Tests different aspects of the set_dagmc_tags function
+    """
+    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    assert(len(single_cube.dagmc_tags) == 3)
+    assert(single_cube.dagmc_tags['category'])
+    assert(single_cube.dagmc_tags['geom_dim'])
+    assert(single_cube.dagmc_tags['global_id'])
