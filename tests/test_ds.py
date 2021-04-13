@@ -65,6 +65,7 @@ def test_set_dagmc_tags():
     assert(single_cube.dagmc_tags['geom_dim'])
     assert(single_cube.dagmc_tags['global_id'])
 
+
 def test_set_entityset_ranges():
     """
     Tests different aspects of the set_entityset_ranges function
@@ -73,6 +74,8 @@ def test_set_entityset_ranges():
     entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
     test_pass = np.full(4, False)
     for dimension, set_type in enumerate(entityset_types):
-        type_range = single_cube._my_moab_core.get_entities_by_type_and_tag(single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension])
-        test_pass[dimension] = (type_range == single_cube.entityset_ranges[set_type])
+        type_range = single_cube._my_moab_core.get_entities_by_type_and_tag(
+            single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension])
+        test_pass[dimension] = (
+            type_range == single_cube.entityset_ranges[set_type])
     assert(all(test_pass))

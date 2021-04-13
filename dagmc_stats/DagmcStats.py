@@ -111,4 +111,4 @@ class DagmcStats:
         for dimension, set_type in enumerate(entityset_types):
             self.entityset_ranges[set_type] = \
                 self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
-                                                            self.dagmc_tags['geom_dim'], [dimension])
+                                                                self.dagmc_tags['geom_dim'], [dimension])
