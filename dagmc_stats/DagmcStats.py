@@ -45,6 +45,8 @@ class DagmcStats:
         self.__set_native_ranges()
         self.dagmc_tags = {}
         self.__set_dagmc_tags()
+        self.entityset_ranges = {}
+        self.__set_entityset_ranges()
 
     def __set_native_ranges(self):
         """Set the class native_ranges variable to a dictionary with MOAB
@@ -90,3 +92,23 @@ class DagmcStats:
                                                                      tag_type=tag_data['type'],
                                                                      storage_type=types.MB_TAG_SPARSE,
                                                                      create_if_missing=False)
+
+    def __set_entityset_ranges(self):
+        """
+        Set a dictionary with MOAB Ranges that are specific to the
+        types.MBENTITYSET type
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        none
+        """
+
+        entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
+        for dimension, set_type in enumerate(entityset_types):
+            self.entityset_ranges[set_type] = \
+                self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
+                                                            self.dagmc_tags['geom_dim'], [dimension])
