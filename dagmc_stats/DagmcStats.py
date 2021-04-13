@@ -41,6 +41,7 @@ class DagmcStats:
         self._vol_data = self._vol_data.set_index('vol_eh')
 
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
+        self.entityset_types = {0:'Nodes', 1:'Curves', 2:'Surfaces', 3:'Volumes'}
         self.native_ranges = {}
         self.__set_native_ranges()
         self.dagmc_tags = {}
@@ -106,9 +107,7 @@ class DagmcStats:
         -------
         none
         """
-
-        entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
-        for dimension, set_type in enumerate(entityset_types):
+        for dimension, set_type in self.entityset_types.items():
             self.entityset_ranges[set_type] = \
                 self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
                                                                 self.dagmc_tags['geom_dim'], [dimension])

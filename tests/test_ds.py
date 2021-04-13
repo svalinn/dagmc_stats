@@ -47,7 +47,7 @@ def test_set_native_ranges():
     """Tests set_native_ranges
     """
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
-    test_pass = np.full(3, False)
+    test_pass = np.full(len(single_cube.entity_types), False)
     for i, native_range_type in enumerate(single_cube.entity_types):
         range = single_cube._my_moab_core.get_entities_by_type(
             single_cube.root_set, native_range_type)
@@ -71,9 +71,8 @@ def test_set_entityset_ranges():
     Tests different aspects of the set_entityset_ranges function
     """
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
-    entityset_types = ['Nodes', 'Curves', 'Surfaces', 'Volumes']
-    test_pass = np.full(4, False)
-    for dimension, set_type in enumerate(entityset_types):
+    test_pass = np.full(len(single_cube.entityset_types), False)
+    for dimension, set_type in single_cube.entityset_types.items():
         type_range = single_cube._my_moab_core.get_entities_by_type_and_tag(
             single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension])
         test_pass[dimension] = (
