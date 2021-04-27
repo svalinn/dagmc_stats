@@ -121,6 +121,7 @@ def test_get_tris_dimension_incorrect():
     """
     test_pass = np.full(2, False)
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    # check if get_tris function generates warning for meshset with invalid dimension
     verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
                 three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
     with warnings.catch_warnings(record=True) as w:
