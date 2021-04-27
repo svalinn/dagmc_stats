@@ -87,9 +87,10 @@ def test_get_tris_vol():
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     vols = three_vols._my_moab_core.get_entities_by_type_and_tag(
-                three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     obs_tris = three_vols.get_tris(meshset=vols[0])
-    exp_tris = three_vols._my_moab_core.get_entities_by_type(vols[0],types.MBTRI)
+    exp_tris = three_vols._my_moab_core.get_entities_by_type(
+        vols[0], types.MBTRI)
     assert(list(obs_tris).sort() == list(exp_tris).sort())
 
 
@@ -99,9 +100,10 @@ def test_get_tris_surf():
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     surfs = three_vols._my_moab_core.get_entities_by_type_and_tag(
-                three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [2])
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [2])
     obs_tris = three_vols.get_tris(meshset=surfs[0])
-    exp_tris = three_vols._my_moab_core.get_entities_by_type(surfs[0],types.MBTRI)
+    exp_tris = three_vols._my_moab_core.get_entities_by_type(
+        surfs[0], types.MBTRI)
     assert(list(obs_tris).sort() == list(exp_tris).sort())
 
 
@@ -111,7 +113,8 @@ def test_get_tris_rootset():
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     obs_tris = three_vols.get_tris(meshset=three_vols.root_set)
-    exp_tris = three_vols._my_moab_core.get_entities_by_type(three_vols.root_set,types.MBTRI)
+    exp_tris = three_vols._my_moab_core.get_entities_by_type(
+        three_vols.root_set, types.MBTRI)
     assert(list(obs_tris).sort() == list(exp_tris).sort())
 
 
@@ -123,7 +126,7 @@ def test_get_tris_dimension_incorrect():
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     # check if get_tris function generates warning for meshset with invalid dimension
     verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
-                three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
     with warnings.catch_warnings(record=True) as w:
         three_vols.get_tris(meshset=verts[0])
         warnings.simplefilter('always')
