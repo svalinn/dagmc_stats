@@ -20,22 +20,18 @@ def test_load_file():
     # tests for pandas data frames
     exp_vert_data = pd.DataFrame(
         columns=['vert_eh', 'roughness', 'tri_per_vert'])
-    exp_vert_data = exp_vert_data.set_index('vert_eh')
     assert(single_cube._vert_data.equals(exp_vert_data))
 
     exp_tri_data = pd.DataFrame(
         columns=['tri_eh', 'aspect_ratio', 'area'])
-    exp_tri_data = exp_tri_data.set_index('tri_eh')
     assert(single_cube._tri_data.equals(exp_tri_data))
 
     exp_surf_data = pd.DataFrame(
         columns=['surf_eh', 'tri_per_surf', 'coarseness'])
-    exp_surf_data = exp_surf_data.set_index('surf_eh')
     assert(single_cube._surf_data.equals(exp_surf_data))
 
     exp_vol_data = pd.DataFrame(
         columns=['vol_eh', 'surf_per_vol', 'coarseness'])
-    exp_vol_data = exp_vol_data.set_index('vol_eh')
     assert(single_cube._vol_data.equals(exp_vol_data))
 
 
@@ -135,3 +131,20 @@ def test_get_tris_dimension_incorrect():
         if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
             test_pass[1] = True
     assert(all(test_pass))
+
+
+def test_populate_triangle_data():
+    """
+    Tests different aspects of the populate_triangle_data function
+    """
+    single_cube = ds.DagmcStats(test_env[1]['input_file'], populate=True)
+    exp_tri_data = pd.DataFrame(
+        columns=['tri_eh', 'aspect_ratio', 'area'])
+    tris = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBTRI)
+    for tri in tris:
+        tri_data_row = {'tri_eh': tri}
+        tri_data_row['area'] = 50
+        tri_data_row['aspect_ratio'] = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+        exp_tri_data = exp_tri_data.append(tri_data_row, ignore_index=True)
+    pd.testing.assert_frame_equal(single_cube._tri_data,exp_tri_data)
+    

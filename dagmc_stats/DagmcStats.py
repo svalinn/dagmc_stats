@@ -6,7 +6,7 @@ import warnings
 
 class DagmcStats:
 
-    def __init__(self, filename, populate=False):
+    def __init__(self, filename, populate=False, meshset=None):
         """Constructor
 
         inputs
@@ -26,19 +26,12 @@ class DagmcStats:
         # initialize data frames
         self._vert_data = pd.DataFrame(
             columns=['vert_eh', 'roughness', 'tri_per_vert'])
-        self._vert_data = self._vert_data.set_index('vert_eh')
-
         self._tri_data = pd.DataFrame(
             columns=['tri_eh', 'aspect_ratio', 'area'])
-        self._tri_data = self._tri_data.set_index('tri_eh')
-
         self._surf_data = pd.DataFrame(
             columns=['surf_eh', 'tri_per_surf', 'coarseness'])
-        self._surf_data = self._surf_data.set_index('surf_eh')
-
         self._vol_data = pd.DataFrame(
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
-        self._vol_data = self._vol_data.set_index('vol_eh')
 
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
         self.entityset_types = {0:'Nodes', 1:'Curves', 2:'Surfaces', 3:'Volumes'}
@@ -48,6 +41,9 @@ class DagmcStats:
         self.__set_dagmc_tags()
         self.entityset_ranges = {}
         self.__set_entityset_ranges()
+        
+        if populate is True:
+            self.__populate_triangle_data(meshset)
 
     def __set_native_ranges(self):
         """Set the class native_ranges variable to a dictionary with MOAB
@@ -147,3 +143,69 @@ class DagmcStats:
             tris = self._my_moab_core.get_entities_by_type(item, types.MBTRI)
             tris_lst.extend(tris)
         return tris
+
+    def __populate_triangle_data(self, meshset):
+        """Populate triangle areas and triangle aspect ratios
+
+        inputs
+        ------
+        meshset : set of entities that are used to populate data. By default,
+                  the root set will be used and data of the whole geometry will
+                  be populated.
+
+        outputs
+        -------
+        none
+        """
+        tris = self.get_tris(meshset)
+        for tri in tris:
+            if tri not in self._tri_data.tri_eh:
+                tri_data_row = {'tri_eh': tri}
+                side_lengths = list(self.get_tri_side_length(tri).values())
+                s = .5*(sum(side_lengths))
+                p = np.prod(s - side_lengths)
+                # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
+                tri_data_row['area'] = np.sqrt(s * p)
+                tri_data_row['aspect_ratio'] = np.prod(side_lengths) / (8 * p)
+                self._tri_data = self._tri_data.append(tri_data_row, ignore_index=True)
+        return
+
+    def get_tri_side_length(self, tri):
+        """
+        Get side lengths of triangle
+
+        inputs
+        ------
+        my_core : a MOAB Core instance
+        tri : triangle entity
+
+        outputs
+        -------
+        side_lengths : a dictionary that stores vert : the opposite side length of
+        the vert as key-value pair
+        """
+
+        side_lengths = {}
+        s = 0
+        coord_list = []
+
+        verts = list(self._my_moab_core.get_adjacencies(tri, 0))
+
+        for vert in verts:
+            coords = self._my_moab_core.get_coords(vert)
+            coord_list.append(coords)
+
+        for side in range(3):
+            side_lengths.update({verts[side-1]:
+                                 np.linalg.norm(coord_list[side] -
+                                 coord_list[side-2])})
+            # Although it may not be intuitive, the indexing of these lists takes
+            # advantage of python's indexing syntax to rotate through
+            # the `verts` of the triangle while simultaneously referencing the side
+            # opposite each of the `verts` by the coordinates of the vertices that
+            # define that side:
+            #    side       side-1   index(side-1)     side-2   index(side-2)
+            #     0           -1           2             -2             1
+            #     1            0           0             -1             2
+            #     2            1           1              0             0
+        return side_lengths
