@@ -5,7 +5,7 @@ from pymoab import core, types
 
 class DagmcStats:
 
-    def __init__(self, filename, populate=False, meshset=None):
+    def __init__(self, filename, populate=False):
         """Constructor
 
         inputs
