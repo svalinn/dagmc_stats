@@ -42,8 +42,8 @@ class DagmcStats:
         self.entityset_ranges = {}
         self.__set_entityset_ranges()
         
-        if populate is True:
-            self.__populate_triangle_data(meshset)
+        #if populate is True:
+        #    self.__populate_triangle_data(meshset)
 
     def __set_native_ranges(self):
         """Set the class native_ranges variable to a dictionary with MOAB
@@ -108,7 +108,7 @@ class DagmcStats:
                                                                 self.dagmc_tags['geom_dim'], [dimension])
 
 
-
+'''
     def __populate_triangle_data(self, meshset):
         """Populate triangle areas and triangle aspect ratios
 
@@ -173,3 +173,4 @@ class DagmcStats:
             #     1            0           0             -1             2
             #     2            1           1              0             0
         return side_lengths
+'''
