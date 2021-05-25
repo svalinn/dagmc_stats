@@ -1,3 +1,7 @@
+from pymoab.rng import Range
+from pymoab import core, types
+import warnings
+
 class DagmcQuery:
     def __init__(self, dagmc_file, meshset=None):
         self.dagmc_file = dagmc_file

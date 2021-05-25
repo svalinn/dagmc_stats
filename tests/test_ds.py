@@ -1,6 +1,7 @@
 from pymoab import core, types
 from pymoab.rng import Range
-import dagmc_stats.DagmcStats as ds
+import dagmc_stats.DagmcFile as ds
+import dagmc_stats.DagmcQuery as dq
 import pandas as pd
 import numpy as np
 import warnings
@@ -84,7 +85,8 @@ def test_get_tris_vol():
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     vols = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
-    obs_tris = three_vols.get_tris(meshset=vols[0])
+    three_vols_query = dq.DagmcQuery(three_vols, meshset=vols[0])
+    obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         vols[0], types.MBTRI)
     assert(list(obs_tris).sort() == list(exp_tris).sort())
@@ -97,7 +99,8 @@ def test_get_tris_surf():
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     surfs = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [2])
-    obs_tris = three_vols.get_tris(meshset=surfs[0])
+    three_vols_query = dq.DagmcQuery(three_vols, meshset=surfs[0])
+    obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         surfs[0], types.MBTRI)
     assert(list(obs_tris).sort() == list(exp_tris).sort())
@@ -108,7 +111,8 @@ def test_get_tris_rootset():
     Tests the get_tris function given the rootset
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
-    obs_tris = three_vols.get_tris(meshset=three_vols.root_set)
+    three_vols_query = dq.DagmcQuery(three_vols, meshset=three_vols.root_set)
+    obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         three_vols.root_set, types.MBTRI)
     assert(list(obs_tris).sort() == list(exp_tris).sort())
@@ -124,7 +128,8 @@ def test_get_tris_dimension_incorrect():
     verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
     with warnings.catch_warnings(record=True) as w:
-        three_vols.get_tris(meshset=verts[0])
+        three_vols_query = dq.DagmcQuery(three_vols, meshset=verts[0])
+        obs_tris = three_vols_query.get_tris()
         warnings.simplefilter('always')
         if len(w) == 1:
             test_pass[0] = True
@@ -132,7 +137,7 @@ def test_get_tris_dimension_incorrect():
             test_pass[1] = True
     assert(all(test_pass))
 
-
+'''
 def test_populate_triangle_data():
     """
     Tests different aspects of the populate_triangle_data function
@@ -147,4 +152,4 @@ def test_populate_triangle_data():
         tri_data_row['aspect_ratio'] = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
         exp_tri_data = exp_tri_data.append(tri_data_row, ignore_index=True)
     pd.testing.assert_frame_equal(single_cube._tri_data,exp_tri_data)
-    
+'''

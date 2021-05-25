@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from pymoab.rng import Range
 from pymoab import core, types
-import warnings
 
 class DagmcStats:
 
