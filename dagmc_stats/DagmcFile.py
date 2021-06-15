@@ -4,6 +4,7 @@ from pymoab.rng import Range
 from pymoab import core, types
 import warnings
 
+
 class DagmcStats:
 
     def __init__(self, filename, populate=False):
@@ -34,15 +35,16 @@ class DagmcStats:
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
 
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-        self.entityset_types = {0:'Nodes', 1:'Curves', 2:'Surfaces', 3:'Volumes'}
+        self.entityset_types = {0: 'Nodes',
+                                1: 'Curves', 2: 'Surfaces', 3: 'Volumes'}
         self.native_ranges = {}
         self.__set_native_ranges()
         self.dagmc_tags = {}
         self.__set_dagmc_tags()
         self.entityset_ranges = {}
         self.__set_entityset_ranges()
-        
-        #if populate is True:
+
+        # if populate is True:
         #    self.__populate_triangle_data(meshset)
 
     def __set_native_ranges(self):
@@ -106,8 +108,19 @@ class DagmcStats:
             self.entityset_ranges[set_type] = \
                 self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
                                                                 self.dagmc_tags['geom_dim'], [dimension])
- 
+
     def get_meshset_by_id(self, dim, ids=[]):
+        """Get meshset of the geometry with specified dimension and ids
+
+        inputs
+        ------
+        dim : dimension of the meshset
+        ids : ids of the meshset
+
+        outputs
+        -------
+        meshset : meshset of the geometry with given dimension and ids
+        """
         # if no id is passed in
         if len(ids) == 0:
             return self.entityset_ranges[dim]
@@ -115,11 +128,12 @@ class DagmcStats:
         all_global_id = []
         for id in ids:
             all_global_id.extend(list(self._my_moab_core.get_entities_by_type_and_tag(self.root_set,
-                                                types.MBENTITYSET, self.dagmc_tags['global_id'], [id])))
+                                                                                      types.MBENTITYSET, self.dagmc_tags['global_id'], [id])))
         meshset = list(set(self.entityset_ranges[dim]) & set(all_global_id))
         # if id is not in the given dim range
         if not meshset:
-            warnings.warn('ID is not in the given dimension range! All entities of specified dimension will be returned.')
+            warnings.warn(
+                'ID is not in the given dimension range! All entities of specified dimension will be returned.')
             meshset = self.entityset_ranges[dim]
         return meshset
 

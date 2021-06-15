@@ -77,7 +77,11 @@ def test_set_entityset_ranges():
             type_range == single_cube.entityset_ranges[set_type])
     assert(all(test_pass))
 
+
 def test_get_meshset_by_id():
+    """
+    Tests the get_meshset_by_id function given valid dim and id
+    """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     # get volume 0
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
@@ -85,16 +89,22 @@ def test_get_meshset_by_id():
     obs = three_vols.get_meshset_by_id('Volumes', ids=[1])
     assert(obs == exp)
 
+
 def test_get_meshset_by_id_empty_id():
-    # empty id is passed in
+    """
+    Tests the get_meshset_by_id function given no id
+    """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     obs = three_vols.get_meshset_by_id('Volumes', ids=[])
     assert(obs == exp)
-    
+
+
 def test_get_meshset_by_id_wrong_dim():
-    # id not in given dimension is passed in
+    """
+    Tests the get_meshset_by_id function given id not in the dim
+    """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     test_pass = np.full(3, False)
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
@@ -109,7 +119,7 @@ def test_get_meshset_by_id_wrong_dim():
             if 'ID is not in the given dimension range! All entities of specified dimension will be returned.' in str(w[-1].message):
                 test_pass[2] = True
     assert(all(test_pass))
-    
+
 
 '''
 def test_populate_triangle_data():
