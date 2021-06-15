@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from pymoab.rng import Range
 from pymoab import core, types
+import warnings
 
 class DagmcStats:
 
@@ -105,6 +106,22 @@ class DagmcStats:
             self.entityset_ranges[set_type] = \
                 self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
                                                                 self.dagmc_tags['geom_dim'], [dimension])
+ 
+    def get_meshset_by_id(self, dim, ids=[]):
+        # if no id is passed in
+        if len(ids) == 0:
+            return self.entityset_ranges[dim]
+
+        all_global_id = []
+        for id in ids:
+            all_global_id.extend(list(self._my_moab_core.get_entities_by_type_and_tag(self.root_set,
+                                                types.MBENTITYSET, self.dagmc_tags['global_id'], [id])))
+        meshset = list(set(self.entityset_ranges[dim]) & set(all_global_id))
+        # if id is not in the given dim range
+        if not meshset:
+            warnings.warn('ID is not in the given dimension range! All entities of specified dimension will be returned.')
+            meshset = self.entityset_ranges[dim]
+        return meshset
 
 
 '''
