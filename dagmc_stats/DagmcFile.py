@@ -35,8 +35,8 @@ class DagmcStats:
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
 
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-        self.entityset_types = {0: 'Nodes',
-                                1: 'Curves', 2: 'Surfaces', 3: 'Volumes'}
+        self.entityset_types = {0: 'nodes',
+                                1: 'curves', 2: 'surfaces', 3: 'volumes'}
         self.native_ranges = {}
         self.__set_native_ranges()
         self.dagmc_tags = {}
@@ -114,13 +114,28 @@ class DagmcStats:
 
         inputs
         ------
-        dim : dimension of the meshset
-        ids : ids of the meshset
+        dim : (Integer or String) Dimension of the meshset. 0: 'node(s)',
+                                1: 'curve(s)', 2: 'surface(s)', 3: 'volume(s)'
+        ids : (Integer) Global ID(s) of the meshset
 
         outputs
         -------
-        meshset : meshset of the geometry with given dimension and ids
+        meshset : meshset of the geometry with given dimension and ids. First,
+                  dim will be checked. If dim is invalid, the root set will be
+                  returned. Then, if id is invalid (empty or not in the given
+                  dim range), all entities with the given dim will be returned.
         """
+        if isinstance(dim, int) and dim in [0, 1, 2, 3]:
+            dim = self.entityset_types[dim]
+        elif isinstance(dim, basestring) and dim.lower() in ['node', 'curve', 'surface', 'volume', 'nodes', 'curves', 'surfaces', 'volumes']:
+            dim = dim.lower()
+            if dim[-1] != 's':
+                dim = dim + 's'
+        else:
+            # invalid dim
+            warnings.warn('Invalid dim!')
+            return self.root_set
+
         # if no id is passed in
         if len(ids) == 0:
             return self.entityset_ranges[dim]
@@ -133,7 +148,8 @@ class DagmcStats:
         # if id is not in the given dim range
         if not meshset:
             warnings.warn(
-                'ID is not in the given dimension range! All entities of specified dimension will be returned.')
+                'ID is not in the given dimension range! ' +\
+                    'All entities of specified dimension will be returned.')
             meshset = self.entityset_ranges[dim]
         return meshset
 

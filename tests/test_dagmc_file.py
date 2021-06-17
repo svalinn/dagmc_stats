@@ -83,12 +83,20 @@ def test_get_meshset_by_id():
     Tests the get_meshset_by_id function given valid dim and id
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    test_pass = np.full(2, False)
     # get volume 0
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])[0]
-    obs = three_vols.get_meshset_by_id('Volumes', ids=[1])
-    assert(obs == exp)
+    obs = three_vols.get_meshset_by_id('volumes', ids=[1])
+    if obs == exp:
+        test_pass[0] = True
 
+    obs_singular = three_vols.get_meshset_by_id('volume', ids=[1])
+    obs_upper = three_vols.get_meshset_by_id('Volumes', ids=[1])
+    obs_integer = three_vols.get_meshset_by_id(3 , ids=[1])
+    if obs == obs_singular == obs_upper == obs_integer:
+        test_pass[1] = True
+    assert(all(test_pass))
 
 def test_get_meshset_by_id_empty_id():
     """
@@ -97,11 +105,11 @@ def test_get_meshset_by_id_empty_id():
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
-    obs = three_vols.get_meshset_by_id('Volumes', ids=[])
+    # When no id is passed in, get_meshset_by_id() function should return the root set.
+    obs = three_vols.get_meshset_by_id('volumes', ids=[])
     assert(obs == exp)
 
-
-def test_get_meshset_by_id_wrong_dim():
+def test_get_meshset_by_id_out_of_range_dim():
     """
     Tests the get_meshset_by_id function given id not in the dim
     """
@@ -110,7 +118,7 @@ def test_get_meshset_by_id_wrong_dim():
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     with warnings.catch_warnings(record=True) as w:
-        obs = three_vols.get_meshset_by_id('Volumes', ids=[4])
+        obs = three_vols.get_meshset_by_id('volumes', ids=[4])
         warnings.simplefilter('always')
         if obs == exp:
             test_pass[0] = True
@@ -120,6 +128,23 @@ def test_get_meshset_by_id_wrong_dim():
                 test_pass[2] = True
     assert(all(test_pass))
 
+def test_get_meshset_by_id_invalid_dim():
+    """
+    Tests the get_meshset_by_id function given invalid dim
+    """
+    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    test_pass = np.full(3, False)
+    exp = three_vols.root_set
+    with warnings.catch_warnings(record=True) as w:
+        obs = three_vols.get_meshset_by_id('vertices', ids=[])
+        warnings.simplefilter('always')
+        if obs == exp:
+            test_pass[0] = True
+        if len(w) == 1:
+            test_pass[1] = True
+            if 'Invalid dim!' in str(w[-1].message):
+                test_pass[2] = True
+    assert(all(test_pass))
 
 '''
 def test_populate_triangle_data():
