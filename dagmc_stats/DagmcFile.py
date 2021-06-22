@@ -141,11 +141,12 @@ class DagmcStats:
         if len(ids) == 0:
             return self.entityset_ranges[dim]
 
-        all_global_id = []
+        dim_ms = self._my_moab_core.create_meshset()
+        self._my_moab_core.add_entity(dim_ms, self.entityset_ranges[dim])
+        meshset = []
         for id in ids:
-            all_global_id.extend(list(self._my_moab_core.get_entities_by_type_and_tag(self.root_set,
-                                                                                      types.MBENTITYSET, self.dagmc_tags['global_id'], [id])))
-        meshset = list(set(self.entityset_ranges[dim]) & set(all_global_id))
+            meshset.extend(list(self._my_moab_core.get_entities_by_type_and_tag(dim_ms,
+                                            types.MBENTITYSET, self.dagmc_tags['global_id'], [id])))
         # if id is not in the given dim range
         if not meshset:
             warnings.warn(
