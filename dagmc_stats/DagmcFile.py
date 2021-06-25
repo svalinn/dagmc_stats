@@ -156,7 +156,6 @@ class DagmcStats:
             warnings.warn(
                 'ID is not in the given dimension range! ' +\
                     'Empty list will be returned.')
-            meshset = []
         return meshset
 
 
