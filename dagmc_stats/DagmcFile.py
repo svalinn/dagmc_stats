@@ -122,8 +122,9 @@ class DagmcStats:
         -------
         meshset : meshset of the geometry with given dimension and ids. First,
                   dim will be checked. If dim is invalid, the root set will be
-                  returned. Then, if id is invalid (empty or not in the given
-                  dim range), all entities with the given dim will be returned.
+                  returned. Then, if id is empty, all entities with the given
+                  dim will be returned. If is is not in the given dim range),
+                  an empty list will be returned.
         """
         plural_names = self.entityset_types.values()
         sing_names = [ name[:-1] for name in plural_names]
@@ -148,14 +149,14 @@ class DagmcStats:
         self._my_moab_core.add_entity(dim_ms, self.entityset_ranges[dim])
         meshset = []
         for id in ids:
-            meshset.extend(list(self._my_moab_core.get_entities_by_type_and_tag(dim_ms,
-                                            types.MBENTITYSET, self.dagmc_tags['global_id'], [id])))
+            meshset.extend(self._my_moab_core.get_entities_by_type_and_tag(dim_ms,
+                                            types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
         # if id is not in the given dim range
         if not meshset:
             warnings.warn(
                 'ID is not in the given dimension range! ' +\
-                    'All entities of specified dimension will be returned.')
-            meshset = self.entityset_ranges[dim]
+                    'Empty list will be returned.')
+            meshset = []
         return meshset
 
 

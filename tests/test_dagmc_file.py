@@ -83,7 +83,7 @@ def test_get_meshset_by_id():
     Tests the get_meshset_by_id function given valid dim and id
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
-    test_pass = np.full(2, False)
+    test_pass = np.full(3, False)
     # get volume 0
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])[0]
@@ -96,6 +96,13 @@ def test_get_meshset_by_id():
     obs_integer = three_vols.get_meshset_by_id(3 , ids=[1])
     if obs == obs_singular == obs_upper == obs_integer:
         test_pass[1] = True
+
+    # get volumes 0, 1
+    exp = list(three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])[0:2])
+    obs = three_vols.get_meshset_by_id('volumes', ids=[1,2])
+    if obs == exp:
+        test_pass[2] = True
     assert(all(test_pass))
 
 def test_get_meshset_by_id_empty_id():
@@ -105,7 +112,7 @@ def test_get_meshset_by_id_empty_id():
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
-    # When no id is passed in, get_meshset_by_id() function should return the root set.
+    # When no id is passed in, get_meshset_by_id() function should return the meshset of the given dimension.
     obs = three_vols.get_meshset_by_id('volumes', ids=[])
     assert(obs == exp)
 
@@ -115,8 +122,7 @@ def test_get_meshset_by_id_out_of_range_dim():
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     test_pass = np.full(3, False)
-    exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
-        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
+    exp = []
     with warnings.catch_warnings(record=True) as w:
         obs = three_vols.get_meshset_by_id('volumes', ids=[4])
         warnings.simplefilter('always')
@@ -124,7 +130,7 @@ def test_get_meshset_by_id_out_of_range_dim():
             test_pass[0] = True
         if len(w) == 1:
             test_pass[1] = True
-            if 'ID is not in the given dimension range! All entities of specified dimension will be returned.' in str(w[-1].message):
+            if 'ID is not in the given dimension range! Empty list will be returned.' in str(w[-1].message):
                 test_pass[2] = True
     assert(all(test_pass))
 
