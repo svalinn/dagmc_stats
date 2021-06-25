@@ -125,10 +125,13 @@ class DagmcStats:
                   returned. Then, if id is invalid (empty or not in the given
                   dim range), all entities with the given dim will be returned.
         """
+        plural_names = self.entityset_types.values()
+        sing_names = [ name[:-1] for name in plural_names]
+        all_names =  plural_names + sing_names
+
         if isinstance(dim, int) and dim in self.entityset_types.keys():
             dim = self.entityset_types[dim]
-        #print(list(my_dict.keys())[list(my_dict.values()).index(112)])
-        elif type(dim) == str and dim.lower() in ['node', 'curve', 'surface', 'volume', 'nodes', 'curves', 'surfaces', 'volumes']:
+        elif type(dim) == str and dim.lower() in all_names:
             dim = dim.lower()
             if dim[-1] != 's':
                 dim = dim + 's'
