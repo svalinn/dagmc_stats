@@ -49,7 +49,10 @@ def test_set_native_ranges():
     for i, native_range_type in enumerate(single_cube.entity_types):
         range = single_cube._my_moab_core.get_entities_by_type(
             single_cube.root_set, native_range_type)
-        test_pass[i] = (range == single_cube.native_ranges[native_range_type])
+        if native_range_type == types.MBENTITYSET:
+            test_pass[i] = (range[:-4] == single_cube.native_ranges[native_range_type])
+        else:
+            test_pass[i] = (range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
 
 
@@ -77,6 +80,14 @@ def test_set_entityset_ranges():
             type_range == single_cube.entityset_ranges[set_type])
     assert(all(test_pass))
 
+def test_set_dimension_meshset():
+    """
+    Tests different aspects of the set_dimension_meshset function
+    """
+    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    range = single_cube._my_moab_core.get_entities_by_type(
+                            single_cube.root_set, types.MBENTITYSET)
+    assert(set(single_cube.dim_dict.values())==set(range[-4:]))
 
 def test_get_meshset_by_id():
     """

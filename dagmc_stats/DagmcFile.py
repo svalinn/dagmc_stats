@@ -43,6 +43,8 @@ class DagmcStats:
         self.__set_dagmc_tags()
         self.entityset_ranges = {}
         self.__set_entityset_ranges()
+        self.dim_dict = {}
+        self.__set_dimension_meshset()
 
         # if populate is True:
         #    self.__populate_triangle_data(meshset)
@@ -109,6 +111,23 @@ class DagmcStats:
                 self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
                                                                 self.dagmc_tags['geom_dim'], [dimension])
 
+    def __set_dimension_meshset(self):
+        """Set the class dim_dict variable to a dictionary with the
+        meshset for each dimension
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        none
+        """
+        for set_type, entityset_range in self.entityset_ranges.items():
+            dim_ms = self._my_moab_core.create_meshset()
+            self._my_moab_core.add_entity(dim_ms, entityset_range)
+            self.dim_dict[set_type] = dim_ms
+
     def get_meshset_by_id(self, dim, ids=[]):
         """Get meshset of the geometry with specified dimension and ids
 
@@ -145,11 +164,9 @@ class DagmcStats:
         if len(ids) == 0:
             return self.entityset_ranges[dim]
 
-        dim_ms = self._my_moab_core.create_meshset()
-        self._my_moab_core.add_entity(dim_ms, self.entityset_ranges[dim])
         meshset = []
         for id in ids:
-            meshset.extend(self._my_moab_core.get_entities_by_type_and_tag(dim_ms,
+            meshset.extend(self._my_moab_core.get_entities_by_type_and_tag(self.dim_dict[dim],
                                             types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
         # if id is not in the given dim range
         if not meshset:
