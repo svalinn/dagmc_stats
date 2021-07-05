@@ -145,7 +145,7 @@ class DagmcStats:
                   dim will be returned. If is is not in the given dim range),
                   an empty list will be returned.
         """
-        plural_names = self.entityset_types.values()
+        plural_names = list(self.entityset_types.values())
         sing_names = [ name[:-1] for name in plural_names]
         all_names =  plural_names + sing_names
 
