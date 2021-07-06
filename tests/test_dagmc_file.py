@@ -87,7 +87,7 @@ def test_set_dimension_meshset():
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
     range = single_cube._my_moab_core.get_entities_by_type(
                             single_cube.root_set, types.MBENTITYSET)
-    assert(set(single_cube.dim_dict.values())==set(range[-4:]))
+    assert(sorted(single_cube.dim_dict.values())==list(range[-4:]))
 
 def test_get_meshset_by_id():
     """
