@@ -158,7 +158,7 @@ class DagmcStats:
         else:
             # invalid dim
             warnings.warn('Invalid dim!')
-            return self.root_set
+            return []
 
         # if no id is passed in
         if len(ids) == 0:

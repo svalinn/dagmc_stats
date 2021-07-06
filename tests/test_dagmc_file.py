@@ -84,10 +84,14 @@ def test_set_dimension_meshset():
     """
     Tests different aspects of the set_dimension_meshset function
     """
+    test_pass = np.full(2, False)
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
     range = single_cube._my_moab_core.get_entities_by_type(
                             single_cube.root_set, types.MBENTITYSET)
-    assert(sorted(single_cube.dim_dict.values())==list(range[-4:]))
+    dim_list = ['nodes', 'curves', 'surfaces', 'volumes']
+    test_pass[0] = (sorted(single_cube.dim_dict.keys()) == sorted(dim_list))
+    test_pass[1] = (sorted(single_cube.dim_dict.values()) == list(range[-4:]))
+    assert(all(test_pass))
 
 def test_get_meshset_by_id():
     """
@@ -123,7 +127,8 @@ def test_get_meshset_by_id_empty_id():
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
-    # When no id is passed in, get_meshset_by_id() function should return the meshset of the given dimension.
+    # When no id is passed in, get_meshset_by_id() function should return all the meshsets
+    # of the given dimension.
     obs = three_vols.get_meshset_by_id('volumes', ids=[])
     assert(obs == exp)
 
@@ -151,7 +156,7 @@ def test_get_meshset_by_id_invalid_dim():
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     test_pass = np.full(3, False)
-    exp = three_vols.root_set
+    exp = []
     with warnings.catch_warnings(record=True) as w:
         obs = three_vols.get_meshset_by_id('vertices', ids=[])
         warnings.simplefilter('always')
