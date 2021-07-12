@@ -47,12 +47,14 @@ def test_set_native_ranges():
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
     test_pass = np.full(len(single_cube.entity_types), False)
     for i, native_range_type in enumerate(single_cube.entity_types):
-        range = single_cube._my_moab_core.get_entities_by_type(
+        entity_range = single_cube._my_moab_core.get_entities_by_type(
             single_cube.root_set, native_range_type)
         if native_range_type == types.MBENTITYSET:
-            test_pass[i] = (range[:-4] == single_cube.native_ranges[native_range_type])
+            # dimension meshsets are of type MBENTITYSE but not in native_ranges
+            num_dim_ms = 4
+            test_pass[i] = (entity_range[:-num_dim_ms] == single_cube.native_ranges[native_range_type])
         else:
-            test_pass[i] = (range == single_cube.native_ranges[native_range_type])
+            test_pass[i] = (entity_range == single_cube.native_ranges[native_range_type])
     assert(all(test_pass))
 
 
@@ -86,11 +88,13 @@ def test_set_dimension_meshset():
     """
     test_pass = np.full(2, False)
     single_cube = ds.DagmcStats(test_env[1]['input_file'])
-    range = single_cube._my_moab_core.get_entities_by_type(
+    mb_entityset = single_cube._my_moab_core.get_entities_by_type(
                             single_cube.root_set, types.MBENTITYSET)
     dim_list = ['nodes', 'curves', 'surfaces', 'volumes']
     test_pass[0] = (sorted(single_cube.dim_dict.keys()) == sorted(dim_list))
-    test_pass[1] = (sorted(single_cube.dim_dict.values()) == list(range[-4:]))
+    # dimension meshsets are the last four elements in mb_entityset
+    num_dim_ms = 4
+    test_pass[1] = (sorted(single_cube.dim_dict.values()) == list(mb_entityset[-num_dim_ms:]))
     assert(all(test_pass))
 
 def test_get_meshset_by_id():
