@@ -1,11 +1,21 @@
 from pymoab.rng import Range
 from pymoab import core, types
+import pandas as pd
 import warnings
 
 class DagmcQuery:
     def __init__(self, dagmc_file, meshset=None):
         self.dagmc_file = dagmc_file
         self.meshset = meshset
+        # initialize data frames
+        self._vert_data = pd.DataFrame(
+            columns=['vert_eh', 'roughness', 'tri_per_vert'])
+        self._tri_data = pd.DataFrame(
+            columns=['tri_eh', 'aspect_ratio', 'area'])
+        self._surf_data = pd.DataFrame(
+            columns=['surf_eh', 'tri_per_surf', 'coarseness'])
+        self._vol_data = pd.DataFrame(
+            columns=['vol_eh', 'surf_per_vol', 'coarseness'])
     
     def get_tris(self):
         """Get triangles of a volume if geom_dim is 3
@@ -43,3 +53,17 @@ class DagmcQuery:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(item, types.MBTRI)
             tris_lst.extend(tris)
         return tris
+
+    def calc_tris_per_vert(self):
+        """
+        popoulate triangle per vertex
+        """
+        t_p_v_data = []
+        tri_dimension = 2
+        for vertex in native_ranges[types.MBVERTEX]:
+            tpv_val = my_core.get_adjacencies(vertex, tri_dimension).size()
+            if ignore_zero and tpv_val == 0:
+                continue
+            t_p_v_data.append(tpv_val)
+        df_vert['t_p_v'] = np.array(t_p_v_data)
+        return

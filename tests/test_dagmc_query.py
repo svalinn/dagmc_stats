@@ -9,10 +9,29 @@ import warnings
 test_env = [{'input_file': 'tests/3vols.h5m'}, {
     'input_file': 'tests/single-cube.h5m'}, {'input_file': 'tests/pyramid.h5m'}]
 
+def test_pandas_data_frame():
+    """Tests the initialization of pandas data frames
+    """
+    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    exp_vert_data = pd.DataFrame(
+        columns=['vert_eh', 'roughness', 'tri_per_vert'])
+    assert(single_cube_query._vert_data.equals(exp_vert_data))
+
+    exp_tri_data = pd.DataFrame(
+        columns=['tri_eh', 'aspect_ratio', 'area'])
+    assert(single_cube_query._tri_data.equals(exp_tri_data))
+
+    exp_surf_data = pd.DataFrame(
+        columns=['surf_eh', 'tri_per_surf', 'coarseness'])
+    assert(single_cube_query._surf_data.equals(exp_surf_data))
+
+    exp_vol_data = pd.DataFrame(
+        columns=['vol_eh', 'surf_per_vol', 'coarseness'])
+    assert(single_cube_query._vol_data.equals(exp_vol_data))
 
 def test_get_tris_vol():
-    """
-    Tests the get_tris function for volume meshset
+    """Tests the get_tris function for volume meshset
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     vols = three_vols._my_moab_core.get_entities_by_type_and_tag(
@@ -25,8 +44,7 @@ def test_get_tris_vol():
 
 
 def test_get_tris_surf():
-    """
-    Tests the get_tris function for surface meshset
+    """Tests the get_tris function for surface meshset
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     surfs = three_vols._my_moab_core.get_entities_by_type_and_tag(
@@ -39,8 +57,7 @@ def test_get_tris_surf():
 
 
 def test_get_tris_rootset():
-    """
-    Tests the get_tris function given the rootset
+    """Tests the get_tris function given the rootset
     """
     three_vols = ds.DagmcStats(test_env[0]['input_file'])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=three_vols.root_set)
@@ -51,8 +68,7 @@ def test_get_tris_rootset():
 
 
 def test_get_tris_dimension_incorrect():
-    """
-    Tests the get_tris function given incorrect dimension
+    """Tests the get_tris function given incorrect dimension
     """
     test_pass = np.full(2, False)
     three_vols = ds.DagmcStats(test_env[0]['input_file'])

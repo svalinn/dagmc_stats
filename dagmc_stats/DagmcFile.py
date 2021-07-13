@@ -23,17 +23,6 @@ class DagmcStats:
         self._my_moab_core = core.Core()
         self._my_moab_core.load_file(filename)
         self.root_set = self._my_moab_core.get_root_set()
-
-        # initialize data frames
-        self._vert_data = pd.DataFrame(
-            columns=['vert_eh', 'roughness', 'tri_per_vert'])
-        self._tri_data = pd.DataFrame(
-            columns=['tri_eh', 'aspect_ratio', 'area'])
-        self._surf_data = pd.DataFrame(
-            columns=['surf_eh', 'tri_per_surf', 'coarseness'])
-        self._vol_data = pd.DataFrame(
-            columns=['vol_eh', 'surf_per_vol', 'coarseness'])
-
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
         self.entityset_types = {0: 'nodes',
                                 1: 'curves', 2: 'surfaces', 3: 'volumes'}
