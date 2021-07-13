@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from pymoab.rng import Range
 from pymoab import core, types
+import warnings
+
 
 class DagmcStats:
 
@@ -33,15 +35,18 @@ class DagmcStats:
             columns=['vol_eh', 'surf_per_vol', 'coarseness'])
 
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
-        self.entityset_types = {0:'Nodes', 1:'Curves', 2:'Surfaces', 3:'Volumes'}
+        self.entityset_types = {0: 'nodes',
+                                1: 'curves', 2: 'surfaces', 3: 'volumes'}
         self.native_ranges = {}
         self.__set_native_ranges()
         self.dagmc_tags = {}
         self.__set_dagmc_tags()
         self.entityset_ranges = {}
         self.__set_entityset_ranges()
-        
-        #if populate is True:
+        self.dim_dict = {}
+        self.__set_dimension_meshset()
+
+        # if populate is True:
         #    self.__populate_triangle_data(meshset)
 
     def __set_native_ranges(self):
@@ -105,6 +110,70 @@ class DagmcStats:
             self.entityset_ranges[set_type] = \
                 self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
                                                                 self.dagmc_tags['geom_dim'], [dimension])
+
+    def __set_dimension_meshset(self):
+        """Set the class dim_dict variable to a dictionary with the
+        meshset for each dimension
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        none
+        """
+        for set_type, entityset_range in self.entityset_ranges.items():
+            dim_ms = self._my_moab_core.create_meshset()
+            self._my_moab_core.add_entity(dim_ms, entityset_range)
+            self.dim_dict[set_type] = dim_ms
+
+    def get_meshset_by_id(self, dim, ids=[]):
+        """Get meshset of the geometry with specified dimension and ids
+
+        inputs
+        ------
+        dim : (Integer or String) Dimension of the meshset. 0: 'node(s)',
+                                1: 'curve(s)', 2: 'surface(s)', 3: 'volume(s)'
+        ids : (Integer) Global ID(s) of the meshset
+
+        outputs
+        -------
+        meshset : meshset of the geometry with given dimension and ids. First,
+                  dim will be checked. If dim is invalid, the root set will be
+                  returned. Then, if id is empty, all entities with the given
+                  dim will be returned. If is is not in the given dim range),
+                  an empty list will be returned.
+        """
+        plural_names = list(self.entityset_types.values())
+        sing_names = [ name[:-1] for name in plural_names]
+        all_names =  plural_names + sing_names
+
+        if isinstance(dim, int) and dim in self.entityset_types.keys():
+            dim = self.entityset_types[dim]
+        elif type(dim) == str and dim.lower() in all_names:
+            dim = dim.lower()
+            if dim[-1] != 's':
+                dim = dim + 's'
+        else:
+            # invalid dim
+            warnings.warn('Invalid dim!')
+            return []
+
+        # if no id is passed in
+        if len(ids) == 0:
+            return self.entityset_ranges[dim]
+
+        meshset = []
+        for id in ids:
+            meshset.extend(self._my_moab_core.get_entities_by_type_and_tag(self.dim_dict[dim],
+                                            types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
+        # if id is not in the given dim range
+        if not meshset:
+            warnings.warn(
+                'ID is not in the given dimension range! ' +\
+                    'Empty list will be returned.')
+        return meshset
 
 
 '''

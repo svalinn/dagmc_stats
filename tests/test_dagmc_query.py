@@ -65,6 +65,6 @@ def test_get_tris_dimension_incorrect():
         warnings.simplefilter('always')
         if len(w) == 1:
             test_pass[0] = True
-        if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
-            test_pass[1] = True
+            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
+                test_pass[1] = True
     assert(all(test_pass))
