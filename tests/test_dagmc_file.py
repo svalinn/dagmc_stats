@@ -51,7 +51,7 @@ def test_set_native_ranges():
             single_cube.root_set, native_range_type)
         if native_range_type == types.MBENTITYSET:
             # dimension meshsets are of type MBENTITYSE but not in native_ranges
-            num_dim_ms = 4
+            num_dim_ms = len(single_cube.entityset_ranges)
             test_pass[i] = (entity_range[:-num_dim_ms] == single_cube.native_ranges[native_range_type])
         else:
             test_pass[i] = (entity_range == single_cube.native_ranges[native_range_type])
@@ -92,8 +92,8 @@ def test_set_dimension_meshset():
                             single_cube.root_set, types.MBENTITYSET)
     dim_list = ['nodes', 'curves', 'surfaces', 'volumes']
     test_pass[0] = (sorted(single_cube.dim_dict.keys()) == sorted(dim_list))
-    # dimension meshsets are the last four elements in mb_entityset
-    num_dim_ms = 4
+    # dimension meshsets are the last len(entityset_ranges) elements in mb_entityset
+    num_dim_ms = len(single_cube.entityset_ranges)
     test_pass[1] = (sorted(single_cube.dim_dict.values()) == list(mb_entityset[-num_dim_ms:]))
     assert(all(test_pass))
 
