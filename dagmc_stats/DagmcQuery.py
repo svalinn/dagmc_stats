@@ -1,6 +1,7 @@
 from pymoab.rng import Range
 from pymoab import core, types
 import pandas as pd
+import numpy as np
 import warnings
 
 class DagmcQuery:
@@ -54,16 +55,16 @@ class DagmcQuery:
             tris_lst.extend(tris)
         return tris
 
-    def calc_tris_per_vert(self):
+    def calc_tris_per_vert(self, ignore_zero=True):
         """
         popoulate triangle per vertex
         """
         t_p_v_data = []
         tri_dimension = 2
-        for vertex in native_ranges[types.MBVERTEX]:
-            tpv_val = my_core.get_adjacencies(vertex, tri_dimension).size()
+        for vertex in self.dagmc_file.native_ranges[types.MBVERTEX]:
+            tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(vertex, tri_dimension).size()
             if ignore_zero and tpv_val == 0:
                 continue
             t_p_v_data.append(tpv_val)
-        df_vert['t_p_v'] = np.array(t_p_v_data)
+        self._vert_data['t_p_v'] = np.array(t_p_v_data)
         return

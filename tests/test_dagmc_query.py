@@ -84,3 +84,12 @@ def test_get_tris_dimension_incorrect():
             if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
                 test_pass[1] = True
     assert(all(test_pass))
+
+def test_calc_tris_per_vert():
+    """Tests part of the get_triangles_per_vertex function"""
+    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols_query = dq.DagmcQuery(three_vols)
+
+    three_vols_query.calc_tris_per_vert()
+    vertices = three_vols._my_moab_core.get_entities_by_type(three_vols.root_set, types.MBVERTEX).size()
+    assert(len(three_vols_query._vert_data['t_p_v']) == vertices)
