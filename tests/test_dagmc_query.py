@@ -1,6 +1,6 @@
 from pymoab import core, types
 from pymoab.rng import Range
-import dagmc_stats.DagmcFile as ds
+import dagmc_stats.DagmcFile as df
 import dagmc_stats.DagmcQuery as dq
 import pandas as pd
 import numpy as np
@@ -12,7 +12,7 @@ test_env = [{'input_file': 'tests/3vols.h5m'}, {
 def test_pandas_data_frame():
     """Tests the initialization of pandas data frames
     """
-    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
     single_cube_query = dq.DagmcQuery(single_cube)
     exp_vert_data = pd.DataFrame(
         columns=['vert_eh', 'roughness', 'tri_per_vert'])
@@ -33,7 +33,7 @@ def test_pandas_data_frame():
 def test_get_tris_vol():
     """Tests the get_tris function for volume meshset
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     vols = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=vols[0])
@@ -46,7 +46,7 @@ def test_get_tris_vol():
 def test_get_tris_surf():
     """Tests the get_tris function for surface meshset
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     surfs = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [2])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=surfs[0])
@@ -59,7 +59,7 @@ def test_get_tris_surf():
 def test_get_tris_rootset():
     """Tests the get_tris function given the rootset
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=three_vols.root_set)
     obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
@@ -71,7 +71,7 @@ def test_get_tris_dimension_incorrect():
     """Tests the get_tris function given incorrect dimension
     """
     test_pass = np.full(2, False)
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     # check if get_tris function generates warning for meshset with invalid dimension
     verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
@@ -87,7 +87,7 @@ def test_get_tris_dimension_incorrect():
 
 def test_calc_tris_per_vert():
     """Tests part of the get_triangles_per_vertex function"""
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     three_vols_query = dq.DagmcQuery(three_vols)
 
     three_vols_query.calc_tris_per_vert()

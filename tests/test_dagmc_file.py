@@ -1,6 +1,6 @@
 from pymoab import core, types
 from pymoab.rng import Range
-import dagmc_stats.DagmcFile as ds
+import dagmc_stats.DagmcFile as df
 import dagmc_stats.DagmcQuery as dq
 import pandas as pd
 import numpy as np
@@ -14,7 +14,7 @@ def test_load_file():
     """Tests loading file and check the values of all the variables that are
     set in the constructor
     """
-    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
     assert(single_cube.root_set == 0)
 
 
@@ -26,7 +26,7 @@ def test_load_file_populate():
 def test_set_native_ranges():
     """Tests set_native_ranges
     """
-    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
     test_pass = np.full(len(single_cube.entity_types), False)
     for i, native_range_type in enumerate(single_cube.entity_types):
         entity_range = single_cube._my_moab_core.get_entities_by_type(
@@ -44,7 +44,7 @@ def test_set_dagmc_tags():
     """
     Tests different aspects of the set_dagmc_tags function
     """
-    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
     assert(len(single_cube.dagmc_tags) == 3)
     assert(single_cube.dagmc_tags['category'])
     assert(single_cube.dagmc_tags['geom_dim'])
@@ -55,7 +55,7 @@ def test_set_entityset_ranges():
     """
     Tests different aspects of the set_entityset_ranges function
     """
-    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
     test_pass = np.full(len(single_cube.entityset_types), False)
     for dimension, set_type in single_cube.entityset_types.items():
         type_range = single_cube._my_moab_core.get_entities_by_type_and_tag(
@@ -69,7 +69,7 @@ def test_set_dimension_meshset():
     Tests different aspects of the set_dimension_meshset function
     """
     test_pass = np.full(2, False)
-    single_cube = ds.DagmcStats(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
     mb_entityset = single_cube._my_moab_core.get_entities_by_type(
                             single_cube.root_set, types.MBENTITYSET)
     dim_list = ['nodes', 'curves', 'surfaces', 'volumes']
@@ -83,7 +83,7 @@ def test_get_meshset_by_id():
     """
     Tests the get_meshset_by_id function given valid dim and id
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     test_pass = np.full(3, False)
     # get volume 0
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
@@ -110,7 +110,7 @@ def test_get_meshset_by_id_empty_id():
     """
     Tests the get_meshset_by_id function given no id
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     # When no id is passed in, get_meshset_by_id() function should return all the meshsets
@@ -122,7 +122,7 @@ def test_get_meshset_by_id_out_of_range_dim():
     """
     Tests the get_meshset_by_id function given id not in the dim
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     test_pass = np.full(3, False)
     exp = []
     with warnings.catch_warnings(record=True) as w:
@@ -140,7 +140,7 @@ def test_get_meshset_by_id_invalid_dim():
     """
     Tests the get_meshset_by_id function given invalid dim
     """
-    three_vols = ds.DagmcStats(test_env[0]['input_file'])
+    three_vols = df.DagmcFile(test_env[0]['input_file'])
     test_pass = np.full(3, False)
     exp = []
     with warnings.catch_warnings(record=True) as w:
@@ -159,7 +159,7 @@ def test_populate_triangle_data():
     """
     Tests different aspects of the populate_triangle_data function
     """
-    single_cube = ds.DagmcStats(test_env[1]['input_file'], populate=True)
+    single_cube = df.DagmcFile(test_env[1]['input_file'], populate=True)
     exp_tri_data = pd.DataFrame(
         columns=['tri_eh', 'aspect_ratio', 'area'])
     tris = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBTRI)

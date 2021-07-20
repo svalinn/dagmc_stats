@@ -5,7 +5,7 @@ from pymoab import core, types
 import warnings
 
 
-class DagmcStats:
+class DagmcFile:
 
     def __init__(self, filename, populate=False):
         """Constructor
