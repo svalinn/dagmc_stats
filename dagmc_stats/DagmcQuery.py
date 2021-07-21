@@ -74,4 +74,4 @@ class DagmcQuery:
             if ignore_zero and tpv_val == 0:
                 continue
             t_p_v_data.append(tpv_val)
-        self._vert_data['t_p_v'] = np.array(t_p_v_data)
+        self._vert_data['tri_per_vert'] = np.array(t_p_v_data)
