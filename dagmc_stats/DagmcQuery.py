@@ -57,7 +57,15 @@ class DagmcQuery:
 
     def calc_tris_per_vert(self, ignore_zero=True):
         """
-        popoulate triangle per vertex
+        calculate triangle per vertex data
+        
+        inputs
+        ------
+        ignore_zero : (boolean) whether or not to ignore zero tris_per_vert values
+
+        outputs
+        -------
+        none
         """
         t_p_v_data = []
         tri_dimension = 2
