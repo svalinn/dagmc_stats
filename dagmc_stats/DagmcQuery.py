@@ -73,5 +73,5 @@ class DagmcQuery:
             tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(vertex, tri_dimension).size()
             if ignore_zero and tpv_val == 0:
                 continue
-            t_p_v_data.append(tpv_val)
-        self._vert_data['tri_per_vert'] = np.array(t_p_v_data)
+            row_data = {'vert_eh': vertex, 'tris_per_vert': tpv_val}
+            t_p_v_data.append(row_data)

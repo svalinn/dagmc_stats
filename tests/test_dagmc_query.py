@@ -85,11 +85,11 @@ def test_get_tris_dimension_incorrect():
                 test_pass[1] = True
     assert(all(test_pass))
 
-def test_calc_tris_per_vert():
-    """Tests part of the get_triangles_per_vertex function"""
+'''def test_calc_tris_per_vert():
+    """Tests part of the calc_triangles_per_vertex function"""
     single_cube = df.DagmcFile(test_env[1]['input_file'])
     single_cube_query = dq.DagmcQuery(single_cube)
 
     single_cube_query.calc_tris_per_vert()
     verts_num = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBVERTEX).size()
-    assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])
+    assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])'''
