@@ -75,4 +75,3 @@ class DagmcQuery:
                 continue
             t_p_v_data.append(tpv_val)
         self._vert_data['t_p_v'] = np.array(t_p_v_data)
-        return
