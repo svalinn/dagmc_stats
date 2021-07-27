@@ -1,7 +1,6 @@
 from pymoab import core, types
 from pymoab.rng import Range
 import dagmc_stats.DagmcFile as df
-import dagmc_stats.DagmcQuery as dq
 import pandas as pd
 import numpy as np
 import warnings

@@ -9,14 +9,10 @@ class DagmcQuery:
         self.dagmc_file = dagmc_file
         self.meshset = meshset
         # initialize data frames
-        self._vert_data = pd.DataFrame(
-            columns=['vert_eh', 'roughness', 'tri_per_vert'])
-        self._tri_data = pd.DataFrame(
-            columns=['tri_eh', 'aspect_ratio', 'area'])
-        self._surf_data = pd.DataFrame(
-            columns=['surf_eh', 'tri_per_surf', 'coarseness'])
-        self._vol_data = pd.DataFrame(
-            columns=['vol_eh', 'surf_per_vol', 'coarseness'])
+        self._vert_data = pd.DataFrame()
+        self._tri_data = pd.DataFrame()
+        self._surf_data = pd.DataFrame()
+        self._vol_data = pd.DataFrame()
     
     def get_tris(self):
         """Get triangles of a volume if geom_dim is 3
@@ -73,5 +69,6 @@ class DagmcQuery:
             tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(vertex, tri_dimension).size()
             if ignore_zero and tpv_val == 0:
                 continue
-            row_data = {'vert_eh': vertex, 'tris_per_vert': tpv_val}
+            row_data = {'vert_eh': vertex, 'tri_per_vert': tpv_val}
             t_p_v_data.append(row_data)
+        self._vert_data = self._vert_data.append(t_p_v_data)

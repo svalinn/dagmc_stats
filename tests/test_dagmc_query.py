@@ -14,20 +14,16 @@ def test_pandas_data_frame():
     """
     single_cube = df.DagmcFile(test_env[1]['input_file'])
     single_cube_query = dq.DagmcQuery(single_cube)
-    exp_vert_data = pd.DataFrame(
-        columns=['vert_eh', 'roughness', 'tri_per_vert'])
+    exp_vert_data = pd.DataFrame()
     assert(single_cube_query._vert_data.equals(exp_vert_data))
 
-    exp_tri_data = pd.DataFrame(
-        columns=['tri_eh', 'aspect_ratio', 'area'])
+    exp_tri_data = pd.DataFrame()
     assert(single_cube_query._tri_data.equals(exp_tri_data))
 
-    exp_surf_data = pd.DataFrame(
-        columns=['surf_eh', 'tri_per_surf', 'coarseness'])
+    exp_surf_data = pd.DataFrame()
     assert(single_cube_query._surf_data.equals(exp_surf_data))
 
-    exp_vol_data = pd.DataFrame(
-        columns=['vol_eh', 'surf_per_vol', 'coarseness'])
+    exp_vol_data = pd.DataFrame()
     assert(single_cube_query._vol_data.equals(exp_vol_data))
 
 def test_get_tris_vol():
@@ -85,11 +81,11 @@ def test_get_tris_dimension_incorrect():
                 test_pass[1] = True
     assert(all(test_pass))
 
-'''def test_calc_tris_per_vert():
+def test_calc_tris_per_vert():
     """Tests part of the calc_triangles_per_vertex function"""
     single_cube = df.DagmcFile(test_env[1]['input_file'])
     single_cube_query = dq.DagmcQuery(single_cube)
 
     single_cube_query.calc_tris_per_vert()
     verts_num = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBVERTEX).size()
-    assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])'''
+    assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])
