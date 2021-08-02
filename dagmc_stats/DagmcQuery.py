@@ -71,4 +71,7 @@ class DagmcQuery:
                 continue
             row_data = {'vert_eh': vertex, 'tri_per_vert': tpv_val}
             t_p_v_data.append(row_data)
-        self._vert_data = self._vert_data.append(t_p_v_data)
+        if self._vert_data.empty:
+            self._vert_data = self._vert_data.append(t_p_v_data)
+        else:
+            self._vert_data.set_index('vert_eh').join(self._vert_data.append(t_p_v_data).set_index('vert_eh'))
