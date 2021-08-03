@@ -87,5 +87,4 @@ def test_calc_tris_per_vert():
     single_cube_query = dq.DagmcQuery(single_cube)
 
     single_cube_query.calc_tris_per_vert()
-    verts_num = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBVERTEX).size()
     assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])
