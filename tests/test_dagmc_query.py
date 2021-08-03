@@ -87,5 +87,25 @@ def test_calc_tris_per_vert():
     single_cube_query = dq.DagmcQuery(single_cube)
 
     single_cube_query.calc_tris_per_vert()
-    verts_num = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBVERTEX).size()
     assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])
+
+
+def test_calc_area_triangle(self):
+    """
+    Tests part of the get__area_triangle function
+    """
+    single_cube = df.DagmcFile(test_env[1]['input_file'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    
+    single_cube_query.test_calc_area_triangle()
+    assert(single_cube_query._tri_data['area'] == np.full(8, 50))
+        
+    # test if a subset of tris is added
+    tri = dq.get_tris(my_core, root_set, dagmc_tags['geom_dim'])[0]
+    exp = 1
+    obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri]))
+    self.assertEqual(exp, obs)
+    
+    exp = 50
+    obs = ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri])[0]
+    self.assertAlmostEqual(exp, obs)

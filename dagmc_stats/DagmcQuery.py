@@ -51,6 +51,45 @@ class DagmcQuery:
             tris_lst.extend(tris)
         return tris
 
+    def get_tri_side_length(self, tri):
+        """
+        Get side lengths of triangle
+
+        inputs
+        ------
+        tri : triangle entity
+
+        outputs
+        -------
+        side_lengths : a dictionary that stores vert : the opposite side length of
+        the vert as key-value pair
+        """
+
+        side_lengths = {}
+        s = 0
+        coord_list = []
+
+        verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0))
+
+        for vert in verts:
+            coords = self.dagmc_file._my_moab_core.get_coords(vert)
+            coord_list.append(coords)
+
+        for side in range(3):
+            side_lengths.update({verts[side-1]:
+                                 np.linalg.norm(coord_list[side] -
+                                 coord_list[side-2])})
+            # Although it may not be intuitive, the indexing of these lists takes
+            # advantage of python's indexing syntax to rotate through
+            # the `verts` of the triangle while simultaneously referencing the side
+            # opposite each of the `verts` by the coordinates of the vertices that
+            # define that side:
+            #    side       side-1   index(side-1)     side-2   index(side-2)
+            #     0           -1           2             -2             1
+            #     1            0           0             -1             2
+            #     2            1           1              0             0
+        return side_lengths
+
     def calc_tris_per_vert(self, ignore_zero=True):
         """
         calculate triangle per vertex data
@@ -75,3 +114,61 @@ class DagmcQuery:
             self._vert_data = self._vert_data.append(t_p_v_data)
         else:
             self._vert_data.set_index('vert_eh').join(self._vert_data.append(t_p_v_data).set_index('vert_eh'))
+
+    def calc_triangle_aspect_ratio(self):
+        """
+        Calculate triangle aspect ratio data (according to the equation:
+        (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        none
+        """
+        t_a_r_data = []
+        tris = get_tris()
+        for tri in tris:
+            side_lengths = list(get_tri_side_length(tri).values())
+            s = .5*(sum(side_lengths))
+            top = np.prod(side_lengths)
+            bottom = 8*np.prod(s-side_lengths)
+            t_a_r = top/bottom
+            row_data = {'tri_eh': tri, 'aspect_ratio': t_a_r}
+            t_a_r_data.append(row_data)
+        if self._tri_data.empty:
+            self._tri_data = self._tri_data.append(t_a_r_data)
+        else:
+            self._tri_data.set_index('tri_eh').join(self._tri_data.append(t_a_r_data).set_index('tri_eh'))
+
+    def calc_area_triangle(self, tris=[]):
+        """
+        Calculate the triangle area data (according to the Heron's formula:
+        sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
+
+        inputs
+        ------
+        tris : (list) triangles whose area will be calculated. The default value is
+        an empty list and will lead to calculation of all triangle areas in the
+        geometry
+
+        outputs
+        -------
+        none
+        """
+        tri_area = []
+        if not tris:
+            tris = get_tris()
+        for tri in tris:
+            side_lengths = list(get_tri_side_length(self.dagmc_file._my_moab_core, tri).values())
+            # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
+            s = sum(side_lengths)/2
+            s = np.sqrt(s * np.prod(s - side_lengths))
+            row_data = {'tri_eh': tri, 'area': s}
+            tri_area.append(row_data)
+        if self._tri_data.empty:
+            self._tri_data = self._tri_data.append(tri_area)
+        else:
+            self._tri_data.set_index('tri_eh').join(self._tri_data.append(t_a_r_data).set_index('tri_eh'))
