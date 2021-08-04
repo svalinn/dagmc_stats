@@ -7,7 +7,10 @@ import warnings
 class DagmcQuery:
     def __init__(self, dagmc_file, meshset=None):
         self.dagmc_file = dagmc_file
-        self.meshset = meshset
+        if meshset is None:
+            self.meshset = self.dagmc_file.root_set
+        else:
+            self.meshset = meshset
         # initialize data frames
         self._vert_data = pd.DataFrame()
         self._tri_data = pd.DataFrame()
@@ -65,7 +68,8 @@ class DagmcQuery:
         """
         t_p_v_data = []
         tri_dimension = 2
-        for vertex in self.dagmc_file.native_ranges[types.MBVERTEX]:
+        for vertex in self.dagmc_file._my_moab_core.get_entities_by_type(
+                self.meshset, types.MBVERTEX):
             tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(vertex, tri_dimension).size()
             if ignore_zero and tpv_val == 0:
                 continue
