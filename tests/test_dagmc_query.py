@@ -6,7 +6,9 @@ import pandas as pd
 import numpy as np
 import warnings
 
-test_env = {'three_vols': 'tests/3vols.h5m', 'single_cube': 'tests/single-cube.h5m', 'pyramid': 'tests/pyramid.h5m'}
+test_env = {'three_vols': 'tests/3vols.h5m',
+            'single_cube': 'tests/single-cube.h5m', 'pyramid': 'tests/pyramid.h5m'}
+
 
 def test_pandas_data_frame():
     """Tests the initialization of pandas data frames
@@ -39,7 +41,8 @@ def test_get_tris_vol():
     surfs = three_vols._my_moab_core.get_child_meshsets(vols[0])
     meshset_lst.extend(surfs)
     for item in meshset_lst:
-        exp_tris.extend(three_vols._my_moab_core.get_entities_by_type(item, types.MBTRI))
+        exp_tris.extend(
+            three_vols._my_moab_core.get_entities_by_type(item, types.MBTRI))
     assert(sorted(obs_tris) == sorted(exp_tris))
 
 
@@ -93,7 +96,8 @@ def test_calc_tris_per_vert_vol():
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=vols[0])
     three_vols_query.calc_tris_per_vert()
-    assert(sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])
+    assert(sorted(three_vols_query._vert_data['tri_per_vert']) == [
+           4, 4, 4, 4, 5, 5, 5, 5])
 
 
 def test_calc_tris_per_vert_surf():
@@ -113,7 +117,8 @@ def test_calc_tris_per_vert_rootset():
     three_vols = df.DagmcFile(test_env['three_vols'])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=three_vols.root_set)
     three_vols_query.calc_tris_per_vert()
-    exp_tpv_len = len(three_vols._my_moab_core.get_entities_by_type(three_vols.root_set, types.MBVERTEX))
+    exp_tpv_len = len(three_vols._my_moab_core.get_entities_by_type(
+        three_vols.root_set, types.MBVERTEX))
     assert(len(three_vols_query._vert_data['tri_per_vert']) == exp_tpv_len)
 
 
