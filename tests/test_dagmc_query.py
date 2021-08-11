@@ -33,9 +33,13 @@ def test_get_tris_vol():
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
     three_vols_query = dq.DagmcQuery(three_vols, meshset=vols[0])
     obs_tris = three_vols_query.get_tris()
-    exp_tris = three_vols._my_moab_core.get_entities_by_type(
-        vols[0], types.MBTRI)
-    assert(list(obs_tris).sort() == list(exp_tris).sort())
+    exp_tris = []
+    meshset_lst = []
+    surfs = three_vols._my_moab_core.get_child_meshsets(vols[0])
+    meshset_lst.extend(surfs)
+    for item in meshset_lst:
+        exp_tris.extend(three_vols._my_moab_core.get_entities_by_type(item, types.MBTRI))
+    assert(sorted(obs_tris) == sorted(exp_tris))
 
 
 def test_get_tris_surf():
@@ -48,7 +52,7 @@ def test_get_tris_surf():
     obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         surfs[0], types.MBTRI)
-    assert(list(obs_tris).sort() == list(exp_tris).sort())
+    assert(sorted(obs_tris) == sorted(exp_tris))
 
 
 def test_get_tris_rootset():
@@ -59,7 +63,7 @@ def test_get_tris_rootset():
     obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         three_vols.root_set, types.MBTRI)
-    assert(list(obs_tris).sort() == list(exp_tris).sort())
+    assert(sorted(obs_tris) == sorted(exp_tris))
 
 
 def test_get_tris_dimension_incorrect():
@@ -82,8 +86,10 @@ def test_get_tris_dimension_incorrect():
 
 def test_calc_tris_per_vert_vol():
     """Tests part of the calc_triangles_per_vertex function"""
-    single_cube = df.DagmcFile(test_env['single_cube'])
-    single_cube_query = dq.DagmcQuery(single_cube)
-
-    single_cube_query.calc_tris_per_vert()
-    assert(sorted(single_cube_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vols = three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
+    three_vols_query = dq.DagmcQuery(three_vols, meshset=vols[0])
+    three_vols_query.calc_tris_per_vert()
+    print(three_vols_query._vert_data)
+    assert(sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 4, 4, 5, 5, 5, 5])

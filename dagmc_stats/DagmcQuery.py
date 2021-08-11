@@ -52,7 +52,7 @@ class DagmcQuery:
         for item in meshset_lst:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(item, types.MBTRI)
             tris_lst.extend(tris)
-        return tris
+        return tris_lst
 
     def calc_tris_per_vert(self, ignore_zero=True):
         """
@@ -68,12 +68,28 @@ class DagmcQuery:
         """
         t_p_v_data = []
         tri_dimension = 2
-        for vertex in self.dagmc_file._my_moab_core.get_entities_by_type(
-                self.meshset, types.MBVERTEX):
-            tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(vertex, tri_dimension).size()
+        meshset_lst = []
+        verts = []
+        if self.meshset is None or self.meshset == self.dagmc_file.root_set:
+            meshset_lst.append(self.dagmc_file.root_set)
+        else:
+            dim = self.dagmc_file._my_moab_core.tag_get_data(self.dagmc_file.dagmc_tags['geom_dim'], self.meshset)[0][0]
+            if dim == 3:
+                surfs = self.dagmc_file._my_moab_core.get_child_meshsets(self.meshset)
+                meshset_lst.extend(surfs)
+            elif dim == 2:
+                meshset_lst.append(self.meshset)
+            else:
+                warnings.warn('Meshset is not a volume nor a surface! Rootset will be used by default.')
+                meshset_lst.append(self.dagmc_file.root_set)
+        for item in meshset_lst:
+            verts.extend(self.dagmc_file._my_moab_core.get_entities_by_type(item, types.MBVERTEX))
+        verts = list(set(verts))
+        for vert in verts:
+            tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(vert, tri_dimension).size()
             if ignore_zero and tpv_val == 0:
                 continue
-            row_data = {'vert_eh': vertex, 'tri_per_vert': tpv_val}
+            row_data = {'vert_eh': vert, 'tri_per_vert': tpv_val}
             t_p_v_data.append(row_data)
         if self._vert_data.empty:
             self._vert_data = self._vert_data.append(t_p_v_data)
