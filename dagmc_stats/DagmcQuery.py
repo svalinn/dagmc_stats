@@ -19,36 +19,35 @@ class DagmcQuery:
         none
         """
         self.dagmc_file = dagmc_file
+        self.meshset_lst = []
         if meshset is None:
-            self.meshset = self.dagmc_file.root_set
+            self.__get_entities(self.dagmc_file.root_set)
         else:
-            self.meshset = meshset
+            self.__get_entities(meshset)
         # initialize data frames
         self._vert_data = pd.DataFrame()
         self._tri_data = pd.DataFrame()
         self._surf_data = pd.DataFrame()
         self._vol_data = pd.DataFrame()
 
-    def __get_entities(self):
-        meshset_lst = []
-        if self.meshset is None or self.meshset == self.dagmc_file.root_set:
-            meshset_lst.append(self.dagmc_file.root_set)
+    def __get_entities(self, meshset):
+        if meshset is None or meshset == self.dagmc_file.root_set:
+            self.meshset_lst.append(self.dagmc_file.root_set)
         else:
             dim = self.dagmc_file._my_moab_core.tag_get_data(
-                self.dagmc_file.dagmc_tags['geom_dim'], self.meshset)[0][0]
+                self.dagmc_file.dagmc_tags['geom_dim'], meshset)[0][0]
             # get triangles of a volume
             if dim == 3:
                 surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
-                    self.meshset)
-                meshset_lst.extend(surfs)
+                    meshset)
+                self.meshset_lst.extend(surfs)
             # get triangles of a surface
             elif dim == 2:
-                meshset_lst.append(self.meshset)
+                self.meshset_lst.append(meshset)
             else:
                 warnings.warn(
                     'Meshset is not a volume nor a surface! Rootset will be used by default.')
-                meshset_lst.append(self.dagmc_file.root_set)
-        return meshset_lst
+                self.meshset_lst.append(self.dagmc_file.root_set)
                 
     def get_tris(self):
         """Get triangles of a volume if geom_dim is 3
@@ -64,9 +63,8 @@ class DagmcQuery:
         -------
         tris : a list of triangle entities
         """
-        meshset_lst = self.__get_entities()
         tris_lst = []
-        for item in meshset_lst:
+        for item in self.meshset_lst:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 item, types.MBTRI)
             tris_lst.extend(tris)
@@ -84,11 +82,10 @@ class DagmcQuery:
         -------
         none
         """
-        meshset_lst = self.__get_entities()
         t_p_v_data = []
         tri_dimension = 2
         verts = []
-        for item in meshset_lst:
+        for item in self.meshset_lst:
             verts.extend(self.dagmc_file._my_moab_core.get_entities_by_type(
                 item, types.MBVERTEX))
         verts = list(set(verts))

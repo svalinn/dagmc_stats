@@ -79,9 +79,9 @@ def test_get_tris_dimension_incorrect():
     verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
         three_vols_query = dq.DagmcQuery(three_vols, meshset=verts[0])
         obs_tris = three_vols_query.get_tris()
-        warnings.simplefilter('always')
         if len(w) == 1:
             test_pass[0] = True
             if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
@@ -131,9 +131,9 @@ def test_calc_tris_per_vert_dimension_incorrect():
     verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
         three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
         three_vols_query = dq.DagmcQuery(three_vols, meshset=verts[0])
         three_vols_query.calc_tris_per_vert()
-        warnings.simplefilter('always')
         if len(w) == 1:
             test_pass[0] = True
             if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
