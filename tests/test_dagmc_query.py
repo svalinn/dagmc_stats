@@ -27,6 +27,53 @@ def test_pandas_data_frame():
     exp_vol_data = pd.DataFrame()
     assert(single_cube_query._vol_data.equals(exp_vol_data))
 
+def test_get_entities_rootset():
+    """Tests the get_entities function for rootset
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    three_vols_query = dq.DagmcQuery(three_vols)
+    exp = [three_vols.root_set]
+    assert(three_vols_query.meshset_lst == exp)
+
+def test_get_entities_vol():
+    """Tests the get_entities function for volume meshset
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vol = three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])[0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    exp = list(three_vols._my_moab_core.get_child_meshsets(vol))
+    assert(three_vols_query.meshset_lst == exp)
+
+def test_get_entities_surf():
+    """Tests the get_entities function for surface meshset
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [2])[0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
+    exp = [surf]
+    assert(three_vols_query.meshset_lst == exp)
+
+def test_get_entities_incorrect_dim():
+    """Tests the get_entities function given incorrect dimension
+    """
+    test_pass = np.full(3, False)
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    # check if get_tris function generates warning for meshset with invalid dimension
+    verts = three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [0])
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols_query = dq.DagmcQuery(three_vols, meshset=verts[0])
+        obs_tris = three_vols_query.get_tris()
+        if len(w) == 1:
+            test_pass[0] = True
+            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
+                test_pass[1] = True
+        exp = [three_vols.root_set]
+        test_pass[2] = (three_vols_query.meshset_lst == exp)
+    assert(all(test_pass))
 
 def test_get_tris_vol():
     """Tests the get_tris function for volume meshset
