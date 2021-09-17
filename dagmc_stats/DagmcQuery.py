@@ -64,9 +64,9 @@ class DagmcQuery:
         tris : a list of triangle entities
         """
         tris_lst = []
-        for item in self.meshset_lst:
+        for meshset in self.meshset_lst:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
-                item, types.MBTRI)
+                meshset, types.MBTRI)
             tris_lst.extend(tris)
         return tris_lst
 
