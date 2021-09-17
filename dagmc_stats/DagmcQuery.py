@@ -21,7 +21,7 @@ class DagmcQuery:
         self.dagmc_file = dagmc_file
         self.meshset_lst = []
         if meshset is None:
-            self.__get_entities(self.dagmc_file.root_set)
+            self.meshset_lst.append(self.dagmc_file.root_set)
         else:
             self.__get_entities(meshset)
         # initialize data frames
