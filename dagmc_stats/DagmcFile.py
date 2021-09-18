@@ -5,7 +5,7 @@ from pymoab import core, types
 import warnings
 
 
-class DagmcStats:
+class DagmcFile:
 
     def __init__(self, filename, populate=False):
         """Constructor
@@ -23,17 +23,6 @@ class DagmcStats:
         self._my_moab_core = core.Core()
         self._my_moab_core.load_file(filename)
         self.root_set = self._my_moab_core.get_root_set()
-
-        # initialize data frames
-        self._vert_data = pd.DataFrame(
-            columns=['vert_eh', 'roughness', 'tri_per_vert'])
-        self._tri_data = pd.DataFrame(
-            columns=['tri_eh', 'aspect_ratio', 'area'])
-        self._surf_data = pd.DataFrame(
-            columns=['surf_eh', 'tri_per_surf', 'coarseness'])
-        self._vol_data = pd.DataFrame(
-            columns=['vol_eh', 'surf_per_vol', 'coarseness'])
-
         self.entity_types = [types.MBVERTEX, types.MBTRI, types.MBENTITYSET]
         self.entityset_types = {0: 'nodes',
                                 1: 'curves', 2: 'surfaces', 3: 'volumes'}
@@ -146,8 +135,8 @@ class DagmcStats:
                   an empty list will be returned.
         """
         plural_names = list(self.entityset_types.values())
-        sing_names = [ name[:-1] for name in plural_names]
-        all_names =  plural_names + sing_names
+        sing_names = [name[:-1] for name in plural_names]
+        all_names = plural_names + sing_names
 
         if isinstance(dim, int) and dim in self.entityset_types.keys():
             dim = self.entityset_types[dim]
@@ -167,12 +156,12 @@ class DagmcStats:
         meshset = []
         for id in ids:
             meshset.extend(self._my_moab_core.get_entities_by_type_and_tag(self.dim_dict[dim],
-                                            types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
+                                                                           types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
         # if id is not in the given dim range
         if not meshset:
             warnings.warn(
-                'ID is not in the given dimension range! ' +\
-                    'Empty list will be returned.')
+                'ID is not in the given dimension range! ' +
+                'Empty list will be returned.')
         return meshset
 
 
