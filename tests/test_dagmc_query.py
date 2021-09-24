@@ -182,22 +182,18 @@ def test_calc_tris_per_vert_dimension_incorrect():
         test_pass[2] = (len(three_vols_query._vert_data['tri_per_vert']) == exp_tpv_len)
     assert(all(test_pass))
 
-def test_calc_area_triangle(self):
+def test_calc_area_triangle():
     """
-    Tests part of the get__area_triangle function
+    Tests part of the get_area_triangle function
     """
-    single_cube = df.DagmcFile(test_env[1]['input_file'])
+    single_cube = df.DagmcFile(test_env['single_cube'])
     single_cube_query = dq.DagmcQuery(single_cube)
-    
-    single_cube_query.test_calc_area_triangle()
-    assert(single_cube_query._tri_data['area'] == np.full(8, 50))
-        
-    # test if a subset of tris is added
-    tri = dq.get_tris(my_core, root_set, dagmc_tags['geom_dim'])[0]
-    exp = 1
-    obs = len(ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri]))
-    self.assertEqual(exp, obs)
-    
-    exp = 50
-    obs = ds.get_area_triangle(my_core, root_set, dagmc_tags['geom_dim'], tris=[tri])[0]
-    self.assertAlmostEqual(exp, obs)
+    single_cube_query.calc_area_triangle()
+    assert(all(single_cube_query._tri_data['area']) == all(np.full(12, 50)))
+
+def test_calc_triangle_aspect_ratio():
+    single_cube = df.DagmcFile(test_env['single_cube'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    single_cube_query.calc_triangle_aspect_ratio()
+    exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+    np.testing.assert_almost_equal(all(single_cube_query._tri_data['aspect_ratio']), all(np.full(12, exp)))

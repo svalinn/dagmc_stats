@@ -154,9 +154,9 @@ class DagmcQuery:
         none
         """
         t_a_r_data = []
-        tris = get_tris()
+        tris = self.get_tris()
         for tri in tris:
-            side_lengths = list(get_tri_side_length(tri).values())
+            side_lengths = list(self.get_tri_side_length(tri).values())
             s = .5*(sum(side_lengths))
             top = np.prod(side_lengths)
             bottom = 8*np.prod(s-side_lengths)
@@ -185,9 +185,9 @@ class DagmcQuery:
         """
         tri_area = []
         if not tris:
-            tris = get_tris()
+            tris = self.get_tris()
         for tri in tris:
-            side_lengths = list(get_tri_side_length(self.dagmc_file._my_moab_core, tri).values())
+            side_lengths = list(self.get_tri_side_length(tri).values())
             # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
             s = sum(side_lengths)/2
             s = np.sqrt(s * np.prod(s - side_lengths))
