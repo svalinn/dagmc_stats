@@ -135,8 +135,8 @@ class DagmcFile:
                   an empty list will be returned.
         """
         plural_names = list(self.entityset_types.values())
-        sing_names = [ name[:-1] for name in plural_names]
-        all_names =  plural_names + sing_names
+        sing_names = [name[:-1] for name in plural_names]
+        all_names = plural_names + sing_names
 
         if isinstance(dim, int) and dim in self.entityset_types.keys():
             dim = self.entityset_types[dim]
@@ -156,12 +156,12 @@ class DagmcFile:
         meshset = []
         for id in ids:
             meshset.extend(self._my_moab_core.get_entities_by_type_and_tag(self.dim_dict[dim],
-                                            types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
+                                                                           types.MBENTITYSET, self.dagmc_tags['global_id'], [id]))
         # if id is not in the given dim range
         if not meshset:
             warnings.warn(
-                'ID is not in the given dimension range! ' +\
-                    'Empty list will be returned.')
+                'ID is not in the given dimension range! ' +
+                'Empty list will be returned.')
         return meshset
 
 
