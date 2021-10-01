@@ -91,7 +91,7 @@ class DagmcQuery:
         verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0))
 
         for vert in verts:
-            coords = list(self.dagmc_file._my_moab_core.get_coords(vert))
+            coords = self.dagmc_file._my_moab_core.get_coords(vert)
             coord_list.append(coords)
 
         for side in range(3):
@@ -173,7 +173,7 @@ class DagmcQuery:
         t_a_r_data = []
         tris = self.get_tris()
         for tri in tris:
-            side_lengths = self.get_tri_side_length(tri).values()
+            side_lengths = list(self.get_tri_side_length(tri).values())
             s = .5*(sum(side_lengths))
             top = np.prod(side_lengths)
             bottom = 8*np.prod(s-side_lengths)
