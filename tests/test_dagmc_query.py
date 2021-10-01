@@ -184,3 +184,23 @@ def test_update_tri_data():
     np.testing.assert_almost_equal(list(three_vols_query._tri_data['aspect_ratio']), list(np.full(2, exp_tar)))
     three_vols_query.calc_area_triangle()
     np.testing.assert_almost_equal(list(three_vols_query._tri_data['area']), list(np.full(2, 50)))
+
+
+def test_duplicate_tpv():
+    """Tests the case where calc_tris_per_vert() is called multiple times
+    """
+    test_pass = np.full(3, False)
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols_query.calc_tris_per_vert()
+        three_vols_query.calc_tris_per_vert()
+        if len(w) == 1:
+            test_pass[0] = True
+            if 'Tri_per_vert already exists. tris_per_vert() will not be called.' in str(w[-1].message):
+                test_pass[1] = True
+    test_pass[2] = (sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 5, 5])
+    assert(all(test_pass))
+    

@@ -121,6 +121,10 @@ class DagmcQuery:
         -------
         none
         """
+        if 'tri_per_vert' in self._vert_data:
+            warnings.warn(
+                    'Tri_per_vert already exists. tris_per_vert() will not be called.')
+            return
         t_p_v_data = []
         tri_dimension = 2
         verts = []
@@ -170,6 +174,10 @@ class DagmcQuery:
         -------
         none
         """
+        if 'aspect_ratio' in self._tri_data:
+            warnings.warn(
+                    'Triangle aspect ratio already exists. Calc_triangle_aspect_ratio() will not be called.')
+            return
         t_a_r_data = []
         tris = self.get_tris()
         for tri in tris:
@@ -197,6 +205,10 @@ class DagmcQuery:
         -------
         none
         """
+        if 'area' in self._tri_data:
+            warnings.warn(
+                    'Triangle area already exists. Calc_area_triangle() will not be called.')
+            return
         tri_area = []
         if not tris:
             tris = self.get_tris()
