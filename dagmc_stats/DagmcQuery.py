@@ -91,7 +91,7 @@ class DagmcQuery:
         verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0))
 
         for vert in verts:
-            coords = self.dagmc_file._my_moab_core.get_coords(vert)
+            coords = list(self.dagmc_file._my_moab_core.get_coords(vert))
             coord_list.append(coords)
 
         for side in range(3):
