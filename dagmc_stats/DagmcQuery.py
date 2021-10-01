@@ -139,10 +139,24 @@ class DagmcQuery:
                 continue
             row_data = {'vert_eh': vert, 'tri_per_vert': tpv_val}
             t_p_v_data.append(row_data)
+        self.__update_vert_data(t_p_v_data)
+
+    def __update_vert_data(self, new_data):
+        """
+        Update _vert_data dataframe
+
+        inputs
+        ------
+        new_data : vert data to be added to the _vert_data dataframe
+
+        outputs
+        -------
+        none
+        """
         if self._vert_data.empty:
-            self._vert_data = self._vert_data.append(t_p_v_data)
+            self._vert_data = self._vert_data.append(new_data)
         else:
-            self._vert_data.set_index('vert_eh').join(self._vert_data.append(t_p_v_data).set_index('vert_eh'))
+            self._vert_data = self._vert_data.merge(pd.DataFrame(new_data), on='vert_eh', how='left')
 
     def __update_tri_data(self, new_data):
         """
