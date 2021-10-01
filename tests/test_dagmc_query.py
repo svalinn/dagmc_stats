@@ -187,7 +187,7 @@ def test_update_tri_data():
 
 
 def test_duplicate_tpv():
-    """Tests the case where calc_tris_per_vert() is called multiple times
+    """Tests the case where calc_tris_per_vert() is called on the same meshset for multiple times
     """
     test_pass = np.full(3, False)
     three_vols = df.DagmcFile(test_env['three_vols'])
