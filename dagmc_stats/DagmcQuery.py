@@ -155,7 +155,7 @@ class DagmcQuery:
         if self._tri_data.empty:
             self._tri_data = self._tri_data.append(new_data)
         else:
-            self._tri_data.set_index('tri_eh').join(self._tri_data.append(new_data).set_index('tri_eh'))
+            self._tri_data = self._tri_data.merge(pd.DataFrame(new_data), on='tri_eh', how='left')
 
     def calc_triangle_aspect_ratio(self):
         """

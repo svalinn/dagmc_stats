@@ -162,12 +162,25 @@ def test_calc_area_triangle_vol():
     np.testing.assert_almost_equal(list(three_vols_query._tri_data['area']), list(np.full(12, 50)))
 
 
-def test_calc_triangle_aspect_ratio_surf():
+def test_calc_triangle_aspect_ratio_vol():
     """Tests part of the calc_triangle_aspect_ratio function
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_triangle_aspect_ratio()
+    exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+    np.testing.assert_almost_equal(list(three_vols_query._tri_data['aspect_ratio']), list(np.full(12, exp)))
+
+
+def test_update_tri_data():
+    """Tests the upadte_tri_data function
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     surf = three_vols.entityset_ranges['surfaces'][0]
     three_vols_query = dq.DagmcQuery(three_vols, surf)
     three_vols_query.calc_triangle_aspect_ratio()
-    exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
-    np.testing.assert_almost_equal(list(three_vols_query._tri_data['aspect_ratio']), list(np.full(2, exp)))
+    exp_tar = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+    np.testing.assert_almost_equal(list(three_vols_query._tri_data['aspect_ratio']), list(np.full(2, exp_tar)))
+    three_vols_query.calc_area_triangle()
+    np.testing.assert_almost_equal(list(three_vols_query._tri_data['area']), list(np.full(2, 50)))
