@@ -144,7 +144,7 @@ class DagmcQuery:
         else:
             self._vert_data.set_index('vert_eh').join(self._vert_data.append(t_p_v_data).set_index('vert_eh'))
 
-    def update_tri_data(self, new_data):
+    def __update_tri_data(self, new_data):
         """
         Update _tri_data dataframe
 
@@ -188,7 +188,7 @@ class DagmcQuery:
             t_a_r = top/bottom
             row_data = {'tri_eh': tri, 'aspect_ratio': t_a_r}
             t_a_r_data.append(row_data)
-        self.update_tri_data(t_a_r_data)
+        self.__update_tri_data(t_a_r_data)
 
     def calc_area_triangle(self, tris=[]):
         """
@@ -219,4 +219,4 @@ class DagmcQuery:
             s = np.sqrt(s * np.prod(s - side_lengths))
             row_data = {'tri_eh': tri, 'area': s}
             tri_area.append(row_data)
-        self.update_tri_data(tri_area)
+        self.__update_tri_data(tri_area)
