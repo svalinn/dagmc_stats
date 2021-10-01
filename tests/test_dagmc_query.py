@@ -164,7 +164,8 @@ def test_calc_area_triangle_vol():
     vol = three_vols.entityset_ranges['volumes'][0]
     three_vols_query = dq.DagmcQuery(three_vols, vol)
     three_vols_query.calc_area_triangle()
-    np.testing.assert_almost_equal(list(three_vols_query._tri_data['area']), list(np.full(12, 50)))
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['area']), list(np.full(12, 50)))
 
 
 def test_calc_triangle_aspect_ratio_vol():
@@ -175,7 +176,8 @@ def test_calc_triangle_aspect_ratio_vol():
     three_vols_query = dq.DagmcQuery(three_vols, vol)
     three_vols_query.calc_triangle_aspect_ratio()
     exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
-    np.testing.assert_almost_equal(list(three_vols_query._tri_data['aspect_ratio']), list(np.full(12, exp)))
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['aspect_ratio']), list(np.full(12, exp)))
 
 
 def test_update_tri_data():
@@ -185,10 +187,13 @@ def test_update_tri_data():
     surf = three_vols.entityset_ranges['surfaces'][0]
     three_vols_query = dq.DagmcQuery(three_vols, surf)
     three_vols_query.calc_triangle_aspect_ratio()
-    exp_tar = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
-    np.testing.assert_almost_equal(list(three_vols_query._tri_data['aspect_ratio']), list(np.full(2, exp_tar)))
+    exp_tar = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)
+                                     * 5*np.sqrt(2)*(10-5*np.sqrt(2)))
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['aspect_ratio']), list(np.full(2, exp_tar)))
     three_vols_query.calc_area_triangle()
-    np.testing.assert_almost_equal(list(three_vols_query._tri_data['area']), list(np.full(2, 50)))
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['area']), list(np.full(2, 50)))
 
 
 def test_duplicate_tpv():
@@ -206,6 +211,6 @@ def test_duplicate_tpv():
             test_pass[0] = True
             if 'Tri_per_vert already exists. tris_per_vert() will not be called.' in str(w[-1].message):
                 test_pass[1] = True
-    test_pass[2] = (sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 5, 5])
+    test_pass[2] = (
+        sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 5, 5])
     assert(all(test_pass))
-    

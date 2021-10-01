@@ -48,7 +48,7 @@ class DagmcQuery:
                 warnings.warn(
                     'Meshset is not a volume nor a surface! Rootset will be used by default.')
                 self.meshset_lst.append(self.dagmc_file.root_set)
-                
+
     def get_tris(self):
         """Get triangles of a volume if geom_dim is 3
         Get triangles of a surface if geom_dim is 2
@@ -97,7 +97,7 @@ class DagmcQuery:
         for side in range(3):
             side_lengths.update({verts[side-1]:
                                  np.linalg.norm(coord_list[side] -
-                                 coord_list[side-2])})
+                                                coord_list[side-2])})
             # Although it may not be intuitive, the indexing of these lists takes
             # advantage of python's indexing syntax to rotate through
             # the `verts` of the triangle while simultaneously referencing the side
@@ -123,7 +123,7 @@ class DagmcQuery:
         """
         if 'tri_per_vert' in self._vert_data:
             warnings.warn(
-                    'Tri_per_vert already exists. tris_per_vert() will not be called.')
+                'Tri_per_vert already exists. tris_per_vert() will not be called.')
             return
         t_p_v_data = []
         tri_dimension = 2
@@ -156,7 +156,8 @@ class DagmcQuery:
         if self._vert_data.empty:
             self._vert_data = self._vert_data.append(new_data)
         else:
-            self._vert_data = self._vert_data.merge(pd.DataFrame(new_data), on='vert_eh', how='left')
+            self._vert_data = self._vert_data.merge(
+                pd.DataFrame(new_data), on='vert_eh', how='left')
 
     def __update_tri_data(self, new_data):
         """
@@ -173,7 +174,8 @@ class DagmcQuery:
         if self._tri_data.empty:
             self._tri_data = self._tri_data.append(new_data)
         else:
-            self._tri_data = self._tri_data.merge(pd.DataFrame(new_data), on='tri_eh', how='left')
+            self._tri_data = self._tri_data.merge(
+                pd.DataFrame(new_data), on='tri_eh', how='left')
 
     def calc_triangle_aspect_ratio(self):
         """
@@ -190,7 +192,7 @@ class DagmcQuery:
         """
         if 'aspect_ratio' in self._tri_data:
             warnings.warn(
-                    'Triangle aspect ratio already exists. Calc_triangle_aspect_ratio() will not be called.')
+                'Triangle aspect ratio already exists. Calc_triangle_aspect_ratio() will not be called.')
             return
         t_a_r_data = []
         tris = self.get_tris()
@@ -221,7 +223,7 @@ class DagmcQuery:
         """
         if 'area' in self._tri_data:
             warnings.warn(
-                    'Triangle area already exists. Calc_area_triangle() will not be called.')
+                'Triangle area already exists. Calc_area_triangle() will not be called.')
             return
         tri_area = []
         if not tris:
