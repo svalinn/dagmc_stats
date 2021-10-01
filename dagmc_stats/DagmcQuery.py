@@ -140,6 +140,23 @@ class DagmcQuery:
         else:
             self._vert_data.set_index('vert_eh').join(self._vert_data.append(t_p_v_data).set_index('vert_eh'))
 
+    def update_tri_data(self, new_data):
+        """
+        Update _tri_data dataframe
+
+        inputs
+        ------
+        new_data : triangle data to be added to the _tri_data dataframe
+
+        outputs
+        -------
+        none
+        """
+        if self._tri_data.empty:
+            self._tri_data = self._tri_data.append(new_data)
+        else:
+            self._tri_data.set_index('tri_eh').join(self._tri_data.append(new_data).set_index('tri_eh'))
+
     def calc_triangle_aspect_ratio(self):
         """
         Calculate triangle aspect ratio data (according to the equation:
@@ -156,17 +173,14 @@ class DagmcQuery:
         t_a_r_data = []
         tris = self.get_tris()
         for tri in tris:
-            side_lengths = list(self.get_tri_side_length(tri).values())
+            side_lengths = self.get_tri_side_length(tri).values()
             s = .5*(sum(side_lengths))
             top = np.prod(side_lengths)
             bottom = 8*np.prod(s-side_lengths)
             t_a_r = top/bottom
             row_data = {'tri_eh': tri, 'aspect_ratio': t_a_r}
             t_a_r_data.append(row_data)
-        if self._tri_data.empty:
-            self._tri_data = self._tri_data.append(t_a_r_data)
-        else:
-            self._tri_data.set_index('tri_eh').join(self._tri_data.append(t_a_r_data).set_index('tri_eh'))
+        self.update_tri_data(t_a_r_data)
 
     def calc_area_triangle(self, tris=[]):
         """
@@ -193,7 +207,4 @@ class DagmcQuery:
             s = np.sqrt(s * np.prod(s - side_lengths))
             row_data = {'tri_eh': tri, 'area': s}
             tri_area.append(row_data)
-        if self._tri_data.empty:
-            self._tri_data = self._tri_data.append(tri_area)
-        else:
-            self._tri_data.set_index('tri_eh').join(self._tri_data.append(t_a_r_data).set_index('tri_eh'))
+        self.update_tri_data(tri_area)
