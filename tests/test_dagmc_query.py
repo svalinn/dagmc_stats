@@ -27,6 +27,7 @@ def test_pandas_data_frame():
     exp_vol_data = pd.DataFrame()
     assert(single_cube_query._vol_data.equals(exp_vol_data))
 
+
 def test_get_entities_rootset():
     """Tests the get_entities function for rootset
     """
@@ -34,6 +35,7 @@ def test_get_entities_rootset():
     three_vols_query = dq.DagmcQuery(three_vols)
     exp = [three_vols.root_set]
     assert(three_vols_query.meshset_lst == exp)
+
 
 def test_get_entities_vol():
     """Tests the get_entities function for volume meshset
@@ -44,6 +46,7 @@ def test_get_entities_vol():
     exp = list(three_vols._my_moab_core.get_child_meshsets(vol))
     assert(three_vols_query.meshset_lst == exp)
 
+
 def test_get_entities_surf():
     """Tests the get_entities function for surface meshset
     """
@@ -52,6 +55,7 @@ def test_get_entities_surf():
     three_vols_query = dq.DagmcQuery(three_vols, surf)
     exp = [surf]
     assert(three_vols_query.meshset_lst == exp)
+
 
 def test_get_entities_incorrect_dim():
     """Tests the get_entities function given incorrect dimension
@@ -70,6 +74,7 @@ def test_get_entities_incorrect_dim():
         exp = [three_vols.root_set]
         test_pass[2] = (three_vols_query.meshset_lst == exp)
     assert(all(test_pass))
+
 
 def test_get_tris_vol():
     """Tests the get_tris function for volume meshset
