@@ -176,6 +176,24 @@ class DagmcQuery:
         else:
             self._tri_data = self._tri_data.merge(
                 pd.DataFrame(new_data), on='tri_eh', how='left')
+                
+    def __update_surf_data(self, new_data):
+        """
+        Update _surf_data dataframe
+
+        inputs
+        ------
+        new_data : surface data to be added to the _surf_data dataframe
+
+        outputs
+        -------
+        none
+        """
+        if self._surf_data.empty:
+            self._surf_data = self._surf_data.append(new_data)
+        else:
+            self._surf_data = self._surf_data.merge(
+                pd.DataFrame(new_data), on='surf_eh', how='left')
 
     def calc_triangle_aspect_ratio(self):
         """
@@ -206,16 +224,14 @@ class DagmcQuery:
             t_a_r_data.append(row_data)
         self.__update_tri_data(t_a_r_data)
 
-    def calc_area_triangle(self, tris=[]):
+    def calc_area_triangle(self):
         """
         Calculate the triangle area data (according to the Heron's formula:
         sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
         inputs
         ------
-        tris : (list) triangles whose area will be calculated. The default value is
-        an empty list and will lead to calculation of all triangle areas in the
-        geometry
+        none
 
         outputs
         -------
@@ -226,8 +242,7 @@ class DagmcQuery:
                 'Triangle area already exists. Calc_area_triangle() will not be called.')
             return
         tri_area = []
-        if not tris:
-            tris = self.get_tris()
+        tris = self.get_tris()
         for tri in tris:
             side_lengths = list(self.get_tri_side_length(tri).values())
             # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
@@ -236,3 +251,34 @@ class DagmcQuery:
             row_data = {'tri_eh': tri, 'area': s}
             tri_area.append(row_data)
         self.__update_tri_data(tri_area)
+
+    def calc_coarseness(self):
+        """
+        Calculate the surface coarseness data
+        
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        none
+        """
+        if 'coarseness' in self._surf_data:
+                warnings.warn(
+                    'Coarseness already exists. Calc_coarseness() will not be called.')
+                return
+        coarseness = []
+        surf_list = []
+        if self.meshset_lst == [self.dagmc_file.root_set]:
+            surf_list = self.dagmc_file.entityset['surfaces']
+        else:
+            surf_list = self.meshset_lst
+        self.calc_area_triangle()
+        for surf in surf_list:
+            tris = self.dagmc_file._my_moab_core.get_entities_by_type(
+                surf, types.MBTRI)
+            row_data = {'surf_eh' : surf,
+            'coarseness' : len(tris)/self._tri_data.loc[self._tri_data['tri_eh'].isin(list(tris)), 'area'].sum()}
+            coarseness.append(row_data)
+        self.__update_surf_data(coarseness)

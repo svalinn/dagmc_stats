@@ -214,3 +214,32 @@ def test_duplicate_tpv():
     test_pass[2] = (
         sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 5, 5])
     assert(all(test_pass))
+
+def test_coarseness():
+    """Tests the calc coarseness function
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_coarseness()
+    np.testing.assert_almost_equal(
+        list(three_vols_query._surf_data['coarseness']), list(np.full(6, 0.02)))
+
+def test_coarseness_area_called():
+    """Tests the case that the calc_triangle_function was called before the
+    calc_coarseness function
+    """
+    test_pass = np.full(3, False)
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols_query.calc_area_triangle()
+        three_vols_query.calc_coarseness()
+        if len(w) == 1:
+            test_pass[0] = True
+            if 'Triangle area already exists. Calc_area_triangle() will not be called.' in str(w[-1].message):
+                test_pass[1] = True
+    test_pass[2] = (list(three_vols_query._surf_data['coarseness'] == [0.02]))
+    assert(all(test_pass))
