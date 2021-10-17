@@ -244,3 +244,12 @@ def test_coarseness_area_called():
                 test_pass[1] = True
     test_pass[2] = (list(three_vols_query._surf_data['coarseness'] == [0.02]))
     assert(all(test_pass))
+
+def test_roughness():
+    single_cube = df.DagmcFile(test_env['single_cube'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    print(single_cube_query.get_roughness())
+    #three_vols = df.DagmcFile(test_env['three_vols'])
+    #surf = three_vols.entityset_ranges['surfaces'][0]
+    #three_vols_query = dq.DagmcQuery(three_vols, surf)
+    #print(three_vols_query.get_roughness())

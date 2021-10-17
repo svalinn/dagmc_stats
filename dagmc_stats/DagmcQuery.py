@@ -69,6 +69,22 @@ class DagmcQuery:
                 meshset, types.MBTRI)
             tris_lst.extend(tris)
         return tris_lst
+    
+    def get_verts(self):
+        verts = []
+        for item in self.meshset_lst:
+            verts.extend(self.dagmc_file._my_moab_core.get_entities_by_type(
+                item, types.MBVERTEX))
+        verts = list(set(verts))
+        return verts
+    
+    def get_surfs(self):
+        surfs = []
+        if self.meshset_lst == [self.dagmc_file.root_set]:
+            surfs = self.dagmc_file.entityset['surfaces']
+        else:
+            surfs = self.meshset_lst
+        return surfs
 
     def get_tri_side_length(self, tri):
         """
@@ -127,11 +143,7 @@ class DagmcQuery:
             return
         t_p_v_data = []
         tri_dimension = 2
-        verts = []
-        for item in self.meshset_lst:
-            verts.extend(self.dagmc_file._my_moab_core.get_entities_by_type(
-                item, types.MBVERTEX))
-        verts = list(set(verts))
+        verts = self.get_verts()
         for vert in verts:
             tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert, tri_dimension).size()
@@ -269,16 +281,157 @@ class DagmcQuery:
                     'Coarseness already exists. Calc_coarseness() will not be called.')
                 return
         coarseness = []
-        surf_list = []
-        if self.meshset_lst == [self.dagmc_file.root_set]:
-            surf_list = self.dagmc_file.entityset['surfaces']
-        else:
-            surf_list = self.meshset_lst
+        surfs = self.get_surfs()
         self.calc_area_triangle()
-        for surf in surf_list:
+        for surf in surfs:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 surf, types.MBTRI)
             row_data = {'surf_eh' : surf,
             'coarseness' : len(tris)/self._tri_data.loc[self._tri_data['tri_eh'].isin(list(tris)), 'area'].sum()}
             coarseness.append(row_data)
         self.__update_surf_data(coarseness)
+
+    def __get_tri_vert_data(self):
+        """Build a numpy strcutured array to store triangle and vertex related
+        data in the form of triangle entity handle | vertex entity handle
+        | angle connected to the vertex | side length of side opposite to
+        vertex in the triangle
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        tri_vert_data : a numpy structured array that stores the triangle
+        and vertex related data
+        all_verts : (list) all the vertices that are connected to
+        triangle in the geometry
+        """
+        all_verts =set()
+        tri_vert_struct = np.dtype({'names': ['tri', 'vert', 'angle',
+    'side_length'], 'formats': [np.uint64, np.uint64, np.float64, np.float64]})
+        tris = self.get_tris()
+        tri_vert_data = np.zeros(len(tris)*3, dtype=tri_vert_struct)
+        tri_vert_index = 0
+
+        for tri in tris:
+            side_lengths = self.get_tri_side_length(tri)   # {vert : side_length}
+            side_length_sum_sq_half = sum(map
+                                        (lambda i: i**2, side_lengths.values()))/2
+            side_length_prod = np.prod(list(side_lengths.values()))
+            verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0, op_type=1))
+            for vert_i in verts:
+                all_verts.add(vert_i)
+                side_i = side_lengths[vert_i]
+                d_i = np.arccos((side_length_sum_sq_half - (side_i**2)) * side_i /
+                                side_length_prod)
+                bar = np.array((tri, vert_i, d_i, side_i), dtype=tri_vert_struct)
+                tri_vert_data[tri_vert_index] = bar
+                tri_vert_index += 1
+        return tri_vert_data, list(all_verts)
+
+    def __calc_gaussian_curvature(self, tri_vert_data):
+        """Get gaussian curvature values of all non-isolated vertices
+
+        inputs
+        ------
+        tri_vert_data : numpy structured array that stores the triangle and
+        vertex related data
+
+        outputs
+        -------
+        gc_all : dictionary in the form of vertex : gaussian curvature value
+        of the vertex
+        """
+        verts = self.get_verts()
+        gc_all = {}
+        for vert_i in verts:
+            gc_all[vert_i] = self.__gaussian_curvature(vert_i, tri_vert_data)
+        return gc_all
+
+
+    def __gaussian_curvature(self, vert_i, tri_vert_data):
+        """Get gaussian curvature value of a vertex
+        Reference: https://www.sciencedirect.com/science/article/pii/
+        S0097849312001203
+        Formula 1
+
+        inputs
+        ------
+        vert_i : vertex entity handle
+        tri_vert_data : numpy structured array that stores the triangle and
+        vertex related data
+
+        outputs
+        -------
+        gc : gaussian curvature value of the vertex
+        """
+        vert_entries = tri_vert_data[tri_vert_data['vert'] == vert_i]
+        sum_alpha_angles = sum(vert_entries['angle'])
+        gc = np.abs(2 * np.pi - sum_alpha_angles)
+        return gc
+
+
+    def __get_lri(self, vert_i, gc_all, tri_vert_data):
+        """Get local roughness value of a vertex
+        Reference: https://www.sciencedirect.com/science/article/pii/
+        S0097849312001203
+        Formula 2, 3
+
+        inputs
+        ------
+        vert_i : vertex entity handle
+        gc_all : dictionary in the form of vertex : gaussian curvature
+        value of the vertex
+        tri_vert_data : numpy structured array that stores the triangle
+        and vertex related data
+
+        outputs
+        -------
+        Lri : local roughness value of the vertex
+        """
+        DIJgc_sum = 0
+        Dii_sum = 0
+        vert_j_list = list(self.dagmc_file._my_moab_core.get_adjacencies(self.dagmc_file._my_moab_core.get_adjacencies(vert_i, 2, op_type=0), 0, op_type=1))
+        vert_j_list.remove(vert_i)
+        for vert_j in vert_j_list:
+            # get tri_ij_list (the list of the two triangles connected to both
+            # vert_i and vert_j)
+            tri_i_list = self.dagmc_file._my_moab_core.get_adjacencies(vert_i, 2, op_type=0)
+            tri_j_list = self.dagmc_file._my_moab_core.get_adjacencies(vert_j, 2, op_type=0)
+            tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
+            # rows with tri value as tri_ij_list[0] or tri_ij_list[1]
+            select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
+                                        (tri_vert_data['tri'] == tri_ij_list[1])
+            # rows with vert value not equal to vert_i and not equal to vert_j
+            exclude_verts = (tri_vert_data['vert'] != vert_i) & \
+                                                (tri_vert_data['vert'] != vert_j)
+            beta_angles = tri_vert_data[select_tris & exclude_verts]['angle']
+            print(beta_angles)
+            Dij = 0.5 * (1/np.tan(beta_angles[0]) + 1/np.tan(beta_angles[1]))
+            DIJgc_sum += (Dij * gc_all[vert_j])
+            Dii_sum += Dij
+        Lri = abs(gc_all[vert_i] - DIJgc_sum/Dii_sum)
+        return Lri
+
+
+    def get_roughness(self):
+        """Get local roughness values of all the non-isolated vertices
+
+        inputs
+        ------
+        none
+
+        outputs
+        -------
+        roughness : (dictionary) the roughness for all vertices in the meshset
+        stored in the form of vert : local roughness value
+        """
+        tri_vert_data, all_verts = self.__get_tri_vert_data()
+        verts = self.get_verts()
+        gc_all = self.__calc_gaussian_curvature(tri_vert_data)
+        roughness = {}
+        for vert_i in verts:
+            roughness[vert_i] = self.__get_lri(vert_i, gc_all, tri_vert_data)
+        return roughness
