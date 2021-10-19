@@ -408,7 +408,6 @@ class DagmcQuery:
             exclude_verts = (tri_vert_data['vert'] != vert_i) & \
                                                 (tri_vert_data['vert'] != vert_j)
             beta_angles = tri_vert_data[select_tris & exclude_verts]['angle']
-            print(beta_angles)
             Dij = 0.5 * (1/np.tan(beta_angles[0]) + 1/np.tan(beta_angles[1]))
             DIJgc_sum += (Dij * gc_all[vert_j])
             Dii_sum += Dij
@@ -416,8 +415,8 @@ class DagmcQuery:
         return Lri
 
 
-    def get_roughness(self):
-        """Get local roughness values of all the non-isolated vertices
+    def calc_roughness(self):
+        """Calculate local roughness values of all the non-isolated vertices
 
         inputs
         ------
@@ -425,13 +424,13 @@ class DagmcQuery:
 
         outputs
         -------
-        roughness : (dictionary) the roughness for all vertices in the meshset
-        stored in the form of vert : local roughness value
+        none
         """
         tri_vert_data, all_verts = self.__get_tri_vert_data()
         verts = self.get_verts()
         gc_all = self.__calc_gaussian_curvature(tri_vert_data)
-        roughness = {}
-        for vert_i in verts:
-            roughness[vert_i] = self.__get_lri(vert_i, gc_all, tri_vert_data)
-        return roughness
+        roughness = []
+        for vert in verts:
+            row_data = {'vert_eh': vert, 'roughness': self.__get_lri(vert, gc_all, tri_vert_data)}
+            roughness.append(row_data)
+        self.__update_vert_data(roughness)
