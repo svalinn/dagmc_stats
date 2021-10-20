@@ -289,15 +289,24 @@ class DagmcQuery:
         coarseness = []
         surfs = self.get_surfs()
         self.calc_area_triangle()
+        total_area = 0.
+        weighted_coarseness = 0.  # surf coarseness * surf area
         for surf in surfs:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 surf, types.MBTRI)
-            total_area = self._tri_data.loc[self._tri_data['tri_eh'].isin(
+            area = self._tri_data.loc[self._tri_data['tri_eh'].isin(
                 list(tris)), 'area'].sum()
-            cval = len(tris) / total_area
+            cval = len(tris) / area
             row_data = {'surf_eh': surf, 'coarseness': cval}
             coarseness.append(row_data)
+            total_area += area
+            weighted_coarseness += cval * area
         self.__update_surf_data(coarseness)
+
+        # calculate weighted average
+        # = sum(coarseness_i * area_i) / sum(area_i), i = surface
+        average_coarseness = weighted_coarseness / total_area
+        self._global_averages['coarseness_ave'] = average_coarseness
 
     def __get_tri_vert_data(self):
         """Build a numpy strcutured array to store triangle and vertex related
