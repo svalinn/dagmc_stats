@@ -8,16 +8,18 @@ import warnings
 
 class DagmcQuery:
     def __init__(self, dagmc_file, meshset=None):
-        """Constructor
+        """This class provides the functionality for making queries about
+        various metrics for the meshset(s) of interest.
 
         inputs
         ------
-        dagmc_file : DagmcFile instance
-        meshset: the meshset on which query will be performed. The rootset will be used by default.
+            dagmc_file : DagmcFile instance
+            meshset: the meshset on which query will be performed.
+                The rootset will be used by default.
 
         outputs
         -------
-        none
+            none
         """
         self.dagmc_file = dagmc_file
         self.meshset_lst = []
@@ -50,8 +52,8 @@ class DagmcQuery:
             elif dim == 2:
                 self.meshset_lst.append(meshset)
             else:
-                warnings.warn(
-                    'Meshset is not a volume nor a surface! Rootset will be used by default.')
+                warnings.warn('Meshset is not a volume nor a surface! ' +
+                              'Rootset will be used by default.')
                 self.meshset_lst.append(self.dagmc_file.root_set)
 
     def get_tris(self):
@@ -61,12 +63,13 @@ class DagmcQuery:
 
         inputs
         ------
-        meshset : set of entities that are used to populate data. Default value
-                  is None and data of the whole geometry will be populated.
+            meshset : set of entities that are used to populate data.
+                Default value is None and data of the whole geometry will
+                be populated.
 
         outputs
         -------
-        tris : a list of triangle entities
+            tris : a list of triangle entities
         """
         tris_lst = []
         for meshset in self.meshset_lst:
@@ -76,6 +79,20 @@ class DagmcQuery:
         return tris_lst
 
     def get_verts(self):
+        """Get vertices of a volume if geom_dim is 3
+        Get vertices of a surface if geom_dim is 2
+        Else get all the vertices
+
+        inputs
+        ------
+            meshset : set of entities that are used to populate data.
+                Default value is None and data of the whole geometry will
+                be populated.
+
+        outputs
+        -------
+            verts : a list of vertex entities
+        """
         verts = []
         for item in self.meshset_lst:
             verts.extend(self.dagmc_file._my_moab_core.get_entities_by_type(
@@ -84,6 +101,20 @@ class DagmcQuery:
         return verts
 
     def get_surfs(self):
+        """Get all surfaces in the query object. If rootset or volume, get all
+        surfs in the rootset or volume. If query is already a surface, return
+        the meshset list
+
+        inputs
+        ------
+            meshset : set of entities that are used to populate data.
+                Default value is None and data of the whole geometry will
+                be populated.
+
+        outputs
+        -------
+            surfs : a list of surface entities
+        """
         surfs = []
         if self.meshset_lst == [self.dagmc_file.root_set]:
             surfs = self.dagmc_file.entityset_ranges['surfaces']
@@ -92,17 +123,16 @@ class DagmcQuery:
         return surfs
 
     def get_tri_side_length(self, tri):
-        """
-        Get side lengths of triangle
+        """Get side lengths of triangle
 
         inputs
         ------
-        tri : triangle entity
+            tri : triangle entity
 
         outputs
         -------
-        side_lengths : a dictionary that stores vert : the opposite side length of
-        the vert as key-value pair
+            side_lengths : a dictionary that stores
+                vert: the opposite side length of the vert as key-value pair
         """
 
         side_lengths = {}
@@ -116,14 +146,14 @@ class DagmcQuery:
             coord_list.append(coords)
 
         for side in range(3):
-            side_lengths.update({verts[side-1]:
+            side_lengths.update({verts[side - 1]:
                                  np.linalg.norm(coord_list[side] -
-                                                coord_list[side-2])})
-            # Although it may not be intuitive, the indexing of these lists takes
-            # advantage of python's indexing syntax to rotate through
-            # the `verts` of the triangle while simultaneously referencing the side
-            # opposite each of the `verts` by the coordinates of the vertices that
-            # define that side:
+                                                coord_list[side - 2])})
+            # Although it may not be intuitive, the indexing of these lists
+            # takes advantage of python's indexing syntax to rotate through
+            # the `verts` of the triangle while simultaneously referencing the
+            # side opposite each of the `verts` by the coordinates of the
+            # vertices that define that side:
             #    side       side-1   index(side-1)     side-2   index(side-2)
             #     0           -1           2             -2             1
             #     1            0           0             -1             2
@@ -131,20 +161,20 @@ class DagmcQuery:
         return side_lengths
 
     def calc_tris_per_vert(self, ignore_zero=True):
-        """
-        calculate triangle per vertex data
+        """calculate triangle per vertex data
 
         inputs
         ------
-        ignore_zero : (boolean) whether or not to ignore zero tris_per_vert values
+            ignore_zero : (boolean) whether or not to ignore zero
+                tris_per_vert values
 
         outputs
         -------
-        none
+            none
         """
         if 'tri_per_vert' in self._vert_data:
-            warnings.warn(
-                'Tri_per_vert already exists. tris_per_vert() will not be called.')
+            warnings.warn('Tri_per_vert already exists. ' +
+                          'tris_per_vert() will not be called.')
             return
         t_p_v_data = []
         tri_dimension = 2
@@ -159,16 +189,15 @@ class DagmcQuery:
         self.__update_vert_data(t_p_v_data)
 
     def __update_vert_data(self, new_data):
-        """
-        Update _vert_data dataframe
+        """Update _vert_data dataframe
 
         inputs
         ------
-        new_data : vert data to be added to the _vert_data dataframe
+            new_data : vert data to be added to the _vert_data dataframe
 
         outputs
         -------
-        none
+            none
         """
         if self._vert_data.empty:
             self._vert_data = self._vert_data.append(new_data)
@@ -177,16 +206,15 @@ class DagmcQuery:
                 pd.DataFrame(new_data), on='vert_eh', how='left')
 
     def __update_tri_data(self, new_data):
-        """
-        Update _tri_data dataframe
+        """Update _tri_data dataframe
 
         inputs
         ------
-        new_data : triangle data to be added to the _tri_data dataframe
+            new_data : triangle data to be added to the _tri_data dataframe
 
         outputs
         -------
-        none
+            none
         """
         if self._tri_data.empty:
             self._tri_data = self._tri_data.append(new_data)
@@ -195,16 +223,15 @@ class DagmcQuery:
                 pd.DataFrame(new_data), on='tri_eh', how='left')
 
     def __update_surf_data(self, new_data):
-        """
-        Update _surf_data dataframe
+        """Update _surf_data dataframe
 
         inputs
         ------
-        new_data : surface data to be added to the _surf_data dataframe
+            new_data : surface data to be added to the _surf_data dataframe
 
         outputs
         -------
-        none
+            none
         """
         if self._surf_data.empty:
             self._surf_data = self._surf_data.append(new_data)
@@ -213,50 +240,48 @@ class DagmcQuery:
                 pd.DataFrame(new_data), on='surf_eh', how='left')
 
     def calc_triangle_aspect_ratio(self):
-        """
-        Calculate triangle aspect ratio data (according to the equation:
+        """Calculate triangle aspect ratio data (according to the equation:
         (abc)/(8(s-a)(s-b)(s-c)), where s = .5(a+b+c).)
 
         inputs
         ------
-        none
+            none
 
         outputs
         -------
-        none
+            none
         """
         if 'aspect_ratio' in self._tri_data:
-            warnings.warn(
-                'Triangle aspect ratio already exists. Calc_triangle_aspect_ratio() will not be called.')
+            warnings.warn('Triangle aspect ratio already exists. ' +
+                          'Calc_triangle_aspect_ratio() will not be called.')
             return
         t_a_r_data = []
         tris = self.get_tris()
         for tri in tris:
             side_lengths = list(self.get_tri_side_length(tri).values())
-            s = .5*(sum(side_lengths))
+            s = 0.5 * (sum(side_lengths))
             top = np.prod(side_lengths)
-            bottom = 8*np.prod(s-side_lengths)
-            t_a_r = top/bottom
+            bottom = 8 * np.prod(s - side_lengths)
+            t_a_r = top / bottom
             row_data = {'tri_eh': tri, 'aspect_ratio': t_a_r}
             t_a_r_data.append(row_data)
         self.__update_tri_data(t_a_r_data)
 
     def calc_area_triangle(self):
-        """
-        Calculate the triangle area data (according to the Heron's formula:
+        """Calculate the triangle area data (according to the Heron's formula:
         sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2)
 
         inputs
         ------
-        none
+            none
 
         outputs
         -------
-        none
+            none
         """
         if 'area' in self._tri_data:
-            warnings.warn(
-                'Triangle area already exists. Calc_area_triangle() will not be called.')
+            warnings.warn('Triangle area already exists. ' +
+                          'Calc_area_triangle() will not be called.')
             return
         tri_area = []
         tris = self.get_tris()
@@ -442,6 +467,14 @@ class DagmcQuery:
         below and update the global averages dictionary.
 
         https://www.sciencedirect.com/science/article/pii/S0097849312001203
+
+        inputs
+        ------
+            none
+
+        outputs
+        -------
+            none
         """
         verts = self.get_verts()
         self.calc_area_triangle()  # get area data if not already calculated
@@ -473,6 +506,9 @@ class DagmcQuery:
         """Calculate local roughness values of all the non-isolated vertices
         and calculates the average roughness for each surface of the meshset
         list and the average of the entire meshset list.
+
+        reference:
+        https://www.sciencedirect.com/science/article/pii/S0097849312001203
 
         inputs
         ------
