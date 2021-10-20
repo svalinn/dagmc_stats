@@ -37,22 +37,33 @@ class DagmcQuery:
         self._global_averages = {}
 
     def __get_entities(self, meshset):
-        if meshset is None or meshset == self.dagmc_file.root_set:
+        if meshset is None or meshset is self.dagmc_file.root_set:
             self.meshset_lst.append(self.dagmc_file.root_set)
         else:
-            dim = self.dagmc_file._my_moab_core.tag_get_data(
-                self.dagmc_file.dagmc_tags['geom_dim'], meshset)[0][0]
-            # get triangles of a volume
-            if dim == 3:
-                surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
-                    meshset)
-                self.meshset_lst.extend(surfs)
-            # get triangles of a surface
-            elif dim == 2:
-                self.meshset_lst.append(meshset)
-            else:
-                warnings.warn('Meshset is not a volume nor a surface! ' +
-                              'Rootset will be used by default.')
+            # allow mixed list of surfaces and volumes that create a
+            # single list of all the surfaces together
+            if type(meshset) != list:
+                # convert single item to list for iterating
+                meshset = [meshset]
+            for m in meshset:
+                dim = self.dagmc_file._my_moab_core.tag_get_data(
+                    self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
+                # get triangles of a volume
+                if dim == 3:
+                    surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
+                        m)
+                    self.meshset_lst.extend(surfs)
+                # get triangles of a surface
+                elif dim == 2:
+                    self.meshset_lst.append(m)
+                else:
+                    warnings.warn('Meshset is not a volume nor a surface!')
+
+            # if no items in the meshset list is a surface or volume,
+            # then use rootset by default instead
+            if len(self.meshset_lst) == 0:
+                warnings.warn('Specified meshset(s) are not surfaces or ' +
+                              'volumes. Rootset will be used by default.')
                 self.meshset_lst.append(self.dagmc_file.root_set)
 
     def get_tris(self):
