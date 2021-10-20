@@ -442,7 +442,8 @@ class DagmcQuery:
             # get adjacent triangles and their areas
             tris = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert, 2, op_type=0)
-            area_sum = self._tri_data.loc[self._tri_data['tri_eh'].isin(tris)]['area'].sum()
+            area_sum = self._tri_data.loc[
+                self._tri_data['tri_eh'].isin(tris)]['area'].sum()
 
             # si = 1/3 of total area of adjacent triangles
             si = area_sum / 3.
