@@ -81,7 +81,7 @@ class DagmcQuery:
     def get_surfs(self):
         surfs = []
         if self.meshset_lst == [self.dagmc_file.root_set]:
-            surfs = self.dagmc_file.entityset['surfaces']
+            surfs = self.dagmc_file.entityset_ranges['surfaces']
         else:
             surfs = self.meshset_lst
         return surfs
@@ -286,8 +286,10 @@ class DagmcQuery:
         for surf in surfs:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 surf, types.MBTRI)
-            row_data = {'surf_eh' : surf,
-            'coarseness' : len(tris)/self._tri_data.loc[self._tri_data['tri_eh'].isin(list(tris)), 'area'].sum()}
+            total_area = self._tri_data.loc[self._tri_data['tri_eh'].isin(
+                list(tris)), 'area'].sum()
+            cval = len(tris) / total_area
+            row_data = {'surf_eh': surf, 'coarseness': cval}
             coarseness.append(row_data)
         self.__update_surf_data(coarseness)
 
