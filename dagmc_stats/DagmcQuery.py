@@ -1,3 +1,4 @@
+from numpy.lib.function_base import average
 from pymoab.rng import Range
 from pymoab import core, types
 import pandas as pd
@@ -29,6 +30,10 @@ class DagmcQuery:
         self._tri_data = pd.DataFrame()
         self._surf_data = pd.DataFrame()
         self._vol_data = pd.DataFrame()
+
+        # dictionary for storing global (across the meshset list) of
+        # the metrics calculated
+        self._global_averages = {}
 
     def __get_entities(self, meshset):
         if meshset is None or meshset == self.dagmc_file.root_set:
@@ -423,6 +428,37 @@ class DagmcQuery:
         Lri = abs(gc_all[vert_i] - DIJgc_sum / Dii_sum)
         return Lri
 
+    def __calc_average_roughness(self):
+        """Calculate global average roughness using equation 5 of reference
+        below and update the global averages dictionary.
+
+        https://www.sciencedirect.com/science/article/pii/S0097849312001203
+        """
+        verts = self.get_verts()
+        self.calc_area_triangle()  # get area data if not already calculated
+        si_total = 0.  # sum of denominator
+        lri_si_total = 0.  # sum of numerator
+        for vert in verts:
+            # get adjacent triangles and their areas
+            tris = self.dagmc_file._my_moab_core.get_adjacencies(
+                vert, 2, op_type=0)
+            area_sum = self._tri_data.loc[self._tri_data['tri_eh'].isin(tris)]['area'].sum()
+
+            # si = 1/3 of total area of adjacent triangles
+            si = area_sum / 3.
+            si_total += si
+
+            # calculate numerator (lri*si)
+            lri_si = float(self._vert_data.loc[
+                self._vert_data['vert_eh'] == vert]['roughness']) * si
+            lri_si_total += lri_si
+
+        # calc average according to formula 5
+        average_roughness = lri_si_total / si_total
+
+        # update global average dictionary
+        self._global_averages['roughness_ave'] = average_roughness
+
     def calc_roughness(self):
         """Calculate local roughness values of all the non-isolated vertices
         and calculates the average roughness for each surface of the meshset
@@ -445,3 +481,6 @@ class DagmcQuery:
             row_data = {'vert_eh': vert, 'roughness': rval}
             roughness_per_vert.append(row_data)
         self.__update_vert_data(roughness_per_vert)
+
+        # calculate average for meshset list
+        self.__calc_average_roughness()
