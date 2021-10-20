@@ -1,4 +1,3 @@
-from numpy.lib.function_base import average
 from pymoab.rng import Range
 from pymoab import core, types
 import pandas as pd
