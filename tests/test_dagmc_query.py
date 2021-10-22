@@ -249,8 +249,12 @@ def test_roughness():
     single_cube = df.DagmcFile(test_env['single_cube'])
     single_cube_query = dq.DagmcQuery(single_cube)
     single_cube_query.calc_roughness()
-    #print(single_cube_query._vert_data)
+    print(single_cube_query._vert_data)
     #three_vols = df.DagmcFile(test_env['three_vols'])
+    #vol = three_vols.entityset_ranges['volumes'][0]
+    #three_vols_query = dq.DagmcQuery(three_vols, vol)
     #surf = three_vols.entityset_ranges['surfaces'][0]
     #three_vols_query = dq.DagmcQuery(three_vols, surf)
-    #print(three_vols_query.get_roughness())
+    #three_vols_query.calc_roughness()
+    #three_vols_query.calc_tris_per_vert()
+    #print(three_vols_query._vert_data)

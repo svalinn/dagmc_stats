@@ -446,9 +446,12 @@ class DagmcQuery:
         """
         DIJgc_sum = 0
         Dii_sum = 0
+        all_tris = self.dagmc_file._my_moab_core.get_adjacencies(
+                vert_i, 2, op_type=0)
+        meshset_tris = self.get_tris()
+        adj_tris = list(set(all_tris) & set(meshset_tris))
         vert_j_list = list(self.dagmc_file._my_moab_core.get_adjacencies(
-            self.dagmc_file._my_moab_core.get_adjacencies(
-                vert_i, 2, op_type=0), 0, op_type=1))
+            adj_tris, 0, op_type=1))
         vert_j_list.remove(vert_i)
         for vert_j in vert_j_list:
             # get tri_ij_list (the list of the two triangles connected to both
@@ -466,7 +469,7 @@ class DagmcQuery:
                             (tri_vert_data['vert'] != vert_j)
             beta_angles = tri_vert_data[select_tris & exclude_verts]['angle']
             Dij = 0.5 * (1. / np.tan(beta_angles[0]) +
-                         1. / np.tan(beta_angles[1]))
+                         1. / np.tan(beta_angles[-1]))
             DIJgc_sum += (Dij * gc_all[vert_j])
             Dii_sum += Dij
         Lri = abs(gc_all[vert_i] - DIJgc_sum / Dii_sum)
