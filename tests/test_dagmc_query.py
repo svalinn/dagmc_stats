@@ -5,6 +5,7 @@ import dagmc_stats.DagmcQuery as dq
 import pandas as pd
 import numpy as np
 import warnings
+import pytest
 
 test_env = {'three_vols': 'tests/3vols.h5m',
             'single_cube': 'tests/single-cube.h5m', 'pyramid': 'tests/pyramid.h5m'}
@@ -27,6 +28,7 @@ def test_pandas_data_frame():
     exp_vol_data = pd.DataFrame()
     assert(single_cube_query._vol_data.equals(exp_vol_data))
 
+
 def test_get_entities_rootset():
     """Tests the get_entities function for rootset
     """
@@ -34,6 +36,7 @@ def test_get_entities_rootset():
     three_vols_query = dq.DagmcQuery(three_vols)
     exp = [three_vols.root_set]
     assert(three_vols_query.meshset_lst == exp)
+
 
 def test_get_entities_vol():
     """Tests the get_entities function for volume meshset
@@ -44,6 +47,7 @@ def test_get_entities_vol():
     exp = list(three_vols._my_moab_core.get_child_meshsets(vol))
     assert(three_vols_query.meshset_lst == exp)
 
+
 def test_get_entities_surf():
     """Tests the get_entities function for surface meshset
     """
@@ -52,6 +56,7 @@ def test_get_entities_surf():
     three_vols_query = dq.DagmcQuery(three_vols, surf)
     exp = [surf]
     assert(three_vols_query.meshset_lst == exp)
+
 
 def test_get_entities_incorrect_dim():
     """Tests the get_entities function given incorrect dimension
@@ -62,7 +67,7 @@ def test_get_entities_incorrect_dim():
     vert = three_vols.entityset_ranges['nodes'][0]
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
-        three_vols_query = dq.DagmcQuery(three_vols, meshset=vert)
+        three_vols_query = dq.DagmcQuery(three_vols, vert)
         if len(w) == 1:
             test_pass[0] = True
             if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
@@ -71,12 +76,13 @@ def test_get_entities_incorrect_dim():
         test_pass[2] = (three_vols_query.meshset_lst == exp)
     assert(all(test_pass))
 
+
 def test_get_tris_vol():
     """Tests the get_tris function for volume meshset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     vol = three_vols.entityset_ranges['volumes'][0]
-    three_vols_query = dq.DagmcQuery(three_vols, meshset=vol)
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
     obs_tris = three_vols_query.get_tris()
     exp_tris = []
     meshset_lst = []
@@ -104,7 +110,7 @@ def test_get_tris_rootset():
     """Tests the get_tris function given the rootset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
-    three_vols_query = dq.DagmcQuery(three_vols, meshset=three_vols.root_set)
+    three_vols_query = dq.DagmcQuery(three_vols, three_vols.root_set)
     obs_tris = three_vols_query.get_tris()
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         three_vols.root_set, types.MBTRI)
@@ -120,7 +126,7 @@ def test_get_tris_dimension_incorrect():
     vert = three_vols.entityset_ranges['nodes'][0]
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
-        three_vols_query = dq.DagmcQuery(three_vols, meshset=vert)
+        three_vols_query = dq.DagmcQuery(three_vols, vert)
         obs_tris = three_vols_query.get_tris()
         if len(w) == 1:
             test_pass[0] = True
@@ -133,10 +139,10 @@ def test_get_tris_dimension_incorrect():
 
 
 def test_calc_tris_per_vert_vol():
-    """Tests part of the calc_triangles_per_vertex function"""
+    """Tests part of the calc_tris_per_vert function"""
     three_vols = df.DagmcFile(test_env['three_vols'])
     vol = three_vols.entityset_ranges['volumes'][0]
-    three_vols_query = dq.DagmcQuery(three_vols, meshset=vol)
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
     three_vols_query.calc_tris_per_vert()
     assert(sorted(three_vols_query._vert_data['tri_per_vert']) == [
            4, 4, 4, 4, 5, 5, 5, 5])
@@ -152,33 +158,64 @@ def test_calc_tris_per_vert_surf():
     assert(sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 5, 5])
 
 
-def test_calc_tris_per_vert_rootset():
-    """Tests the calc_tris_per_vertfunction given the rootset
+def test_calc_area_triangle_vol():
+    """Tests part of the calc_area_triangle function
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
-    three_vols_query = dq.DagmcQuery(three_vols, meshset=three_vols.root_set)
-    three_vols_query.calc_tris_per_vert()
-    exp_tpv_len = len(three_vols._my_moab_core.get_entities_by_type(
-        three_vols.root_set, types.MBVERTEX))
-    assert(len(three_vols_query._vert_data['tri_per_vert']) == exp_tpv_len)
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_area_triangle()
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['area']), list(np.full(12, 50)))
 
 
-def test_calc_tris_per_vert_dimension_incorrect():
-    """Tests the calc_tris_per_vert function given incorrect dimension
+def test_calc_triangle_aspect_ratio_vol():
+    """Tests part of the calc_triangle_aspect_ratio function
     """
-    test_pass = np.full(3, False)
     three_vols = df.DagmcFile(test_env['three_vols'])
-    # check if get_tris function generates warning for meshset with invalid dimension
-    vert = three_vols.entityset_ranges['nodes'][0]
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_triangle_aspect_ratio()
+    exp = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['aspect_ratio']), list(np.full(12, exp)))
+
+
+def test_update_tri_data():
+    """Tests the upadte_tri_data function
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
+    three_vols_query.calc_triangle_aspect_ratio()
+    exp_tar = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)
+                                     * 5*np.sqrt(2)*(10-5*np.sqrt(2)))
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['aspect_ratio']), list(np.full(2, exp_tar)))
+    three_vols_query.calc_area_triangle()
+    np.testing.assert_almost_equal(
+        list(three_vols_query._tri_data['area']), list(np.full(2, 50)))
+
+@pytest.mark.parametrize("function,message",
+                         [('calc_tris_per_vert()',
+                           'Tri_per_vert already exists. tris_per_vert() will not be called.'),
+                          ('calc_area_triangle()',
+                           'Triangle area already exists. Calc_area_triangle() will not be called.'),
+                          ('calc_triangle_aspect_ratio()',
+                           'Triangle aspect ratio already exists. Calc_triangle_aspect_ratio() will not be called.')])
+def test_duplicate_calc(function, message):
+    """Tests the case where calc_tris_per_vert() is called on the same meshset for multiple times
+    """
+    test_pass = np.full(2, False)
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
-        three_vols_query = dq.DagmcQuery(three_vols, meshset=vert)
-        three_vols_query.calc_tris_per_vert()
+        eval('three_vols_query.' + function)
+        eval('three_vols_query.' + function)
         if len(w) == 1:
             test_pass[0] = True
-            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
+            if message in str(w[-1].message):
                 test_pass[1] = True
-        exp_tpv_len = len(three_vols._my_moab_core.get_entities_by_type(
-            three_vols.root_set, types.MBVERTEX))
-        test_pass[2] = (len(three_vols_query._vert_data['tri_per_vert']) == exp_tpv_len)
     assert(all(test_pass))
