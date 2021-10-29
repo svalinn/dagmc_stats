@@ -196,11 +196,17 @@ def test_update_tri_data():
     np.testing.assert_almost_equal(
         list(three_vols_query._tri_data['area']), list(np.full(2, 50)))
 
-@pytest.mark.parametrize("function,message", [('calc_tris_per_vert()','Tri_per_vert already exists. tris_per_vert() will not be called.')])
-def test_duplicate_tpv(function, message):
+@pytest.mark.parametrize("function,message",
+                         [('calc_tris_per_vert()',
+                           'Tri_per_vert already exists. tris_per_vert() will not be called.'),
+                          ('calc_area_triangle()',
+                           'Triangle area already exists. Calc_area_triangle() will not be called.'),
+                          ('calc_triangle_aspect_ratio()',
+                           'Triangle aspect ratio already exists. Calc_triangle_aspect_ratio() will not be called.')])
+def test_duplicate_calc(function, message):
     """Tests the case where calc_tris_per_vert() is called on the same meshset for multiple times
     """
-    test_pass = np.full(3, False)
+    test_pass = np.full(2, False)
     three_vols = df.DagmcFile(test_env['three_vols'])
     surf = three_vols.entityset_ranges['surfaces'][0]
     three_vols_query = dq.DagmcQuery(three_vols, surf)
@@ -212,6 +218,4 @@ def test_duplicate_tpv(function, message):
             test_pass[0] = True
             if message in str(w[-1].message):
                 test_pass[1] = True
-    test_pass[2] = (
-        sorted(three_vols_query._vert_data['tri_per_vert']) == [4, 4, 5, 5])
     assert(all(test_pass))
