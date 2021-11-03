@@ -68,9 +68,11 @@ def test_get_entities_incorrect_dim():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         three_vols_query = dq.DagmcQuery(three_vols, vert)
-        if len(w) == 1:
+        if len(w) == 2:
             test_pass[0] = True
-            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
+            if 'Meshset is not a volume nor a surface!' in str(w[0].message) and \
+               'Specified meshset(s) are not surfaces or ' + \
+               'volumes. Rootset will be used by default.' in str(w[-1].message):
                 test_pass[1] = True
         exp = [three_vols.root_set]
         test_pass[2] = (three_vols_query.meshset_lst == exp)
@@ -115,27 +117,6 @@ def test_get_tris_rootset():
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         three_vols.root_set, types.MBTRI)
     assert(sorted(obs_tris) == sorted(exp_tris))
-
-
-def test_get_tris_dimension_incorrect():
-    """Tests the get_tris function given incorrect dimension
-    """
-    test_pass = np.full(3, False)
-    three_vols = df.DagmcFile(test_env['three_vols'])
-    # check if get_tris function generates warning for meshset with invalid dimension
-    vert = three_vols.entityset_ranges['nodes'][0]
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        three_vols_query = dq.DagmcQuery(three_vols, vert)
-        obs_tris = three_vols_query.get_tris()
-        if len(w) == 1:
-            test_pass[0] = True
-            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
-                test_pass[1] = True
-        exp_tris = three_vols._my_moab_core.get_entities_by_type(
-            three_vols.root_set, types.MBTRI)
-        test_pass[2] = (sorted(obs_tris) == sorted(exp_tris))
-    assert(all(test_pass))
 
 
 def test_calc_tris_per_vert_vol():
@@ -253,7 +234,7 @@ def test_roughness():
     single_cube = df.DagmcFile(test_env['single_cube'])
     single_cube_query = dq.DagmcQuery(single_cube)
     single_cube_query.calc_roughness()
-    print(single_cube_query._vert_data)
+    #print(single_cube_query._vert_data)
     #three_vols = df.DagmcFile(test_env['three_vols'])
     #vol = three_vols.entityset_ranges['volumes'][0]
     #three_vols_query = dq.DagmcQuery(three_vols, vol)
