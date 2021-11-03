@@ -81,7 +81,7 @@ class DagmcFile:
                                                                      size=tag_data['size'],
                                                                      tag_type=tag_data['type'],
                                                                      storage_type=types.MB_TAG_SPARSE,
-                                                                     create_if_missing=False)
+                                                                     create_if_missing=True)
 
     def __set_entityset_ranges(self):
         """Set a dictionary with MOAB Ranges that are specific to the

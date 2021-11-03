@@ -231,15 +231,25 @@ def test_coarseness_area_called():
     assert(all(test_pass))
 
 def test_roughness():
-    single_cube = df.DagmcFile(test_env['single_cube'])
-    single_cube_query = dq.DagmcQuery(single_cube)
-    single_cube_query.calc_roughness()
-    #print(single_cube_query._vert_data)
-    #three_vols = df.DagmcFile(test_env['three_vols'])
-    #vol = three_vols.entityset_ranges['volumes'][0]
-    #three_vols_query = dq.DagmcQuery(three_vols, vol)
-    #surf = three_vols.entityset_ranges['surfaces'][0]
-    #three_vols_query = dq.DagmcQuery(three_vols, surf)
-    #three_vols_query.calc_roughness()
-    #three_vols_query.calc_tris_per_vert()
-    #print(three_vols_query._vert_data)
+    #single_cube = df.DagmcFile(test_env['single_cube'])
+    pyramid = df.DagmcFile(test_env['pyramid'])
+    pyramid_query = dq.DagmcQuery(pyramid)
+    pyramid_query.calc_roughness()
+    
+    gc_top = 2.0/3*np.pi
+    gc_bottom = 5.0/6*np.pi
+    d_bottom = [1/np.tan(np.pi/3),
+                0.5*(1/np.tan(np.pi/3)+1/np.tan(np.pi/4)), 0]
+    lr_bottom = []
+    lr_top = np.abs(gc_top - gc_bottom)
+    lr_bottom.append(np.abs(gc_bottom - \
+                (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom) \
+                /(d_bottom[0]+2*d_bottom[1])))
+    lr_bottom.append(np.abs(gc_bottom - \
+                (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom+d_bottom[2]*gc_bottom) \
+                /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
+    exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
+    obs = sorted(list(pyramid_query._vert_data['roughness']))
+    for i in range(5):
+        np.testing.assert_almost_equal(obs[i], exp[i])
+    
