@@ -543,3 +543,28 @@ class DagmcQuery:
 
         # calculate average for meshset list
         self.__calc_average_roughness()
+        
+        # calculate triangle average roughness
+        self.__calc_tri_roughness()
+        
+    def __calc_tri_roughness(self):
+        """Calculate triangle average roughness
+
+        inputs
+        ------
+            none
+
+        outputs
+        -------
+            none
+        """
+        tri_roughness = []
+        tris = self.get_tris()
+        for tri in tris:
+            three_verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0, op_type=1))
+            sum_lr = self._vert_data.loc[
+                self._vert_data['vert_eh'].isin(three_verts)]['roughness'].sum()
+            rval = sum_lr/3
+            row_data = {'tri_eh': tri, 'roughness': rval}
+            tri_roughness.append(row_data)
+        self.__update_tri_data(tri_roughness)

@@ -231,7 +231,10 @@ def test_coarseness_area_called():
     assert(all(test_pass))
 
 def test_roughness():
-    #single_cube = df.DagmcFile(test_env['single_cube'])
+    """Tests the calc roughness function, __calc_avg_roughness() function and
+    __calc_tri_roughness() function.
+    """
+    test_pass = np.full(3, False)
     pyramid = df.DagmcFile(test_env['pyramid'])
     pyramid_query = dq.DagmcQuery(pyramid)
     pyramid_query.calc_roughness()
@@ -250,6 +253,4 @@ def test_roughness():
                 /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
     exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
     obs = sorted(list(pyramid_query._vert_data['roughness']))
-    for i in range(5):
-        np.testing.assert_almost_equal(obs[i], exp[i])
-    
+    np.testing.assert_almost_equal(obs, exp)
