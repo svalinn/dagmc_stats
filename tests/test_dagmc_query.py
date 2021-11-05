@@ -231,8 +231,8 @@ def test_coarseness_area_called():
     assert(all(test_pass))
 
 def test_roughness():
-    """Tests the calc roughness function, __calc_avg_roughness() function and
-    __calc_tri_roughness() function.
+    """Tests the calc roughness function, __calc_average_roughness() function
+    and __calc_tri_roughness() function.
     """
     test_pass = np.full(3, False)
     pyramid = df.DagmcFile(test_env['pyramid'])
@@ -254,3 +254,14 @@ def test_roughness():
     exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
     obs = sorted(list(pyramid_query._vert_data['roughness']))
     np.testing.assert_almost_equal(obs, exp)
+    
+    # test the __calc_average_roughness function
+    s_top = 4*25/4*np.sqrt(3)
+    s_bottom = [12.5+2*25/4*np.sqrt(3), 25+2*25/4*np.sqrt(3)]
+    num = lr_top*s_top/3 + \
+                2*lr_bottom[0]*s_bottom[0]/3 + \
+                2*lr_bottom[1]*s_bottom[1]/3
+    denom = 4*25/4*np.sqrt(3)+25
+    exp = num/denom
+    obs = pyramid_query._global_averages['roughness_ave']
+    np.testing.assert_almost_equal(obs, exp, 2)
