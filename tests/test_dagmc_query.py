@@ -265,3 +265,9 @@ def test_roughness():
     exp = num/denom
     obs = pyramid_query._global_averages['roughness_ave']
     np.testing.assert_almost_equal(obs, exp, 2)
+
+    #test the __calc_tri_roughness function
+    tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3, (lr_bottom[0]*2+lr_bottom[1])/3]
+    exp = [tri_roughness[i] for i in [0,0,0,0,1,1]]
+    obs = pyramid_query._tri_data['roughness']
+    np.testing.assert_almost_equal(sorted(obs), sorted(exp))
