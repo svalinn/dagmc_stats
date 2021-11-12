@@ -258,14 +258,14 @@ def test_roughness():
     # test the __calc_average_roughness function
     side_length = 5
     s_top = 4*(np.sqrt(3)/4*side_length**2)/3
-    s_bottom = [(side_length**2/2+2*(np.sqrt(3)/4*side_length**2))/3, (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3]
+    s_bottom = [(side_length**2/2.0+2*(np.sqrt(3)/4*side_length**2))/3.0, (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3.0]
     num = lr_top*s_top+ \
                 2*lr_bottom[0]*s_bottom[0] + \
                 2*lr_bottom[1]*s_bottom[1]
     denom = s_top+sum(s_bottom)*2
     exp = num/denom
     obs = pyramid_query._global_averages['roughness_ave']
-    np.testing.assert_almost_equal(obs, exp, 3)
+    np.testing.assert_almost_equal(obs, exp)
 
     #test the __calc_tri_roughness function
     tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3, (lr_bottom[0]*2+lr_bottom[1])/3]
