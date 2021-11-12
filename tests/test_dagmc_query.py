@@ -239,10 +239,10 @@ def test_roughness():
     pyramid_query = dq.DagmcQuery(pyramid)
     pyramid_query.calc_roughness()
     
-    gc_top = 2*np.pi-4*np.pi/3
-    gc_bottom = 2*np.pi-2*np.pi/3-np.pi/2
-    d_bottom = [1/np.tan(np.pi/3),
-                0.5*(1/np.tan(np.pi/3)+1/np.tan(np.pi/4)), 0]
+    gc_top = 2.0*np.pi-4*np.pi/3.0
+    gc_bottom = 2.0*np.pi-2*np.pi/3.0-np.pi/2.0
+    d_bottom = [1.0/np.tan(np.pi/3.0),
+                0.5*(1.0/np.tan(np.pi/3.0)+1.0/np.tan(np.pi/4.0)), 0]
     lr_bottom = []
     lr_top = np.abs(gc_top - gc_bottom)
     lr_bottom.append(np.abs(gc_bottom - \
@@ -256,8 +256,8 @@ def test_roughness():
     np.testing.assert_almost_equal(obs, exp)
     
     # test the __calc_average_roughness function
-    side_length = 5
-    s_top = 4*(np.sqrt(3)/4*side_length**2)/3
+    side_length = 5.0
+    s_top = 4*(np.sqrt(3)/4*side_length**2)/3.0
     s_bottom = [(side_length**2/2.0+2*(np.sqrt(3)/4*side_length**2))/3.0, (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3.0]
     num = lr_top*s_top+ \
                 2*lr_bottom[0]*s_bottom[0] + \
