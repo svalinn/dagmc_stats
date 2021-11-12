@@ -239,8 +239,8 @@ def test_roughness():
     pyramid_query = dq.DagmcQuery(pyramid)
     pyramid_query.calc_roughness()
     
-    gc_top = 2.0/3*np.pi
-    gc_bottom = 5.0/6*np.pi
+    gc_top = 2*np.pi-4*np.pi/3
+    gc_bottom = 2*np.pi-2*np.pi/3-np.pi/2
     d_bottom = [1/np.tan(np.pi/3),
                 0.5*(1/np.tan(np.pi/3)+1/np.tan(np.pi/4)), 0]
     lr_bottom = []
@@ -256,15 +256,16 @@ def test_roughness():
     np.testing.assert_almost_equal(obs, exp)
     
     # test the __calc_average_roughness function
-    s_top = 4*25/4*np.sqrt(3)
-    s_bottom = [12.5+2*25/4*np.sqrt(3), 25+2*25/4*np.sqrt(3)]
-    num = lr_top*s_top/3 + \
-                2*lr_bottom[0]*s_bottom[0]/3 + \
-                2*lr_bottom[1]*s_bottom[1]/3
-    denom = 4*25/4*np.sqrt(3)+25
+    side_length = 5
+    s_top = 4*(np.sqrt(3)/4*side_length**2)/3
+    s_bottom = [(side_length**2/2+2*(np.sqrt(3)/4*side_length**2))/3, (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3]
+    num = lr_top*s_top+ \
+                2*lr_bottom[0]*s_bottom[0] + \
+                2*lr_bottom[1]*s_bottom[1]
+    denom = s_top+sum(s_bottom)*2
     exp = num/denom
     obs = pyramid_query._global_averages['roughness_ave']
-    np.testing.assert_almost_equal(obs, exp, 2)
+    np.testing.assert_almost_equal(obs, exp, 3)
 
     #test the __calc_tri_roughness function
     tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3, (lr_bottom[0]*2+lr_bottom[1])/3]
