@@ -253,7 +253,7 @@ def test_roughness():
                 /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
     exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
     obs = sorted(list(pyramid_query._vert_data['roughness']))
-    np.testing.assert_almost_equal(obs, exp)
+    test_pass[0] = np.allclose(obs,exp)
     
     # test the __calc_average_roughness function
     side_length = 5.0
@@ -265,10 +265,12 @@ def test_roughness():
     denom = s_top+sum(s_bottom)*2
     exp = num/denom
     obs = pyramid_query._global_averages['roughness_ave']
-    np.testing.assert_almost_equal(obs, exp)
+    test_pass[1] = np.allclose([obs],[exp])
 
     #test the __calc_tri_roughness function
     tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3, (lr_bottom[0]*2+lr_bottom[1])/3]
     exp = [tri_roughness[i] for i in [0,0,0,0,1,1]]
     obs = pyramid_query._tri_data['roughness']
-    np.testing.assert_almost_equal(sorted(obs), sorted(exp))
+    test_pass[2] = np.allclose(sorted(obs),sorted(exp))
+    
+    assert(all(test_pass))
