@@ -37,6 +37,16 @@ class DagmcQuery:
         self._global_averages = {}
 
     def __get_entities(self, meshset):
+        """convert the list of meshsets to its corresponding list of surfaces
+
+        inputs
+        ------
+            meshset: the list of meshsets on which query will be performed.
+
+        outputs
+        -------
+            none
+        """
         if meshset is None or meshset is self.dagmc_file.root_set:
             self.meshset_lst.append(self.dagmc_file.root_set)
         else:
@@ -48,12 +58,12 @@ class DagmcQuery:
             for m in meshset:
                 dim = self.dagmc_file._my_moab_core.tag_get_data(
                     self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
-                # get triangles of a volume
+                # get surfaces of a volume
                 if dim == 3:
                     surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
                         m)
                     self.meshset_lst.extend(surfs)
-                # get triangles of a surface
+                # get surface
                 elif dim == 2:
                     self.meshset_lst.append(m)
                 else:
@@ -73,9 +83,7 @@ class DagmcQuery:
 
         inputs
         ------
-            meshset : set of entities that are used to populate data.
-                Default value is None and data of the whole geometry will
-                be populated.
+            none
 
         outputs
         -------
@@ -95,19 +103,17 @@ class DagmcQuery:
 
         inputs
         ------
-            meshset : set of entities that are used to populate data.
-                Default value is None and data of the whole geometry will
-                be populated.
+            none
 
         outputs
         -------
             verts : a list of vertex entities
         """
-        verts = []
+        verts = set()
         for item in self.meshset_lst:
-            verts.extend(self.dagmc_file._my_moab_core.get_entities_by_type(
+            verts.update(self.dagmc_file._my_moab_core.get_entities_by_type(
                 item, types.MBVERTEX))
-        verts = list(set(verts))
+        verts = list(verts)
         return verts
 
     def get_surfs(self):
@@ -306,7 +312,7 @@ class DagmcQuery:
 
     def calc_coarseness(self):
         """
-        Calculate the surface coarseness data
+        Calculate the density of facets on a surface (num tris / total area)
 
         inputs
         ------
@@ -380,9 +386,9 @@ class DagmcQuery:
                 side_i = side_lengths[vert_i]
                 d_i = np.arccos((side_length_sum_sq_half -
                                 (side_i**2)) * side_i / side_length_prod)
-                bar = np.array((tri, vert_i, d_i, side_i),
+                tri_vert_entry = np.array((tri, vert_i, d_i, side_i),
                                dtype=tri_vert_struct)
-                tri_vert_data[tri_vert_index] = bar
+                tri_vert_data[tri_vert_index] = tri_vert_entry
                 tri_vert_index += 1
         return tri_vert_data, list(all_verts)
 
@@ -446,10 +452,10 @@ class DagmcQuery:
         """
         DIJgc_sum = 0
         Dii_sum = 0
-        all_tris = self.dagmc_file._my_moab_core.get_adjacencies(
+        adj_tris = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert_i, 2, op_type=0)
         meshset_tris = self.get_tris()
-        adj_tris = list(set(all_tris) & set(meshset_tris))
+        adj_tris = list(set(adj_tris) & set(meshset_tris))
         vert_j_list = list(self.dagmc_file._my_moab_core.get_adjacencies(
             adj_tris, 0, op_type=1))
         vert_j_list.remove(vert_i)
@@ -465,9 +471,9 @@ class DagmcQuery:
             select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
                           (tri_vert_data['tri'] == tri_ij_list[1])
             # rows with vert value not equal to vert_i and not equal to vert_j
-            exclude_verts = (tri_vert_data['vert'] != vert_i) & \
+            vert_filter = (tri_vert_data['vert'] != vert_i) & \
                             (tri_vert_data['vert'] != vert_j)
-            beta_angles = tri_vert_data[select_tris & exclude_verts]['angle']
+            beta_angles = tri_vert_data[select_tris & vert_filter]['angle']
             Dij = 0.5 * (1. / np.tan(beta_angles[0]) +
                          1. / np.tan(beta_angles[-1]))
             DIJgc_sum += (Dij * gc_all[vert_j])
@@ -548,7 +554,8 @@ class DagmcQuery:
         self.__calc_tri_roughness()
         
     def __calc_tri_roughness(self):
-        """Calculate triangle average roughness
+        """Calculate triangle average roughness by averaging roughness values
+        of the triangle vertices.
 
         inputs
         ------
@@ -564,7 +571,7 @@ class DagmcQuery:
             three_verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0, op_type=1))
             sum_lr = self._vert_data.loc[
                 self._vert_data['vert_eh'].isin(three_verts)]['roughness'].sum()
-            rval = sum_lr/3
+            rval = sum_lr/3.0
             row_data = {'tri_eh': tri, 'roughness': rval}
             tri_roughness.append(row_data)
         self.__update_tri_data(tri_roughness)

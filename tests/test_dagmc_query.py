@@ -35,6 +35,7 @@ def test_get_entities_rootset():
     three_vols = df.DagmcFile(test_env['three_vols'])
     three_vols_query = dq.DagmcQuery(three_vols)
     exp = [three_vols.root_set]
+    #exp = list(three_vols.entityset_ranges['surfaces'])
     assert(three_vols_query.meshset_lst == exp)
 
 
@@ -75,6 +76,7 @@ def test_get_entities_incorrect_dim():
                'volumes. Rootset will be used by default.' in str(w[-1].message):
                 test_pass[1] = True
         exp = [three_vols.root_set]
+        #exp = list(three_vols.entityset_ranges['surfaces'])
         test_pass[2] = (three_vols_query.meshset_lst == exp)
     assert(all(test_pass))
 
@@ -201,6 +203,7 @@ def test_duplicate_calc(function, message):
                 test_pass[1] = True
     assert(all(test_pass))
 
+
 def test_coarseness():
     """Tests the calc coarseness function
     """
@@ -211,24 +214,6 @@ def test_coarseness():
     np.testing.assert_almost_equal(
         list(three_vols_query._surf_data['coarseness']), list(np.full(6, 0.02)))
 
-def test_coarseness_area_called():
-    """Tests the case that the calc_triangle_function was called before the
-    calc_coarseness function
-    """
-    test_pass = np.full(3, False)
-    three_vols = df.DagmcFile(test_env['three_vols'])
-    surf = three_vols.entityset_ranges['surfaces'][0]
-    three_vols_query = dq.DagmcQuery(three_vols, surf)
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        three_vols_query.calc_area_triangle()
-        three_vols_query.calc_coarseness()
-        if len(w) == 1:
-            test_pass[0] = True
-            if 'Triangle area already exists. Calc_area_triangle() will not be called.' in str(w[-1].message):
-                test_pass[1] = True
-    test_pass[2] = (list(three_vols_query._surf_data['coarseness'] == [0.02]))
-    assert(all(test_pass))
 
 def test_roughness():
     """Tests the calc roughness function, __calc_average_roughness() function
@@ -269,8 +254,8 @@ def test_roughness():
 
     #test the __calc_tri_roughness function
     tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3, (lr_bottom[0]*2+lr_bottom[1])/3]
-    exp = [tri_roughness[i] for i in [0,0,0,0,1,1]]
+    exp = [tri_roughness[i] for i in [0, 0, 0, 0, 1, 1]]
     obs = pyramid_query._tri_data['roughness']
-    test_pass[2] = np.allclose(sorted(obs),sorted(exp))
+    test_pass[2] = np.allclose(sorted(obs), sorted(exp))
     
     assert(all(test_pass))
