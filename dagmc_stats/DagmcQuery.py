@@ -356,7 +356,6 @@ class DagmcQuery:
             verts = list(self.dagmc_file._my_moab_core.get_adjacencies(
                 tri, 0, op_type=1))
             for vert_i in verts:
-                all_verts.add(vert_i)
                 side_i = side_lengths[vert_i]
                 d_i = np.arccos((side_length_sum_sq_half -
                                 (side_i**2)) * side_i / side_length_prod)
@@ -364,26 +363,8 @@ class DagmcQuery:
                                dtype=tri_vert_struct)
                 tri_vert_data[tri_vert_index] = tri_vert_entry
                 tri_vert_index += 1
+            all_verts.update(verts)
         return tri_vert_data, list(all_verts)
-
-    def __calc_gaussian_curvature(self, tri_vert_data):
-        """Get gaussian curvature values of all non-isolated vertices
-
-        inputs
-        ------
-        tri_vert_data : numpy structured array that stores the triangle and
-        vertex related data
-
-        outputs
-        -------
-        gc_all : dictionary in the form of vertex : gaussian curvature value
-        of the vertex
-        """
-        verts = self.get_verts()
-        gc_all = {}
-        for vert_i in verts:
-            gc_all[vert_i] = self.__gaussian_curvature(vert_i, tri_vert_data)
-        return gc_all
 
     def __gaussian_curvature(self, vert_i, tri_vert_data):
         """Get gaussian curvature value of a vertex
@@ -513,7 +494,9 @@ class DagmcQuery:
         """
         tri_vert_data, all_verts = self.__get_tri_vert_data()
         verts = self.get_verts()
-        gc_all = self.__calc_gaussian_curvature(tri_vert_data)
+        gc_all = {}
+        for vert_i in verts:
+            gc_all[vert_i] = self.__gaussian_curvature(vert_i, tri_vert_data)
         roughness_per_vert = []
         for vert in verts:
             rval = self.__get_lri(vert, gc_all, tri_vert_data)
