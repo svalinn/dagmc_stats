@@ -34,8 +34,7 @@ def test_get_entities_rootset():
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     three_vols_query = dq.DagmcQuery(three_vols)
-    exp = [three_vols.root_set]
-    #exp = list(three_vols.entityset_ranges['surfaces'])
+    exp = list(three_vols.entityset_ranges['surfaces'])
     assert(three_vols_query.meshset_lst == exp)
 
 
@@ -75,8 +74,7 @@ def test_get_entities_incorrect_dim():
                'Specified meshset(s) are not surfaces or ' + \
                'volumes. Rootset will be used by default.' in str(w[-1].message):
                 test_pass[1] = True
-        exp = [three_vols.root_set]
-        #exp = list(three_vols.entityset_ranges['surfaces'])
+        exp = list(three_vols.entityset_ranges['surfaces'])
         test_pass[2] = (three_vols_query.meshset_lst == exp)
     assert(all(test_pass))
 

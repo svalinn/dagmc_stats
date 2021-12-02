@@ -23,7 +23,7 @@ class DagmcQuery:
         self.dagmc_file = dagmc_file
         self.meshset_lst = []
         if meshset is None:
-            self.meshset_lst.append(self.dagmc_file.root_set)
+            self.meshset_lst =  list(self.dagmc_file.entityset_ranges['surfaces'])
         else:
             self.__get_entities(meshset)
         # initialize data frames
@@ -47,34 +47,31 @@ class DagmcQuery:
         -------
             none
         """
-        if meshset is None or meshset is self.dagmc_file.root_set:
-            self.meshset_lst.append(self.dagmc_file.root_set)
-        else:
-            # allow mixed list of surfaces and volumes that create a
-            # single list of all the surfaces together
-            if type(meshset) != list:
-                # convert single item to list for iterating
-                meshset = [meshset]
-            for m in meshset:
-                dim = self.dagmc_file._my_moab_core.tag_get_data(
-                    self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
-                # get surfaces of a volume
-                if dim == 3:
-                    surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
-                        m)
-                    self.meshset_lst.extend(surfs)
-                # get surface
-                elif dim == 2:
-                    self.meshset_lst.append(m)
-                else:
-                    warnings.warn('Meshset is not a volume nor a surface!')
+        # allow mixed list of surfaces and volumes that create a
+        # single list of all the surfaces together
+        if type(meshset) != list:
+            # convert single item to list for iterating
+            meshset = [meshset]
+        for m in meshset:
+            dim = self.dagmc_file._my_moab_core.tag_get_data(
+                self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
+            # get surfaces of a volume
+            if dim == 3:
+                surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
+                    m)
+                self.meshset_lst.extend(surfs)
+            # get surface
+            elif dim == 2:
+                self.meshset_lst.append(m)
+            else:
+                warnings.warn('Meshset is not a volume nor a surface!')
 
-            # if no items in the meshset list is a surface or volume,
-            # then use rootset by default instead
-            if len(self.meshset_lst) == 0:
-                warnings.warn('Specified meshset(s) are not surfaces or ' +
-                              'volumes. Rootset will be used by default.')
-                self.meshset_lst.append(self.dagmc_file.root_set)
+        # if no items in the meshset list is a surface or volume,
+        # then use rootset by default instead
+        if len(self.meshset_lst) == 0:
+            warnings.warn('Specified meshset(s) are not surfaces or ' +
+                            'volumes. Rootset will be used by default.')
+            self.meshset_lst = list(self.dagmc_file.entityset_ranges['surfaces'])
 
     def get_tris(self):
         """Get triangles of a volume if geom_dim is 3
@@ -115,28 +112,6 @@ class DagmcQuery:
                 item, types.MBVERTEX))
         verts = list(verts)
         return verts
-
-    def get_surfs(self):
-        """Get all surfaces in the query object. If rootset or volume, get all
-        surfs in the rootset or volume. If query is already a surface, return
-        the meshset list
-
-        inputs
-        ------
-            meshset : set of entities that are used to populate data.
-                Default value is None and data of the whole geometry will
-                be populated.
-
-        outputs
-        -------
-            surfs : a list of surface entities
-        """
-        surfs = []
-        if self.meshset_lst == [self.dagmc_file.root_set]:
-            surfs = self.dagmc_file.entityset_ranges['surfaces']
-        else:
-            surfs = self.meshset_lst
-        return surfs
 
     def get_tri_side_length(self, tri):
         """Get side lengths of triangle
@@ -328,11 +303,10 @@ class DagmcQuery:
             return
 
         coarseness = []
-        surfs = self.get_surfs()
         self.calc_area_triangle()
         total_area = 0.
         weighted_coarseness = 0.  # surf coarseness * surf area
-        for surf in surfs:
+        for surf in self.meshset_lst:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 surf, types.MBTRI)
             area = self._tri_data.loc[self._tri_data['tri_eh'].isin(
