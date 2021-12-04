@@ -31,6 +31,7 @@ class DagmcQuery:
         self._tri_data = pd.DataFrame()
         self._surf_data = pd.DataFrame()
         self._vol_data = pd.DataFrame()
+        self._tri_vert_data = []
 
         # dictionary for storing global (across the meshset list) of
         # the metrics calculated
@@ -335,17 +336,13 @@ class DagmcQuery:
 
         outputs
         -------
-        tri_vert_data : a numpy structured array that stores the triangle
-            and vertex related data
-        all_verts : (list) all the vertices that are connected to
-            triangle in the geometry
+        none
         """
-        all_verts = set()
         tri_vert_struct = np.dtype({
             'names': ['tri', 'vert', 'angle', 'side_length'],
             'formats': [np.uint64, np.uint64, np.float64, np.float64]})
         tris = self.get_tris()
-        tri_vert_data = np.zeros(len(tris) * 3, dtype=tri_vert_struct)
+        self._tri_vert_data = np.zeros(len(tris) * 3, dtype=tri_vert_struct)
         tri_vert_index = 0
 
         for tri in tris:
@@ -361,12 +358,10 @@ class DagmcQuery:
                                 (side_i**2)) * side_i / side_length_prod)
                 tri_vert_entry = np.array((tri, vert_i, d_i, side_i),
                                dtype=tri_vert_struct)
-                tri_vert_data[tri_vert_index] = tri_vert_entry
+                self._tri_vert_data[tri_vert_index] = tri_vert_entry
                 tri_vert_index += 1
-            all_verts.update(verts)
-        return tri_vert_data, list(all_verts)
 
-    def __gaussian_curvature(self, vert_i, tri_vert_data):
+    def __gaussian_curvature(self, vert_i):
         """Get gaussian curvature value of a vertex
         Reference: https://www.sciencedirect.com/science/article/pii/
         S0097849312001203
@@ -375,19 +370,17 @@ class DagmcQuery:
         inputs
         ------
             vert_i : vertex entity handle
-            tri_vert_data : numpy structured array that stores the
-            triangle and vertex related data
 
         outputs
         -------
             gc : gaussian curvature value of the vertex
         """
-        vert_entries = tri_vert_data[tri_vert_data['vert'] == vert_i]
+        vert_entries = self._tri_vert_data[self._tri_vert_data['vert'] == vert_i]
         sum_alpha_angles = sum(vert_entries['angle'])
         gc = np.abs(2 * np.pi - sum_alpha_angles)
         return gc
 
-    def __get_lri(self, vert_i, gc_all, tri_vert_data):
+    def __get_lri(self, vert_i, gc_all):
         """Get local roughness value of a vertex
         Reference: https://www.sciencedirect.com/science/article/pii/
         S0097849312001203
@@ -398,8 +391,6 @@ class DagmcQuery:
             vert_i : vertex entity handle
             gc_all : dictionary in the form of vertex : gaussian curvature
                 value of the vertex
-            tri_vert_data : numpy structured array that stores the triangle
-                and vertex related data
 
         outputs
         -------
@@ -421,12 +412,12 @@ class DagmcQuery:
                 vert_j, 2, op_type=0)
             tri_ij_list = list(set(adj_tris) & set(tri_j_list))
             # rows with tri value as tri_ij_list[0] or tri_ij_list[1]
-            select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
-                          (tri_vert_data['tri'] == tri_ij_list[1])
+            select_tris = (self._tri_vert_data['tri'] == tri_ij_list[0]) | \
+                          (self._tri_vert_data['tri'] == tri_ij_list[1])
             # rows with vert value not equal to vert_i and not equal to vert_j
-            vert_filter = (tri_vert_data['vert'] != vert_i) & \
-                            (tri_vert_data['vert'] != vert_j)
-            beta_angles = tri_vert_data[select_tris & vert_filter]['angle']
+            vert_filter = (self._tri_vert_data['vert'] != vert_i) & \
+                            (self._tri_vert_data['vert'] != vert_j)
+            beta_angles = self._tri_vert_data[select_tris & vert_filter]['angle']
             Dij = 0.5 * (1. / np.tan(beta_angles[0]) +
                          1. / np.tan(beta_angles[-1]))
             DIJgc_sum += (Dij * gc_all[vert_j])
@@ -490,13 +481,14 @@ class DagmcQuery:
         -------
             none
         """
-        tri_vert_data, all_verts = self.__get_tri_vert_data()
+        self.__get_tri_vert_data()
         gc_all = {}
-        for vert_i in all_verts:
-            gc_all[vert_i] = self.__gaussian_curvature(vert_i, tri_vert_data)
+        verts = self.get_verts()
+        for vert_i in verts:
+            gc_all[vert_i] = self.__gaussian_curvature(vert_i)
         roughness_per_vert = []
-        for vert in all_verts:
-            rval = self.__get_lri(vert, gc_all, tri_vert_data)
+        for vert in verts:
+            rval = self.__get_lri(vert, gc_all)
             row_data = {'vert_eh': vert, 'roughness': rval}
             roughness_per_vert.append(row_data)
         self.__update_vert_data(roughness_per_vert)
