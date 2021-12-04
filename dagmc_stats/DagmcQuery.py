@@ -417,11 +417,9 @@ class DagmcQuery:
         for vert_j in vert_j_list:
             # get tri_ij_list (the list of the two triangles connected to both
             # vert_i and vert_j)
-            tri_i_list = self.dagmc_file._my_moab_core.get_adjacencies(
-                vert_i, 2, op_type=0)
             tri_j_list = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert_j, 2, op_type=0)
-            tri_ij_list = list(set(tri_i_list) & set(tri_j_list))
+            tri_ij_list = list(set(adj_tris) & set(tri_j_list))
             # rows with tri value as tri_ij_list[0] or tri_ij_list[1]
             select_tris = (tri_vert_data['tri'] == tri_ij_list[0]) | \
                           (tri_vert_data['tri'] == tri_ij_list[1])
@@ -493,12 +491,11 @@ class DagmcQuery:
             none
         """
         tri_vert_data, all_verts = self.__get_tri_vert_data()
-        verts = self.get_verts()
         gc_all = {}
-        for vert_i in verts:
+        for vert_i in all_verts:
             gc_all[vert_i] = self.__gaussian_curvature(vert_i, tri_vert_data)
         roughness_per_vert = []
-        for vert in verts:
+        for vert in all_verts:
             rval = self.__get_lri(vert, gc_all, tri_vert_data)
             row_data = {'vert_eh': vert, 'roughness': rval}
             roughness_per_vert.append(row_data)
