@@ -8,7 +8,7 @@ import warnings
 import pytest
 
 test_env = {'three_vols': 'tests/3vols.h5m',
-            'single_cube': 'tests/single-cube.h5m', 'pyramid': 'tests/kalinPyra3.h5m'}
+            'single_cube': 'tests/single-cube.h5m', 'pyramid': 'tests/pyramid.h5m'}
 
 
 def test_pandas_data_frame():
