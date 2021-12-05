@@ -63,7 +63,7 @@ def test_get_entities_incorrect_dim():
     """
     test_pass = np.full(3, False)
     three_vols = df.DagmcFile(test_env['three_vols'])
-    # check if get_tris function generates warning for meshset with invalid dimension
+    # check if __get_tris function generates warning for meshset with invalid dimension
     vert = three_vols.entityset_ranges['nodes'][0]
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
@@ -80,12 +80,12 @@ def test_get_entities_incorrect_dim():
 
 
 def test_get_tris_vol():
-    """Tests the get_tris function for volume meshset
+    """Tests the tris variable for volume meshset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     vol = three_vols.entityset_ranges['volumes'][0]
     three_vols_query = dq.DagmcQuery(three_vols, vol)
-    obs_tris = three_vols_query.get_tris()
+    obs_tris = three_vols_query.tris
     exp_tris = []
     meshset_lst = []
     surfs = three_vols._my_moab_core.get_child_meshsets(vol)
@@ -97,23 +97,23 @@ def test_get_tris_vol():
 
 
 def test_get_tris_surf():
-    """Tests the get_tris function for surface meshset
+    """Tests the tris variable for surface meshset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     surf = three_vols.entityset_ranges['surfaces'][0]
     three_vols_query = dq.DagmcQuery(three_vols, surf)
-    obs_tris = three_vols_query.get_tris()
+    obs_tris = three_vols_query.tris
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         surf, types.MBTRI)
     assert(sorted(obs_tris) == sorted(exp_tris))
 
 
 def test_get_tris_rootset():
-    """Tests the get_tris function given the rootset
+    """Tests the tris variable given the rootset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     three_vols_query = dq.DagmcQuery(three_vols, three_vols.root_set)
-    obs_tris = three_vols_query.get_tris()
+    obs_tris = three_vols_query.tris
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         three_vols.root_set, types.MBTRI)
     assert(sorted(obs_tris) == sorted(exp_tris))

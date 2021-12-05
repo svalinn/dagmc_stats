@@ -26,6 +26,8 @@ class DagmcQuery:
             self.meshset_lst =  list(self.dagmc_file.entityset_ranges['surfaces'])
         else:
             self.__get_entities(meshset)
+        self.tris = self.__get_tris()
+        self.verts = self.__get_verts()
         # initialize data frames
         self._vert_data = pd.DataFrame()
         self._tri_data = pd.DataFrame()
@@ -74,7 +76,7 @@ class DagmcQuery:
                             'volumes. Rootset will be used by default.')
             self.meshset_lst = list(self.dagmc_file.entityset_ranges['surfaces'])
 
-    def get_tris(self):
+    def __get_tris(self):
         """Get triangles of a volume if geom_dim is 3
         Get triangles of a surface if geom_dim is 2
         Else get all the triangles
@@ -94,7 +96,7 @@ class DagmcQuery:
             tris_lst.extend(tris)
         return tris_lst
 
-    def get_verts(self):
+    def __get_verts(self):
         """Get vertices of a volume if geom_dim is 3
         Get vertices of a surface if geom_dim is 2
         Else get all the vertices
@@ -170,8 +172,7 @@ class DagmcQuery:
             return
         t_p_v_data = []
         tri_dimension = 2
-        verts = self.get_verts()
-        for vert in verts:
+        for vert in self.verts:
             tpv_val = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert, tri_dimension).size()
             if ignore_zero and tpv_val == 0:
@@ -248,8 +249,7 @@ class DagmcQuery:
                           'Calc_triangle_aspect_ratio() will not be called.')
             return
         t_a_r_data = []
-        tris = self.get_tris()
-        for tri in tris:
+        for tri in self.tris:
             side_lengths = list(self.get_tri_side_length(tri).values())
             s = 0.5 * (sum(side_lengths))
             top = np.prod(side_lengths)
@@ -276,8 +276,7 @@ class DagmcQuery:
                           'Calc_area_triangle() will not be called.')
             return
         tri_area = []
-        tris = self.get_tris()
-        for tri in tris:
+        for tri in self.tris:
             side_lengths = list(self.get_tri_side_length(tri).values())
             # sqrt(s(s - a)(s - b)(s - c)), where s = (a + b + c)/2
             s = sum(side_lengths)/2
@@ -341,11 +340,10 @@ class DagmcQuery:
         tri_vert_struct = np.dtype({
             'names': ['tri', 'vert', 'angle', 'side_length'],
             'formats': [np.uint64, np.uint64, np.float64, np.float64]})
-        tris = self.get_tris()
-        self._tri_vert_data = np.zeros(len(tris) * 3, dtype=tri_vert_struct)
+        self._tri_vert_data = np.zeros(len(self.tris) * 3, dtype=tri_vert_struct)
         tri_vert_index = 0
 
-        for tri in tris:
+        for tri in self.tris:
             side_lengths = self.get_tri_side_length(tri)  # {vert: side_length}
             side_length_sum_sq_half = sum(map(lambda i: i**2,
                                           side_lengths.values())) / 2.
@@ -400,8 +398,7 @@ class DagmcQuery:
         Dii_sum = 0
         adj_tris = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert_i, 2, op_type=0)
-        meshset_tris = self.get_tris()
-        adj_tris = list(set(adj_tris) & set(meshset_tris))
+        adj_tris = list(set(adj_tris) & set(self.tris))
         vert_j_list = list(self.dagmc_file._my_moab_core.get_adjacencies(
             adj_tris, 0, op_type=1))
         vert_j_list.remove(vert_i)
@@ -439,11 +436,10 @@ class DagmcQuery:
         -------
             none
         """
-        verts = self.get_verts()
         self.calc_area_triangle()  # get area data if not already calculated
         si_total = 0.  # sum of denominator
         lri_si_total = 0.  # sum of numerator
-        for vert in verts:
+        for vert in self.verts:
             # get adjacent triangles and their areas
             tris = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert, 2, op_type=0)
@@ -483,11 +479,10 @@ class DagmcQuery:
         """
         self.__get_tri_vert_data()
         gc_all = {}
-        verts = self.get_verts()
-        for vert_i in verts:
+        for vert_i in self.verts:
             gc_all[vert_i] = self.__gaussian_curvature(vert_i)
         roughness_per_vert = []
-        for vert in verts:
+        for vert in self.verts:
             rval = self.__get_lri(vert, gc_all)
             row_data = {'vert_eh': vert, 'roughness': rval}
             roughness_per_vert.append(row_data)
@@ -512,8 +507,7 @@ class DagmcQuery:
             none
         """
         tri_roughness = []
-        tris = self.get_tris()
-        for tri in tris:
+        for tri in self.tris:
             three_verts = list(self.dagmc_file._my_moab_core.get_adjacencies(tri, 0, op_type=1))
             sum_lr = self._vert_data.loc[
                 self._vert_data['vert_eh'].isin(three_verts)]['roughness'].sum()
