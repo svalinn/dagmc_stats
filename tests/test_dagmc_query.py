@@ -251,7 +251,7 @@ def test_roughness():
     test_pass[1] = np.allclose([obs],[exp])
 
     #test the __calc_tri_roughness function
-    tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3, (lr_bottom[0]*2+lr_bottom[1])/3]
+    tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3.0, (lr_bottom[0]*2+lr_bottom[1])/3.0]
     exp = [tri_roughness[i] for i in [0, 0, 0, 0, 1, 1]]
     obs = pyramid_query._tri_data['roughness']
     test_pass[2] = np.allclose(sorted(obs), sorted(exp))
