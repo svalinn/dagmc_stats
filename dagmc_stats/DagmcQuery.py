@@ -437,24 +437,22 @@ class DagmcQuery:
             none
         """
         self.calc_area_triangle()  # get area data if not already calculated
-        si_total = 0.  # sum of denominator
-        lri_si_total = 0.  # sum of numerator
+        vert_area = []
         for vert in self.verts:
             # get adjacent triangles and their areas
             tris = self.dagmc_file._my_moab_core.get_adjacencies(
                 vert, 2, op_type=0)
             area_sum = self._tri_data.loc[
                 self._tri_data['tri_eh'].isin(tris)]['area'].sum()
-
-            # si = 1/3 of total area of adjacent triangles
-            si = area_sum / 3.
-            si_total += si
-
-            # calculate numerator (lri*si)
-            lri_si = float(self._vert_data.loc[
-                self._vert_data['vert_eh'] == vert]['roughness']) * si
-            lri_si_total += lri_si
-
+            row_data = {'vert_eh': vert, 'area': area_sum}
+            vert_area.append(row_data)
+        self.__update_vert_data(vert_area)
+        
+        # si = 1/3 of total area of adjacent triangles
+        # sum of denominator
+        si_total = (self._vert_data['area'].sum())/3.0
+        # sum of numerator
+        lri_si_total = (self._vert_data['area']/3.0 * self._vert_data['roughness']).sum()
         # calc average according to formula 5
         average_roughness = lri_si_total / si_total
 
