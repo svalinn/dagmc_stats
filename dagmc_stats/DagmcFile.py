@@ -97,8 +97,8 @@ class DagmcFile:
         """
         for dimension, set_type in self.entityset_types.items():
             self.entityset_ranges[set_type] = \
-                self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
-                                                                self.dagmc_tags['geom_dim'], [dimension])
+                list(self._my_moab_core.get_entities_by_type_and_tag(self.root_set, types.MBENTITYSET,
+                                                                self.dagmc_tags['geom_dim'], [dimension]))
 
     def __set_dimension_meshset(self):
         """Set the class dim_dict variable to a dictionary with the
