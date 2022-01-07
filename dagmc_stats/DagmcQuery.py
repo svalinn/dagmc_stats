@@ -69,6 +69,7 @@ class DagmcQuery:
             else:
                 warnings.warn('Meshset is not a volume nor a surface!')
 
+        self.meshset_lst = list(set(self.meshset_lst))
         # if no items in the meshset list is a surface or volume,
         # then use rootset by default instead
         if len(self.meshset_lst) == 0:
@@ -303,9 +304,8 @@ class DagmcQuery:
             return
 
         coarseness = []
+        surf_area = []
         self.calc_area_triangle()
-        total_area = 0.
-        weighted_coarseness = 0.  # surf coarseness * surf area
         for surf in self.meshset_lst:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 surf, types.MBTRI)
@@ -313,18 +313,19 @@ class DagmcQuery:
                 list(tris)), 'area'].sum()
             cval = len(tris) / area
             row_data = {'surf_eh': surf, 'coarseness': cval}
+            area_data = {'surf_eh': surf, 'area': area}
             coarseness.append(row_data)
-            total_area += area
-            weighted_coarseness += cval * area
+            surf_area.append(area_data)
         self.__update_surf_data(coarseness)
+        self.__update_surf_data(surf_area)
 
-        # calculate weighted average
-        # = sum(coarseness_i * area_i) / sum(area_i), i = surface
+        weighted_coarseness = (self._surf_data['coarseness'] * self._surf_data['area']).sum()
+        total_area = self._surf_data['area'].sum()
         average_coarseness = weighted_coarseness / total_area
         self._global_averages['coarseness_ave'] = average_coarseness
 
     def __get_tri_vert_data(self):
-        """Build a numpy strcutured array to store triangle and vertex related
+        """Build a numpy structured array to store triangle and vertex related
         data in the form of triangle entity handle | vertex entity handle
         | angle connected to the vertex | side length of side opposite to
         vertex in the triangle
@@ -348,8 +349,7 @@ class DagmcQuery:
             side_length_sum_sq_half = sum(map(lambda i: i**2,
                                           side_lengths.values())) / 2.
             side_length_prod = np.prod(list(side_lengths.values()))
-            verts = list(self.dagmc_file._my_moab_core.get_adjacencies(
-                tri, 0, op_type=1))
+            verts = side_lengths.keys()
             for vert_i in verts:
                 side_i = side_lengths[vert_i]
                 d_i = np.arccos((side_length_sum_sq_half -
@@ -410,7 +410,7 @@ class DagmcQuery:
             tri_ij_list = list(set(adj_tris) & set(tri_j_list))
             # rows with tri value as tri_ij_list[0] or tri_ij_list[1]
             select_tris = (self._tri_vert_data['tri'] == tri_ij_list[0]) | \
-                          (self._tri_vert_data['tri'] == tri_ij_list[1])
+                          (self._tri_vert_data['tri'] == tri_ij_list[-1])
             # rows with vert value not equal to vert_i and not equal to vert_j
             vert_filter = (self._tri_vert_data['vert'] != vert_i) & \
                             (self._tri_vert_data['vert'] != vert_j)

@@ -241,7 +241,8 @@ def test_roughness():
     # test the __calc_average_roughness function
     side_length = 5.0
     s_top = 4*(np.sqrt(3)/4*side_length**2)/3.0
-    s_bottom = [(side_length**2/2.0+2*(np.sqrt(3)/4*side_length**2))/3.0, (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3.0]
+    s_bottom = [(side_length**2/2.0+2*(np.sqrt(3)/4*side_length**2))/3.0,
+                (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3.0]
     num = lr_top*s_top+ \
                 2*lr_bottom[0]*s_bottom[0] + \
                 2*lr_bottom[1]*s_bottom[1]
@@ -252,7 +253,7 @@ def test_roughness():
 
     #test the __calc_tri_roughness function
     tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3.0, (lr_bottom[0]*2+lr_bottom[1])/3.0]
-    exp = [tri_roughness[i] for i in [0, 0, 0, 0, 1, 1]]
+    exp = [tri_roughness[0]] * 4 + [tri_roughness[1]] * 2
     obs = pyramid_query._tri_data['roughness']
     test_pass[2] = np.allclose(sorted(obs), sorted(exp))
     
