@@ -59,8 +59,8 @@ def test_set_entityset_ranges():
     single_cube = df.DagmcFile(test_env['single_cube'])
     test_pass = np.full(len(single_cube.entityset_types), False)
     for dimension, set_type in single_cube.entityset_types.items():
-        type_range = single_cube._my_moab_core.get_entities_by_type_and_tag(
-            single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension])
+        type_range = list(single_cube._my_moab_core.get_entities_by_type_and_tag(
+            single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension]))
         test_pass[dimension] = (
             type_range == single_cube.entityset_ranges[set_type])
     assert(all(test_pass))
@@ -116,8 +116,8 @@ def test_get_meshset_by_id_empty_id():
     Tests the get_meshset_by_id function given no id
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
-    exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
-        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
+    exp = list(three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3]))
     # When no id is passed in, get_meshset_by_id() function should return all the meshsets
     # of the given dimension.
     obs = three_vols.get_meshset_by_id('volumes', ids=[])
