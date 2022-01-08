@@ -77,7 +77,16 @@ def test_get_entities_incorrect_dim():
         exp = list(three_vols.entityset_ranges['surfaces'])
         test_pass[2] = (three_vols_query.meshset_lst == exp)
     assert(all(test_pass))
-
+    
+def test_get_entities_vol_and_surf():
+    """Tests the get_entities function for a list of volume and surface meshsets
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][7]
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, [surf, vol])
+    exp = list(list(three_vols._my_moab_core.get_child_meshsets(vol)) + [surf])
+    assert(three_vols_query.meshset_lst == exp)
 
 def test_get_tris_vol():
     """Tests the tris variable for volume meshset
