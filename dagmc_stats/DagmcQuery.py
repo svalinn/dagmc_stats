@@ -26,8 +26,8 @@ class DagmcQuery:
             self.meshset_lst =  self.dagmc_file.entityset_ranges['surfaces']
         else:
             self.__get_entities(meshset)
-        self.tris = self.__get_tris()
-        self.verts = self.__get_verts()
+        self.__get_tris()
+        self.__get_verts()
         # initialize data frames
         self._vert_data = pd.DataFrame()
         self._tri_data = pd.DataFrame()
@@ -95,7 +95,7 @@ class DagmcQuery:
             tris = self.dagmc_file._my_moab_core.get_entities_by_type(
                 meshset, types.MBTRI)
             tris_lst.extend(tris)
-        return tris_lst
+        self.tris = tris_lst
 
     def __get_verts(self):
         """Get vertices of a volume if geom_dim is 3
@@ -114,8 +114,7 @@ class DagmcQuery:
         for item in self.meshset_lst:
             verts.update(self.dagmc_file._my_moab_core.get_entities_by_type(
                 item, types.MBVERTEX))
-        verts = list(verts)
-        return verts
+        self.verts = list(verts)
 
     def get_tri_side_length(self, tri):
         """Get side lengths of triangle
