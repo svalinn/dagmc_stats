@@ -34,7 +34,7 @@ def test_get_entities_rootset():
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     three_vols_query = dq.DagmcQuery(three_vols)
-    exp = [three_vols.root_set]
+    exp = list(three_vols.entityset_ranges['surfaces'])
     assert(three_vols_query.meshset_lst == exp)
 
 
@@ -63,27 +63,38 @@ def test_get_entities_incorrect_dim():
     """
     test_pass = np.full(3, False)
     three_vols = df.DagmcFile(test_env['three_vols'])
-    # check if get_tris function generates warning for meshset with invalid dimension
+    # check if __get_tris function generates warning for meshset with invalid dimension
     vert = three_vols.entityset_ranges['nodes'][0]
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         three_vols_query = dq.DagmcQuery(three_vols, vert)
-        if len(w) == 1:
+        if len(w) == 2:
             test_pass[0] = True
-            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
+            if 'Meshset is not a volume nor a surface!' in str(w[0].message) and \
+               'Specified meshset(s) are not surfaces or ' + \
+               'volumes. Rootset will be used by default.' in str(w[-1].message):
                 test_pass[1] = True
-        exp = [three_vols.root_set]
+        exp = list(three_vols.entityset_ranges['surfaces'])
         test_pass[2] = (three_vols_query.meshset_lst == exp)
     assert(all(test_pass))
-
+    
+def test_get_entities_vol_and_surf():
+    """Tests the get_entities function for a list of volume and surface meshsets
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][7]
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, [surf, vol])
+    exp = list(list(three_vols._my_moab_core.get_child_meshsets(vol)) + [surf])
+    assert(three_vols_query.meshset_lst == exp)
 
 def test_get_tris_vol():
-    """Tests the get_tris function for volume meshset
+    """Tests the tris variable for volume meshset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     vol = three_vols.entityset_ranges['volumes'][0]
     three_vols_query = dq.DagmcQuery(three_vols, vol)
-    obs_tris = three_vols_query.get_tris()
+    obs_tris = three_vols_query.tris
     exp_tris = []
     meshset_lst = []
     surfs = three_vols._my_moab_core.get_child_meshsets(vol)
@@ -95,47 +106,26 @@ def test_get_tris_vol():
 
 
 def test_get_tris_surf():
-    """Tests the get_tris function for surface meshset
+    """Tests the tris variable for surface meshset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     surf = three_vols.entityset_ranges['surfaces'][0]
     three_vols_query = dq.DagmcQuery(three_vols, surf)
-    obs_tris = three_vols_query.get_tris()
+    obs_tris = three_vols_query.tris
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         surf, types.MBTRI)
     assert(sorted(obs_tris) == sorted(exp_tris))
 
 
 def test_get_tris_rootset():
-    """Tests the get_tris function given the rootset
+    """Tests the tris variable given the rootset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     three_vols_query = dq.DagmcQuery(three_vols, three_vols.root_set)
-    obs_tris = three_vols_query.get_tris()
+    obs_tris = three_vols_query.tris
     exp_tris = three_vols._my_moab_core.get_entities_by_type(
         three_vols.root_set, types.MBTRI)
     assert(sorted(obs_tris) == sorted(exp_tris))
-
-
-def test_get_tris_dimension_incorrect():
-    """Tests the get_tris function given incorrect dimension
-    """
-    test_pass = np.full(3, False)
-    three_vols = df.DagmcFile(test_env['three_vols'])
-    # check if get_tris function generates warning for meshset with invalid dimension
-    vert = three_vols.entityset_ranges['nodes'][0]
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        three_vols_query = dq.DagmcQuery(three_vols, vert)
-        obs_tris = three_vols_query.get_tris()
-        if len(w) == 1:
-            test_pass[0] = True
-            if 'Meshset is not a volume nor a surface! Rootset will be used by default.' in str(w[-1].message):
-                test_pass[1] = True
-        exp_tris = three_vols._my_moab_core.get_entities_by_type(
-            three_vols.root_set, types.MBTRI)
-        test_pass[2] = (sorted(obs_tris) == sorted(exp_tris))
-    assert(all(test_pass))
 
 
 def test_calc_tris_per_vert_vol():
@@ -218,4 +208,62 @@ def test_duplicate_calc(function, message):
             test_pass[0] = True
             if message in str(w[-1].message):
                 test_pass[1] = True
+    assert(all(test_pass))
+
+
+def test_coarseness():
+    """Tests the calc coarseness function
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_coarseness()
+    np.testing.assert_almost_equal(
+        list(three_vols_query._surf_data['coarseness']), list(np.full(6, 0.02)))
+
+
+def test_roughness():
+    """Tests the calc roughness function, __calc_average_roughness() function
+    and __calc_tri_roughness() function.
+    """
+    test_pass = np.full(3, False)
+    pyramid = df.DagmcFile(test_env['pyramid'])
+    pyramid_query = dq.DagmcQuery(pyramid)
+    pyramid_query.calc_roughness()
+    
+    gc_top = 2.0*np.pi-4*np.pi/3.0
+    gc_bottom = 2.0*np.pi-2*np.pi/3.0-np.pi/2.0
+    d_bottom = [1.0/np.tan(np.pi/3.0),
+                0.5*(1.0/np.tan(np.pi/3.0)+1.0/np.tan(np.pi/4.0)), 0]
+    lr_bottom = []
+    lr_top = np.abs(gc_top - gc_bottom)
+    lr_bottom.append(np.abs(gc_bottom - \
+                (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom) \
+                /(d_bottom[0]+2*d_bottom[1])))
+    lr_bottom.append(np.abs(gc_bottom - \
+                (d_bottom[0]*gc_top+2*d_bottom[1]*gc_bottom+d_bottom[2]*gc_bottom) \
+                /(d_bottom[0]+2*d_bottom[1]+d_bottom[2])))
+    exp = [lr_bottom[0],lr_bottom[0],lr_bottom[1],lr_bottom[1],lr_top]
+    obs = sorted(list(pyramid_query._vert_data['roughness']))
+    test_pass[0] = np.allclose(obs,exp)
+    
+    # test the __calc_average_roughness function
+    side_length = 5.0
+    s_top = 4*(np.sqrt(3)/4*side_length**2)/3.0
+    s_bottom = [(side_length**2/2.0+2*(np.sqrt(3)/4*side_length**2))/3.0,
+                (side_length**2+2*(np.sqrt(3)/4*side_length**2))/3.0]
+    num = lr_top*s_top+ \
+                2*lr_bottom[0]*s_bottom[0] + \
+                2*lr_bottom[1]*s_bottom[1]
+    denom = s_top+sum(s_bottom)*2
+    exp = num/denom
+    obs = pyramid_query._global_averages['roughness_ave']
+    test_pass[1] = np.allclose([obs],[exp])
+
+    #test the __calc_tri_roughness function
+    tri_roughness = [(lr_bottom[0]+lr_bottom[1]+lr_top)/3.0, (lr_bottom[0]*2+lr_bottom[1])/3.0]
+    exp = [tri_roughness[0]] * 4 + [tri_roughness[1]] * 2
+    obs = pyramid_query._tri_data['roughness']
+    test_pass[2] = np.allclose(sorted(obs), sorted(exp))
+    
     assert(all(test_pass))

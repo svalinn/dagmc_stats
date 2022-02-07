@@ -59,8 +59,8 @@ def test_set_entityset_ranges():
     single_cube = df.DagmcFile(test_env['single_cube'])
     test_pass = np.full(len(single_cube.entityset_types), False)
     for dimension, set_type in single_cube.entityset_types.items():
-        type_range = single_cube._my_moab_core.get_entities_by_type_and_tag(
-            single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension])
+        type_range = list(single_cube._my_moab_core.get_entities_by_type_and_tag(
+            single_cube.root_set, types.MBENTITYSET, single_cube.dagmc_tags['geom_dim'], [dimension]))
         test_pass[dimension] = (
             type_range == single_cube.entityset_ranges[set_type])
     assert(all(test_pass))
@@ -116,8 +116,8 @@ def test_get_meshset_by_id_empty_id():
     Tests the get_meshset_by_id function given no id
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
-    exp = three_vols._my_moab_core.get_entities_by_type_and_tag(
-        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3])
+    exp = list(three_vols._my_moab_core.get_entities_by_type_and_tag(
+        three_vols.root_set, types.MBENTITYSET, three_vols.dagmc_tags['geom_dim'], [3]))
     # When no id is passed in, get_meshset_by_id() function should return all the meshsets
     # of the given dimension.
     obs = three_vols.get_meshset_by_id('volumes', ids=[])
@@ -160,21 +160,3 @@ def test_get_meshset_by_id_invalid_dim():
             if 'Invalid dim!' in str(w[-1].message):
                 test_pass[2] = True
     assert(all(test_pass))
-
-
-'''
-def test_populate_triangle_data():
-    """
-    Tests different aspects of the populate_triangle_data function
-    """
-    single_cube = df.DagmcFile(test_env[1]['input_file'], populate=True)
-    exp_tri_data = pd.DataFrame(
-        columns=['tri_eh', 'aspect_ratio', 'area'])
-    tris = single_cube._my_moab_core.get_entities_by_type(single_cube.root_set, types.MBTRI)
-    for tri in tris:
-        tri_data_row = {'tri_eh': tri}
-        tri_data_row['area'] = 50
-        tri_data_row['aspect_ratio'] = (10*10*10*np.sqrt(2))/(8*5*np.sqrt(2)*5*np.sqrt(2)*(10-5*np.sqrt(2)))
-        exp_tri_data = exp_tri_data.append(tri_data_row, ignore_index=True)
-    pd.testing.assert_frame_equal(single_cube._tri_data,exp_tri_data)
-'''
