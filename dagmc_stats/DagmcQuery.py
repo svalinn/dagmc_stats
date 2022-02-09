@@ -204,6 +204,25 @@ class DagmcQuery:
             t_p_s_data.append(row_data)
         self.__update_surf_data(t_p_s_data)
 
+    def __update_dataframe(self, df, df_column, new_data):
+        """Update _vert_data dataframe
+
+        inputs
+        ------
+            df : dataframe to be updated with new data
+            df_column : name of shared column to define merge operation
+            new_data : vert data to be added to the dataframe
+
+        outputsa
+        -------
+            none
+        """
+        if df.empty:
+            df = df.append(new_data)
+        else:
+            df = df.merge(pd.DataFrame(new_data), on=df_column, how='left')
+
+
     def __update_vert_data(self, new_data):
         """Update _vert_data dataframe
 
@@ -215,11 +234,7 @@ class DagmcQuery:
         -------
             none
         """
-        if self._vert_data.empty:
-            self._vert_data = self._vert_data.append(new_data)
-        else:
-            self._vert_data = self._vert_data.merge(
-                pd.DataFrame(new_data), on='vert_eh', how='left')
+        self.__update_dataframe(self._vert_data, 'vert_eh', new_data)
 
     def __update_tri_data(self, new_data):
         """Update _tri_data dataframe
@@ -232,11 +247,7 @@ class DagmcQuery:
         -------
             none
         """
-        if self._tri_data.empty:
-            self._tri_data = self._tri_data.append(new_data)
-        else:
-            self._tri_data = self._tri_data.merge(
-                pd.DataFrame(new_data), on='tri_eh', how='left')
+        self.__update_dataframe(self._tri_data, 'tri_eh', new_data)
 
     def __update_surf_data(self, new_data):
         """Update _surf_data dataframe
@@ -249,11 +260,7 @@ class DagmcQuery:
         -------
             none
         """
-        if self._surf_data.empty:
-            self._surf_data = self._surf_data.append(new_data)
-        else:
-            self._surf_data = self._surf_data.merge(
-                pd.DataFrame(new_data), on='surf_eh', how='left')
+        self.__update_dataframe(self._surf_data, 'surf_eh', new_data)
 
     def calc_triangle_aspect_ratio(self):
         """Calculate triangle aspect ratio data (according to the equation:
