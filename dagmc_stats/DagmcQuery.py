@@ -180,6 +180,29 @@ class DagmcQuery:
             row_data = {'vert_eh': vert, 'tri_per_vert': tpv_val}
             t_p_v_data.append(row_data)
         self.__update_vert_data(t_p_v_data)
+        
+    def calc_tris_per_surf(self):
+        """calculate triangle per surface data
+
+        inputs
+        ------
+            none
+
+        outputs
+        -------
+            none
+        """
+        if 'tri_per_surf' in self._surf_data:
+            warnings.warn('Tri_per_surf already exists. ' +
+                          'tris_per_surf() will not be called.')
+            return
+        t_p_s_data = []
+        for surf in self.meshset_lst:
+            num_tris = self.dagmc_file._my_moab_core.get_entities_by_type(
+                surf, types.MBTRI).size()
+            row_data = {'surf_eh': surf, 'tri_per_surf': num_tris}
+            t_p_s_data.append(row_data)
+        self.__update_surf_data(t_p_s_data)
 
     def __update_vert_data(self, new_data):
         """Update _vert_data dataframe
