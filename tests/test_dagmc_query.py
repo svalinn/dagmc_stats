@@ -155,6 +155,15 @@ def test_calc_tris_per_surf_vol():
     three_vols_query = dq.DagmcQuery(three_vols, vol)
     three_vols_query.calc_tris_per_surf()
     assert(sorted(three_vols_query._surf_data['tri_per_surf']) == list(np.full(6,2)))
+    
+
+def test_calc_surfs_per_vol_vol():
+    """Tests part of the calc_surfs_per_vol function"""
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_surfs_per_vol()
+    assert(sorted(three_vols_query._vol_data['surf_per_vol']) == [6])
 
 
 def test_calc_area_triangle_vol():
