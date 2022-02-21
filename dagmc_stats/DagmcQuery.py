@@ -53,7 +53,7 @@ class DagmcQuery:
         -------
             none
         """
-        # allow mixed list of surfaces and volumes that create a
+        # allow mixed list of surfaces and volumes and create a
         # single list of all the surfaces together
         if type(meshset) != list:
             # convert single item to list for iterating
@@ -186,7 +186,7 @@ class DagmcQuery:
         return side_lengths
 
     def calc_tris_per_vert(self, ignore_zero=True):
-        """calculate triangle per vertex data
+        """Calculate triangle per vertex data
 
         inputs
         ------
@@ -213,7 +213,7 @@ class DagmcQuery:
         self.__update_vert_data(t_p_v_data)
         
     def calc_tris_per_surf(self):
-        """calculate triangle per surface data
+        """Calculate triangle per surface data
 
         inputs
         ------
@@ -236,7 +236,7 @@ class DagmcQuery:
         self.__update_surf_data(t_p_s_data)
 
     def calc_surfs_per_vol(self):
-        """calculate surfaces per volume data
+        """Calculate surface per volume data
 
         inputs
         ------
@@ -379,8 +379,7 @@ class DagmcQuery:
         self.__update_tri_data(tri_area)
 
     def calc_coarseness(self):
-        """
-        Calculate the density of facets on a surface (num tris / total area)
+        """Calculate the density of facets on a surface (num tris / total area)
 
         inputs
         ------
