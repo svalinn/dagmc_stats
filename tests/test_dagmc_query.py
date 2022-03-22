@@ -29,7 +29,7 @@ def test_pandas_data_frame():
     assert(single_cube_query._vol_data.equals(exp_vol_data))
 
 
-def test_get_entities_rootset():
+def test_get_entities_empty_meshset_lst():
     """Tests the get_entities function for rootset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
@@ -37,6 +37,13 @@ def test_get_entities_rootset():
     exp = list(three_vols.entityset_ranges['surfaces'])
     assert(three_vols_query.meshset_lst == exp)
 
+def test_get_entities_rootset():
+    """Tests the get_entities function for rootset
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    three_vols_query = dq.DagmcQuery(three_vols, three_vols.root_set)
+    exp = list(three_vols.entityset_ranges['surfaces'])
+    assert(three_vols_query.meshset_lst == exp)
 
 def test_get_entities_vol():
     """Tests the get_entities function for volume meshset
