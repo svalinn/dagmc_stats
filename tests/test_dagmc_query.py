@@ -60,7 +60,6 @@ def test_get_entities_surf():
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     surf = three_vols.entityset_ranges['surfaces'][0]
-    warnings.simplefilter('always')
     three_vols_query = dq.DagmcQuery(three_vols, surf)
     exp = [surf]
     assert(three_vols_query.meshset_lst == exp)
@@ -76,12 +75,11 @@ def test_get_entities_incorrect_dim():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         three_vols_query = dq.DagmcQuery(three_vols, vert)
-        if len(w) == 3:
+        if len(w) == 2:
             test_pass[0] = True
             if 'Meshset is not a volume nor a surface!' in str(w[0].message) and \
                'Specified meshset(s) are not surfaces or ' + \
-               'volumes. Rootset will be used by default.' in str(w[-1].message) and \
-               'Specified meshset(s) are not volumes.' in str(w[1].message):
+               'volumes. Rootset will be used by default.' in str(w[-1].message):
                 test_pass[1] = True
         exp = list(three_vols.entityset_ranges['surfaces'])
         test_pass[2] = (three_vols_query.meshset_lst == exp)
@@ -190,6 +188,24 @@ def test_calc_surfs_per_vol_vol():
     three_vols_query.calc_surfs_per_vol()
     assert(sorted(three_vols_query._vol_data['surf_per_vol']) == [6])
 
+
+def test_calc_surfs_per_vol_no_vol_meshset():
+    """Tests the calc_surfs_per_vol function when no volume is given in the meshset:
+    """
+    test_pass = np.full(3, False)
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols_query.calc_surfs_per_vol()
+        if len(w) == 1:
+            test_pass[0] = True
+        if 'Volume list is empty.' in str(w[0].message):
+            test_pass[1] = True
+        if len(three_vols_query._vol_data) == 0:
+            test_pass[2] = True
+    assert(all(test_pass))
 
 def test_calc_area_triangle_vol():
     """Tests part of the calc_area_triangle function

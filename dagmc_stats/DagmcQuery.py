@@ -87,8 +87,6 @@ class DagmcQuery:
         self.vols = list(set(self.vols))
         # if no items in the meshset list is a surface or volume,
         # then use rootset by default instead
-        if len(self.vols) == 0:
-            warnings.warn('Specified meshset(s) are not volumes.')
         if len(self.meshset_lst) == 0:
             warnings.warn('Specified meshset(s) are not surfaces or ' +
                             'volumes. Rootset will be used by default.')
@@ -232,6 +230,9 @@ class DagmcQuery:
         -------
             none
         """
+        if len(self.vols) == 0:
+            warnings.warn('Volume list is empty.')
+            return
         if 'surf_per_vol' in self._surf_data:
             warnings.warn('Surf_per_vol already exists. ' +
                           'calc_surfs_per_vol() will not be called.')
