@@ -23,11 +23,7 @@ class DagmcQuery:
         self.dagmc_file = dagmc_file
         self.meshset_lst = []
         self.vols = []
-        if meshset is None or meshset is dagmc_file.root_set:
-            self.meshset_lst =  self.dagmc_file.entityset_ranges['surfaces']
-            self.vols =  self.dagmc_file.entityset_ranges['volumes']
-        else:
-            self.__get_entities(meshset)
+        self.__rationalize_meshset(meshset)
         self.__get_tris()
         self.__get_verts()
         # initialize data frames
@@ -40,7 +36,25 @@ class DagmcQuery:
         # dictionary for storing global (across the meshset list) of
         # the metrics calculated
         self._global_averages = {}
+    
+    def __rationalize_meshset(self, meshset):
+        """enumerate and rationalize all the possible states of meshset
+        
+        inputs
+        ------
+            meshset: the list of meshsets on which query will be performed.
 
+        outputs
+        -------
+            none
+        """
+        if type(meshset) != list:
+            meshset = [meshset]
+        if self.dagmc_file.root_set in meshset or meshset == [None]:
+            meshset = self.dagmc_file.entityset_ranges['volumes']
+        self.__get_entities(meshset)
+            
+        
     def __get_entities(self, meshset):
         """convert the list of meshsets to its corresponding list of surfaces
 
@@ -54,9 +68,6 @@ class DagmcQuery:
         """
         # allow mixed list of surfaces and volumes and create a
         # single list of all the surfaces together
-        if type(meshset) != list:
-            # convert single item to list for iterating
-            meshset = [meshset]
         for m in meshset:
             dim = self.dagmc_file._my_moab_core.tag_get_data(
                 self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
@@ -76,12 +87,12 @@ class DagmcQuery:
         self.vols = list(set(self.vols))
         # if no items in the meshset list is a surface or volume,
         # then use rootset by default instead
+        if len(self.vols) == 0:
+            warnings.warn('Specified meshset(s) are not volumes.')
         if len(self.meshset_lst) == 0:
             warnings.warn('Specified meshset(s) are not surfaces or ' +
                             'volumes. Rootset will be used by default.')
             self.meshset_lst = self.dagmc_file.entityset_ranges['surfaces']
-        if len(self.vols) == 0:
-            warnings.warn('Specified meshset(s) are not volumes.')
 
     def __get_tris(self):
         """Get triangles of a volume if geom_dim is 3

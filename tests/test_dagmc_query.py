@@ -60,6 +60,7 @@ def test_get_entities_surf():
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
     surf = three_vols.entityset_ranges['surfaces'][0]
+    warnings.simplefilter('always')
     three_vols_query = dq.DagmcQuery(three_vols, surf)
     exp = [surf]
     assert(three_vols_query.meshset_lst == exp)
@@ -75,11 +76,12 @@ def test_get_entities_incorrect_dim():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         three_vols_query = dq.DagmcQuery(three_vols, vert)
-        if len(w) == 2:
+        if len(w) == 3:
             test_pass[0] = True
             if 'Meshset is not a volume nor a surface!' in str(w[0].message) and \
                'Specified meshset(s) are not surfaces or ' + \
-               'volumes. Rootset will be used by default.' in str(w[-1].message):
+               'volumes. Rootset will be used by default.' in str(w[-1].message) and \
+               'Specified meshset(s) are not volumes.' in str(w[1].message):
                 test_pass[1] = True
         exp = list(three_vols.entityset_ranges['surfaces'])
         test_pass[2] = (three_vols_query.meshset_lst == exp)
