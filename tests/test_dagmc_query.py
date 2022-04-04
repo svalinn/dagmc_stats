@@ -97,6 +97,22 @@ def test_get_entities_vol_and_surf():
     exp = list(list(three_vols._my_moab_core.get_child_meshsets(vol)) + [surf])
     assert(three_vols_query.meshset_lst == exp)
 
+def test_rationalize_meshset_rootset_in_list():
+    """Tests the rationalize_meshset function for a list containing rootset
+    """
+    test_pass = np.full(2, False)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols = df.DagmcFile(test_env['three_vols'])
+        vert = three_vols.entityset_ranges['nodes'][0]
+        three_vols_query = dq.DagmcQuery(three_vols, [three_vols.root_set, vert])
+        exp = list(three_vols.entityset_ranges['surfaces'])
+        if len(w) == 0:
+            test_pass[0] = True
+        test_pass[1] = (three_vols_query.meshset_lst == exp)
+    assert(all(test_pass))
+
+
 def test_get_tris_vol():
     """Tests the tris variable for volume meshset
     """
