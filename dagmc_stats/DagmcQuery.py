@@ -21,9 +21,11 @@ class DagmcQuery:
             none
         """
         self.dagmc_file = dagmc_file
+        self.meshset = meshset
         self.meshset_lst = []
         self.vols = []
-        self.__rationalize_meshset(meshset)
+        self.__rationalize_meshset()
+        self.__get_entities()
         self.__get_tris()
         self.__get_verts()
         # initialize data frames
@@ -37,30 +39,28 @@ class DagmcQuery:
         # the metrics calculated
         self._global_averages = {}
     
-    def __rationalize_meshset(self, meshset):
+    def __rationalize_meshset(self):
         """enumerate and rationalize all the possible states of meshset
         
         inputs
         ------
-            meshset: the list of meshsets on which query will be performed.
+            none
 
         outputs
         -------
             none
         """
-        if type(meshset) != list:
-            meshset = [meshset]
-        if self.dagmc_file.root_set in meshset or meshset == [None]:
-            meshset = self.dagmc_file.entityset_ranges['volumes']
-        self.__get_entities(meshset)
-            
+        if type(self.meshset) != list:
+            self.meshset = [self.meshset]
+        if self.dagmc_file.root_set in self.meshset or self.meshset == [None]:
+            self.meshset = self.dagmc_file.entityset_ranges['volumes']
         
-    def __get_entities(self, meshset):
+    def __get_entities(self):
         """convert the list of meshsets to its corresponding list of surfaces
 
         inputs
         ------
-            meshset: the list of meshsets on which query will be performed.
+            none
 
         outputs
         -------
@@ -68,7 +68,7 @@ class DagmcQuery:
         """
         # allow mixed list of surfaces and volumes and create a
         # single list of all the surfaces together
-        for m in meshset:
+        for m in self.meshset:
             dim = self.dagmc_file._my_moab_core.tag_get_data(
                 self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
             # get surfaces of a volume
