@@ -29,7 +29,7 @@ def test_pandas_data_frame():
     assert(single_cube_query._vol_data.equals(exp_vol_data))
 
 
-def test_get_entities_rootset():
+def test_get_entities_empty_meshset_lst():
     """Tests the get_entities function for rootset
     """
     three_vols = df.DagmcFile(test_env['three_vols'])
@@ -37,6 +37,13 @@ def test_get_entities_rootset():
     exp = list(three_vols.entityset_ranges['surfaces'])
     assert(three_vols_query.meshset_lst == exp)
 
+def test_get_entities_rootset():
+    """Tests the get_entities function for rootset
+    """
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    three_vols_query = dq.DagmcQuery(three_vols, three_vols.root_set)
+    exp = list(three_vols.entityset_ranges['surfaces'])
+    assert(three_vols_query.meshset_lst == exp)
 
 def test_get_entities_vol():
     """Tests the get_entities function for volume meshset
@@ -87,6 +94,22 @@ def test_get_entities_vol_and_surf():
     three_vols_query = dq.DagmcQuery(three_vols, [surf, vol])
     exp = list(list(three_vols._my_moab_core.get_child_meshsets(vol)) + [surf])
     assert(three_vols_query.meshset_lst == exp)
+
+def test_rationalize_meshset_rootset_in_list():
+    """Tests the rationalize_meshset function for a list containing rootset
+    """
+    test_pass = np.full(2, False)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols = df.DagmcFile(test_env['three_vols'])
+        vert = three_vols.entityset_ranges['nodes'][0]
+        three_vols_query = dq.DagmcQuery(three_vols, [three_vols.root_set, vert])
+        exp = list(three_vols.entityset_ranges['surfaces'])
+        if len(w) == 0:
+            test_pass[0] = True
+        test_pass[1] = (three_vols_query.meshset_lst == exp)
+    assert(all(test_pass))
+
 
 def test_get_tris_vol():
     """Tests the tris variable for volume meshset
@@ -155,7 +178,34 @@ def test_calc_tris_per_surf_vol():
     three_vols_query = dq.DagmcQuery(three_vols, vol)
     three_vols_query.calc_tris_per_surf()
     assert(sorted(three_vols_query._surf_data['tri_per_surf']) == list(np.full(6,2)))
+    
 
+def test_calc_surfs_per_vol_vol():
+    """Tests part of the calc_surfs_per_vol function"""
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    vol = three_vols.entityset_ranges['volumes'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, vol)
+    three_vols_query.calc_surfs_per_vol()
+    assert(sorted(three_vols_query._vol_data['surf_per_vol']) == [6])
+
+
+def test_calc_surfs_per_vol_no_vol_meshset():
+    """Tests the calc_surfs_per_vol function when no volume is given in the meshset:
+    """
+    test_pass = np.full(3, False)
+    three_vols = df.DagmcFile(test_env['three_vols'])
+    surf = three_vols.entityset_ranges['surfaces'][0]
+    three_vols_query = dq.DagmcQuery(three_vols, surf)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        three_vols_query.calc_surfs_per_vol()
+        if len(w) == 1:
+            test_pass[0] = True
+        if 'Volume list is empty.' in str(w[0].message):
+            test_pass[1] = True
+        if len(three_vols_query._vol_data) == 0:
+            test_pass[2] = True
+    assert(all(test_pass))
 
 def test_calc_area_triangle_vol():
     """Tests part of the calc_area_triangle function

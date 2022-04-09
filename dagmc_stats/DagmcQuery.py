@@ -21,11 +21,11 @@ class DagmcQuery:
             none
         """
         self.dagmc_file = dagmc_file
+        self.meshset = meshset
         self.meshset_lst = []
-        if meshset is None:
-            self.meshset_lst =  self.dagmc_file.entityset_ranges['surfaces']
-        else:
-            self.__get_entities(meshset)
+        self.vols = []
+        self.__rationalize_meshset()
+        self.__get_entities()
         self.__get_tris()
         self.__get_verts()
         # initialize data frames
@@ -38,24 +38,37 @@ class DagmcQuery:
         # dictionary for storing global (across the meshset list) of
         # the metrics calculated
         self._global_averages = {}
-
-    def __get_entities(self, meshset):
-        """convert the list of meshsets to its corresponding list of surfaces
-
+    
+    def __rationalize_meshset(self):
+        """enumerate and rationalize all the possible states of meshset
+        
         inputs
         ------
-            meshset: the list of meshsets on which query will be performed.
+            none
 
         outputs
         -------
             none
         """
-        # allow mixed list of surfaces and volumes that create a
+        if type(self.meshset) != list:
+            self.meshset = [self.meshset]
+        if self.dagmc_file.root_set in self.meshset or self.meshset == [None]:
+            self.meshset = self.dagmc_file.entityset_ranges['volumes']
+        
+    def __get_entities(self):
+        """convert the list of meshsets to its corresponding list of surfaces
+
+        inputs
+        ------
+            none
+
+        outputs
+        -------
+            none
+        """
+        # allow mixed list of surfaces and volumes and create a
         # single list of all the surfaces together
-        if type(meshset) != list:
-            # convert single item to list for iterating
-            meshset = [meshset]
-        for m in meshset:
+        for m in self.meshset:
             dim = self.dagmc_file._my_moab_core.tag_get_data(
                 self.dagmc_file.dagmc_tags['geom_dim'], m)[0][0]
             # get surfaces of a volume
@@ -63,6 +76,7 @@ class DagmcQuery:
                 surfs = self.dagmc_file._my_moab_core.get_child_meshsets(
                     m)
                 self.meshset_lst.extend(surfs)
+                self.vols.append(m)
             # get surface
             elif dim == 2:
                 self.meshset_lst.append(m)
@@ -70,6 +84,7 @@ class DagmcQuery:
                 warnings.warn('Meshset is not a volume nor a surface!')
 
         self.meshset_lst = list(set(self.meshset_lst))
+        self.vols = list(set(self.vols))
         # if no items in the meshset list is a surface or volume,
         # then use rootset by default instead
         if len(self.meshset_lst) == 0:
@@ -155,7 +170,7 @@ class DagmcQuery:
         return side_lengths
 
     def calc_tris_per_vert(self, ignore_zero=True):
-        """calculate triangle per vertex data
+        """Calculate triangle per vertex data
 
         inputs
         ------
@@ -182,7 +197,7 @@ class DagmcQuery:
         self.__update_vert_data(t_p_v_data)
         
     def calc_tris_per_surf(self):
-        """calculate triangle per surface data
+        """Calculate triangle per surface data
 
         inputs
         ------
@@ -204,6 +219,31 @@ class DagmcQuery:
             t_p_s_data.append(row_data)
         self.__update_surf_data(t_p_s_data)
 
+    def calc_surfs_per_vol(self):
+        """Calculate surface per volume data
+
+        inputs
+        ------
+            none
+
+        outputs
+        -------
+            none
+        """
+        if len(self.vols) == 0:
+            warnings.warn('Volume list is empty.')
+            return
+        if 'surf_per_vol' in self._surf_data:
+            warnings.warn('Surf_per_vol already exists. ' +
+                          'calc_surfs_per_vol() will not be called.')
+            return
+        s_p_v_data = []
+        for vol in self.vols:
+            num_surfs = self.dagmc_file._my_moab_core.get_child_meshsets(vol).size()
+            row_data = {'vol_eh': vol, 'surf_per_vol': num_surfs}
+            s_p_v_data.append(row_data)
+        self.__update_vol_data(s_p_v_data)
+
     def __update_vert_data(self, new_data):
         """Update _vert_data dataframe
 
@@ -215,6 +255,8 @@ class DagmcQuery:
         -------
             none
         """
+        # todo
+        #self.vert_data.concat(self.vert_data, new_data)
         if self._vert_data.empty:
             self._vert_data = self._vert_data.append(new_data)
         else:
@@ -254,6 +296,23 @@ class DagmcQuery:
         else:
             self._surf_data = self._surf_data.merge(
                 pd.DataFrame(new_data), on='surf_eh', how='left')
+
+    def __update_vol_data(self, new_data):
+        """Update _vol_data dataframe
+
+        inputs
+        ------
+            new_data : volume data to be added to the _vol_data dataframe
+
+        outputs
+        -------
+            none
+        """
+        if self._vol_data.empty:
+            self._vol_data = self._vol_data.append(new_data)
+        else:
+            self._vol_data = self._vol_data.merge(
+                pd.DataFrame(new_data), on='vol_eh', how='left')
 
     def calc_triangle_aspect_ratio(self):
         """Calculate triangle aspect ratio data (according to the equation:
@@ -309,8 +368,7 @@ class DagmcQuery:
         self.__update_tri_data(tri_area)
 
     def calc_coarseness(self):
-        """
-        Calculate the density of facets on a surface (num tris / total area)
+        """Calculate the density of facets on a surface (num tris / total area)
 
         inputs
         ------
