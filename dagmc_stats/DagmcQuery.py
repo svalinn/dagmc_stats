@@ -593,3 +593,26 @@ class DagmcQuery:
             row_data = {'tri_eh': tri, 'roughness': rval}
             tri_roughness.append(row_data)
         self.__update_tri_data(tri_roughness)
+
+    def add_tag(self, tag_name, tag_dic, tag_type):
+        """Add tag according to given tag information
+
+        inputs
+        ------
+            tag_name : tag name
+            tag_dic : a dictionary containing eh:data
+            tag_type : tag type
+        
+        outputs
+        -------
+            none
+        """
+        # create the tag handle
+        tag_eh = \
+            self.dagmc_file._my_moab_core.tag_get_handle(tag_name, size=1,
+                                    tag_type=tag_type,
+                                    storage_type=types.MB_TAG_SPARSE,
+                                    create_if_missing=True)
+        for eh, data in tag_dic.items():
+            # assign data to the tag:
+            self.dagmc_file._my_moab_core.tag_set_data(tag_eh, eh, data)

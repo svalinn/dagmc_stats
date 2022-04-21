@@ -326,3 +326,52 @@ def test_roughness():
     test_pass[2] = np.allclose(sorted(obs), sorted(exp))
     
     assert(all(test_pass))
+
+
+def test_add_tag():
+    """Tests part of the add_tag function
+    """
+    single_cube = df.DagmcFile(test_env['single_cube'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    #TODO: remove added tag
+
+    test_tag_dic = {}
+    for tri in single_cube.native_ranges[types.MBTRI]:
+        test_tag_dic[tri] = 1
+    single_cube_query.add_tag('test_tag', test_tag_dic, types.MB_TYPE_INTEGER)
+    # check tag names, data, and type
+    r = np.full(3, False)
+    try:
+        # try to get tag by expected name
+        tag_out = single_cube._my_moab_core.tag_get_handle('test_tag')
+        r[0] = True
+    except:
+        # fails if tag does not exist
+        r[0] = False
+    # only test the rest if tag exists
+    if r[0]:
+        data_out = single_cube._my_moab_core.tag_get_data(tag_out, single_cube.native_ranges[types.MBTRI][0])
+        # check data value
+        if data_out[0][0] == 1:
+            r[1] = True
+        # check data type
+        if type(data_out[0][0]) is np.int32:
+            r[2] = True
+    """#TODO: not the same tag_eh
+    tag_eh = \
+        single_cube._my_moab_core.tag_get_handle('test_tag', size=1,
+                                tag_type=types.MB_TYPE_INTEGER,
+                                storage_type=types.MB_TAG_SPARSE,
+                                create_if_missing=True)
+    tag_eh1 = \
+        single_cube._my_moab_core.tag_get_handle('test_tag', size=1,
+                                tag_type=types.MB_TYPE_INTEGER,
+                                storage_type=types.MB_TAG_SPARSE,
+                                create_if_missing=True)
+    print(tag_eh == tag_eh1, tag_eh, tag_eh1)
+    single_cube._my_moab_core.tag_delete(tag_eh)
+    try:
+        tag_out = single_cube._my_moab_core.tag_get_handle('test_tag')
+    except:
+        print("success!")"""
+    assert(all(r))
