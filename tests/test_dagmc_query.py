@@ -333,12 +333,11 @@ def test_add_tag():
     """
     single_cube = df.DagmcFile(test_env['single_cube'])
     single_cube_query = dq.DagmcQuery(single_cube)
-    #TODO: remove added tag
 
     test_tag_dic = {}
     for tri in single_cube.native_ranges[types.MBTRI]:
         test_tag_dic[tri] = 1
-    single_cube_query.add_tag('test_tag', test_tag_dic, types.MB_TYPE_INTEGER)
+    tag_eh = single_cube_query.add_tag('test_tag', types.MB_TYPE_INTEGER, test_tag_dic)
     # check tag names, data, and type
     r = np.full(3, False)
     try:
@@ -357,21 +356,5 @@ def test_add_tag():
         # check data type
         if type(data_out[0][0]) is np.int32:
             r[2] = True
-    """#TODO: not the same tag_eh
-    tag_eh = \
-        single_cube._my_moab_core.tag_get_handle('test_tag', size=1,
-                                tag_type=types.MB_TYPE_INTEGER,
-                                storage_type=types.MB_TAG_SPARSE,
-                                create_if_missing=True)
-    tag_eh1 = \
-        single_cube._my_moab_core.tag_get_handle('test_tag', size=1,
-                                tag_type=types.MB_TYPE_INTEGER,
-                                storage_type=types.MB_TAG_SPARSE,
-                                create_if_missing=True)
-    print(tag_eh == tag_eh1, tag_eh, tag_eh1)
     single_cube._my_moab_core.tag_delete(tag_eh)
-    try:
-        tag_out = single_cube._my_moab_core.tag_get_handle('test_tag')
-    except:
-        print("success!")"""
     assert(all(r))

@@ -594,14 +594,15 @@ class DagmcQuery:
             tri_roughness.append(row_data)
         self.__update_tri_data(tri_roughness)
 
-    def add_tag(self, tag_name, tag_dic, tag_type):
+    def add_tag(self, tag_name, tag_type, tag_dic=None):
         """Add tag according to given tag information
 
         inputs
         ------
             tag_name : tag name
-            tag_dic : a dictionary containing eh:data
             tag_type : tag type
+            tag_dic : a dictionary containing eh:data
+            
         
         outputs
         -------
@@ -613,6 +614,6 @@ class DagmcQuery:
                                     tag_type=tag_type,
                                     storage_type=types.MB_TAG_SPARSE,
                                     create_if_missing=True)
-        for eh, data in tag_dic.items():
-            # assign data to the tag:
-            self.dagmc_file._my_moab_core.tag_set_data(tag_eh, eh, data)
+        # assign data to the tag
+        self.dagmc_file._my_moab_core.tag_set_data(tag_eh, tag_dic.keys(), tag_dic.values())
+        return tag_eh
