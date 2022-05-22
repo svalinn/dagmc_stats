@@ -390,9 +390,10 @@ def test_add_tag_inconsistent_dic_val_len():
     
     # dictionary with values of combination of integers and lists
     test_tag_dic = {}
+    key_test = single_cube.native_ranges[types.MBTRI][0]
     for tri in single_cube.native_ranges[types.MBTRI]:
         test_tag_dic[tri] = [1,2]
-    test_tag_dic[test_tag_dic.keys()[0]] = 1
+    test_tag_dic[key_test] = 1
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         tag_eh = single_cube_query.add_tag('test_tag', types.MB_TYPE_INTEGER, test_tag_dic)
@@ -406,7 +407,7 @@ def test_add_tag_inconsistent_dic_val_len():
             test_pass[2] = True
     
     # dictionary with values of lists of different sizes
-    test_tag_dic[test_tag_dic.keys()[0]] = [1,2,3]
+    test_tag_dic[key_test] = [1,2,3]
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         tag_eh = single_cube_query.add_tag('test_tag', types.MB_TYPE_INTEGER, test_tag_dic)
