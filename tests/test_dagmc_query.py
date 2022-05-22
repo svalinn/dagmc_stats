@@ -380,3 +380,43 @@ def test_add_tag_none_dict():
             r[1] = True
     single_cube._my_moab_core.tag_delete(tag_eh)
     assert(all(r))
+
+def test_add_tag_inconsistent_dic_val_len():
+    """Tests the add_tag function given dictionary with inconsistent value lengths
+    """
+    test_pass = np.full(6, False)
+    single_cube = df.DagmcFile(test_env['single_cube'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    
+    # dictionary with values of combination of integers and lists
+    test_tag_dic = {}
+    for tri in single_cube.native_ranges[types.MBTRI]:
+        test_tag_dic[tri] = [1,2]
+    test_tag_dic[test_tag_dic.keys()[0]] = 1
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        tag_eh = single_cube_query.add_tag('test_tag', types.MB_TYPE_INTEGER, test_tag_dic)
+        if len(w) == 1:
+            test_pass[0] = True
+        if 'lengths in tag_dic values are not consistent!' in str(w[0].message):
+            test_pass[1] = True
+        try:
+            tag_out = single_cube._my_moab_core.tag_get_handle('test_tag')
+        except:
+            test_pass[2] = True
+    
+    # dictionary with values of lists of different sizes
+    test_tag_dic[test_tag_dic.keys()[0]] = [1,2,3]
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        tag_eh = single_cube_query.add_tag('test_tag', types.MB_TYPE_INTEGER, test_tag_dic)
+        if len(w) == 1:
+            test_pass[3] = True
+        if 'lengths in tag_dic values are not consistent!' in str(w[0].message):
+            test_pass[4] = True
+        try:
+            tag_out = single_cube._my_moab_core.tag_get_handle('test_tag')
+        except:
+            test_pass[5] = True
+
+    assert(all(test_pass))
