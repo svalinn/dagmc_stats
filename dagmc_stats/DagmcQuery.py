@@ -608,12 +608,30 @@ class DagmcQuery:
         -------
             none
         """
+        # the default tag size is 1, else is len(dic_vals)
+        tag_size = 1
+        
+        # check if lengths of values in the tag_dic are consistent
+        if tag_dic is not None:
+            # integer elements in tag_dic.values()
+            int_val = list(filter(lambda val: type(val) is not list, tag_dic.values()))
+            # list elements in tag_dic.values()
+            lst_val = [val for val in tag_dic.values() if val not in int_val]
+            if len(lst_val) != 0:
+                tag_size = len(lst_val[0])
+
+            if len(int_val) != 0 and len(lst_val) != 0 or \
+                    len(lst_val) != 0 and not all(len(lst_val) == tag_size for val in tag_dic.values()):
+                warnings.warn('lengths in tag_dic values are not consistent!')
+                return
+
         # create the tag handle
         tag_eh = \
-            self.dagmc_file._my_moab_core.tag_get_handle(tag_name, size=1,
+            self.dagmc_file._my_moab_core.tag_get_handle(tag_name, size=tag_size,
                                     tag_type=tag_type,
                                     storage_type=types.MB_TAG_SPARSE,
                                     create_if_missing=True)
         # assign data to the tag
-        self.dagmc_file._my_moab_core.tag_set_data(tag_eh, tag_dic.keys(), tag_dic.values())
+        if tag_dic is not None:
+            self.dagmc_file._my_moab_core.tag_set_data(tag_eh, tag_dic.keys(), tag_dic.values())
         return tag_eh
