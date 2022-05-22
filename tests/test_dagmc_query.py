@@ -358,3 +358,25 @@ def test_add_tag():
             r[2] = True
     single_cube._my_moab_core.tag_delete(tag_eh)
     assert(all(r))
+    
+def test_add_tag_none_dict():
+    """Tests the add_tag function given none dictionary
+    """
+    r = np.full(2, False)
+    single_cube = df.DagmcFile(test_env['single_cube'])
+    single_cube_query = dq.DagmcQuery(single_cube)
+    tag_eh = single_cube_query.add_tag('test_tag', types.MB_TYPE_INTEGER)
+    try:
+        # try to get tag by expected name
+        tag_out = single_cube._my_moab_core.tag_get_handle('test_tag')
+        r[0] = True
+    except:
+        # fails if tag does not exist
+        r[0] = False
+    if r[0]:
+        try:
+            data_out = single_cube._my_moab_core.tag_get_data(tag_out, single_cube.native_ranges[types.MBTRI][0])
+        except:
+            r[1] = True
+    single_cube._my_moab_core.tag_delete(tag_eh)
+    assert(all(r))
