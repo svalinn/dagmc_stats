@@ -633,5 +633,8 @@ class DagmcQuery:
                                     create_if_missing=True)
         # assign data to the tag
         if tag_dic is not None:
-            self.dagmc_file._my_moab_core.tag_set_data(tag_eh, tag_dic.keys(), tag_dic.values())
+            for eh, data in tag_dic.items():
+                # assign data to the tag:
+                self.dagmc_file._my_moab_core.tag_set_data(tag_eh, eh, data)
+            #self.dagmc_file._my_moab_core.tag_set_data(tag_eh, tag_dic.keys(), tag_dic.values())
         return tag_eh
