@@ -620,7 +620,7 @@ class DagmcQuery:
             if e > 0 and e < n:
                 inconsistent_len = True
             if e == n:
-                tag_size = len(tag_dic.values()[0])
+                tag_size = len(list(tag_dic.values())[0])
                 for val in tag_dic.values():
                     if len(val) != tag_size:
                         inconsistent_len = True
