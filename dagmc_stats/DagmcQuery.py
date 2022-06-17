@@ -593,3 +593,52 @@ class DagmcQuery:
             row_data = {'tri_eh': tri, 'roughness': rval}
             tri_roughness.append(row_data)
         self.__update_tri_data(tri_roughness)
+
+    def add_tag(self, tag_name, tag_type, tag_dic=None):
+        """Add tag according to given tag information
+
+        inputs
+        ------
+            tag_name : tag name
+            tag_type : tag type
+            tag_dic : a dictionary containing eh:data
+            
+        
+        outputs
+        -------
+            none
+        """
+        # the default tag size is 1, else is len(dic_vals)
+        tag_size = 1
+        inconsistent_len = False
+        
+        # check if lengths of values in the tag_dic are consistent
+        if tag_dic is not None:
+            # number of entries that are lists
+            e = len(list(filter(lambda val: type(val) is list, tag_dic.values())))
+            n = len(tag_dic.values())
+            if e > 0 and e < n:
+                inconsistent_len = True
+            if e == n:
+                tag_size = len(list(tag_dic.values())[0])
+                for val in tag_dic.values():
+                    if len(val) != tag_size:
+                        inconsistent_len = True
+                        break
+        if inconsistent_len:
+            warnings.warn('lengths in tag_dic values are not consistent!')
+            return
+
+        # create the tag handle
+        tag_eh = \
+            self.dagmc_file._my_moab_core.tag_get_handle(tag_name, size=tag_size,
+                                    tag_type=tag_type,
+                                    storage_type=types.MB_TAG_SPARSE,
+                                    create_if_missing=True)
+        # assign data to the tag
+        if tag_dic is not None:
+            for eh, data in tag_dic.items():
+                # assign data to the tag:
+                self.dagmc_file._my_moab_core.tag_set_data(tag_eh, eh, data)
+            #self.dagmc_file._my_moab_core.tag_set_data(tag_eh, tag_dic.keys(), tag_dic.values())
+        return tag_eh
